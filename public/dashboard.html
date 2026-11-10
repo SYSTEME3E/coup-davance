@@ -1,12 +1,19 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Matchs du jour – Coup d’Avance</title></head><body><div class="wrap">
-<div class="top"><a class="logo" href="index.html">Coup d’Avance</a><span><span id="who"></span> <a href="#" id="out">Se déconnecter</a></span></div>
-<h1>Matchs du jour</h1><div id="list"><p>Chargement des matchs…</p></div></div>
+<header class="top"><a class="logo" href="index.html">Coup d’Avance</a><div class="user"><span id="who"></span><a href="#" id="out" class="out">Quitter</a></div></header>
+<h1 class="pt">Matchs du jour</h1><p class="sub" id="date"></p>
+<div id="list"><p class="sub">Chargement des matchs…</p></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+$("date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+const card=m=>{const d=m.data,p=d.result,t=new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+return '<div class="card"><div class="tm">'+m.home+' <span>contre</span> '+m.away+'</div><div class="mk">'+(m.league||"")+' · '+t+'</div>'
++'<div class="bar"><span class="h" style="flex:'+p.home+'">'+p.home+'%</span><span class="d" style="flex:'+p.draw+'">'+p.draw+'%</span><span class="a" style="flex:'+p.away+'">'+p.away+'%</span></div>'
++'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
++'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+d.likelyScore+'</b></div></div></div>'};
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
 $("who").textContent=session.user.email;
 const s=new Date();s.setHours(0,0,0,0);const e=new Date(s);e.setDate(e.getDate()+1);
 const{data,error}=await sb.from("predictions").select("*").gte("kickoff",s.toISOString()).lt("kickoff",e.toISOString()).order("kickoff");
-$("list").innerHTML=error?"<p>Impossible de charger les matchs.</p>":data.length?data.map(m=>{const d=m.data,p=d.result;return '<div class="card"><b>'+m.home+' – '+m.away+'</b><div class="mk">'+(m.league||"")+' · '+new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'</div><div class="bar"><span class="h" style="flex:'+p.home+'">'+p.home+'%</span><span class="d" style="flex:'+p.draw+'">'+p.draw+'%</span><span class="a" style="flex:'+p.away+'">'+p.away+'%</span></div><div class="mk"><span>Les deux marquent <b>'+d.btts+'%</b></span><span>+2,5 buts <b>'+d.over["2.5"]+'%</b></span><span>Score probable <b>'+d.likelyScore+'</b></span></div></div>'}).join(""):"<p>Aucun pronostic pour aujourd’hui. Ils sont publiés chaque matin.</p>"})();
+$("list").innerHTML=error?'<div class="card">Impossible de charger les matchs. Réessaie dans un instant.</div>':data.length?data.map(card).join(""):'<div class="card"><b>Pas encore de pronostics pour aujourd’hui.</b><p class="sub" style="margin:8px 0 0">Ils sont calculés chaque matin. Il peut aussi n’y avoir aucun match aujourd’hui dans les compétitions couvertes.</p></div>'})();
 $("out").onclick=async ev=>{ev.preventDefault();await sb.auth.signOut();location.href="index.html"};
 </script></body></html>
