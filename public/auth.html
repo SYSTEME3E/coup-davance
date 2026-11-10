@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Connexion – Coup d’Avance</title></head><body><div class="wrap">
+<a class="logo" href="index.html">Coup d’Avance</a>
+<main class="box"><div class="tabs"><a id="t-login" href="#login">Connexion</a><a id="t-signup" href="#signup">Créer un compte</a></div>
+<h1 id="title"></h1>
+<label for="email">Adresse e-mail</label><input id="email" type="email" autocomplete="email">
+<label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="current-password">
+<label class="check" id="terms"><input id="ok" type="checkbox"><span>J’ai 18 ans ou plus et j’accepte les <a href="legal.html#cgu">conditions d’utilisation</a> et la <a href="legal.html#confidentialite">politique de confidentialité</a>.</span></label>
+<div id="msg" role="alert"></div><button class="btn" id="go"></button></main></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);let mode="login";
+function view(){mode=location.hash==="#signup"?"signup":"login";const s=mode==="signup";
+$("t-login").className=s?"":"on";$("t-signup").className=s?"on":"";
+$("title").textContent=s?"Crée ton compte gratuit":"Content de te revoir";
+$("go").textContent=s?"Créer mon compte":"Me connecter";$("terms").hidden=!s;
+$("pw").autocomplete=s?"new-password":"current-password";say("")}
+function say(t,ok){$("msg").style.color=ok?"#1B4332":"";$("msg").textContent=t}
+addEventListener("hashchange",view);view();
+const q=new URLSearchParams(location.search).get("email");if(q)$("email").value=q;
+$("go").onclick=async()=>{say("");const email=$("email").value.trim(),password=$("pw").value;
+if(!/^\S+@\S+\.\S+$/.test(email))return say("Adresse e-mail invalide.");
+if(mode==="signup"&&password.length<8)return say("Le mot de passe doit contenir au moins 8 caractères.");
+if(mode==="signup"&&!$("ok").checked)return say("Confirme que tu as 18 ans et que tu acceptes les conditions.");
+$("go").disabled=true;
+if(mode==="signup"){const{data,error}=await sb.auth.signUp({email,password,options:{data:{accepted_terms:true},emailRedirectTo:location.origin+"/dashboard.html"}});
+ if(error)say(/registered/i.test(error.message)?"Un compte existe déjà avec cette adresse e-mail.":"Inscription impossible : "+error.message);
+ else if(data.session)location.href="dashboard.html";else say("Compte créé. Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi.",true)}
+else{const{error}=await sb.auth.signInWithPassword({email,password});
+ if(error)say("E-mail ou mot de passe incorrect.");else location.href="dashboard.html"}
+$("go").disabled=false};
+</script></body></html>
