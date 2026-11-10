@@ -1,19 +1,39 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Matchs du jour – Coup d’Avance</title></head><body><div class="wrap">
 <header class="top"><a class="logo" href="index.html">Coup d’Avance</a><div class="user"><span id="who"></span><a href="#" id="out" class="out">Quitter</a></div></header>
 <h1 class="pt">Matchs du jour</h1><p class="sub" id="date"></p>
+<div id="bilan"></div>
 <div id="list"><p class="sub">Chargement des matchs…</p></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LB={home:"victoire à domicile",draw:"match nul",away:"victoire à l’extérieur"};
+const yn=b=>b?"✔":"✘";
 $("date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+const result=m=>{
+  if(m.settled_at&&m.final_home!=null){const v=m.verdict||{};
+    return '<div class="res '+(v.ok1x2?"ok":"ko")+'"><div class="sc">'+m.final_home+' – '+m.final_away+'<small>Score final</small></div>'
+    +'<div class="vd"><b>'+(v.ok1x2?"✔ Pronostic juste":"✘ Pronostic raté")+'</b><small>Prévu : '+(LB[v.predicted]||"?")+(v.scoreHit?" · score exact !":"")+'</small></div></div>'
+    +(v.btts&&v.over25?'<div class="chk">Les deux marquent '+yn(v.btts.ok)+' · Plus de 2,5 buts '+yn(v.over25.ok)+'</div>':"")}
+  if(m.settled_at)return '<div class="res wait">Match annulé ou non joué ('+esc(m.final_status)+')</div>';
+  if(new Date(m.kickoff)<Date.now())return '<div class="res wait">Match en cours ou résultat en attente…</div>';
+  return ""};
 const card=m=>{const d=m.data,p=d.result,t=new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
-return '<div class="card"><div class="tm">'+m.home+' <span>contre</span> '+m.away+'</div><div class="mk">'+(m.league||"")+' · '+t+'</div>'
+return '<div class="card"><div class="tm">'+esc(m.home)+' <span>contre</span> '+esc(m.away)+'</div><div class="mk">'+esc(m.league||"")+' · '+t+'</div>'
 +'<div class="bar"><span class="h" style="flex:'+p.home+'">'+p.home+'%</span><span class="d" style="flex:'+p.draw+'">'+p.draw+'%</span><span class="a" style="flex:'+p.away+'">'+p.away+'%</span></div>'
 +'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
-+'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+d.likelyScore+'</b></div></div></div>'};
++'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div></div>'+result(m)+'</div>'};
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
 $("who").textContent=session.user.email;
-const s=new Date();s.setHours(0,0,0,0);const e=new Date(s);e.setDate(e.getDate()+1);
-const{data,error}=await sb.from("predictions").select("*").gte("kickoff",s.toISOString()).lt("kickoff",e.toISOString()).order("kickoff");
-$("list").innerHTML=error?'<div class="card">Impossible de charger les matchs. Réessaie dans un instant.</div>':data.length?data.map(card).join(""):'<div class="card"><b>Pas encore de pronostics pour aujourd’hui.</b><p class="sub" style="margin:8px 0 0">Ils sont calculés chaque matin. Il peut aussi n’y avoir aucun match aujourd’hui dans les compétitions couvertes.</p></div>'})();
+const s=new Date();s.setHours(0,0,0,0);
+const yd=new Date(s);yd.setDate(yd.getDate()-1);const tm=new Date(s);tm.setDate(tm.getDate()+1);const e=new Date(s);e.setDate(e.getDate()+2);
+const{data,error}=await sb.from("predictions").select("*").gte("kickoff",yd.toISOString()).lt("kickoff",e.toISOString()).order("kickoff");
+const day=d=>data.filter(m=>new Date(m.kickoff).toDateString()===d.toDateString());
+const part=(t,d,hideEmpty)=>{const a=day(d);if(!a.length&&hideEmpty)return"";return '<p class="sub dh">'+t+' ('+a.length+')</p>'+(a.length?a.map(card).join(""):'<div class="card"><p class="sub" style="margin:0">Aucun pronostic pour le moment.</p></div>')};
+$("list").innerHTML=error?'<div class="card">Impossible de charger les matchs. Réessaie dans un instant.</div>':data.length?part("Hier",yd,true)+part("Aujourd’hui",s)+part("Demain",tm):'<div class="card"><b>Pas encore de pronostics pour aujourd’hui ni demain.</b><p class="sub" style="margin:8px 0 0">Ils sont calculés toutes les 5 minutes. Il peut aussi n’y avoir aucun match dans les compétitions couvertes.</p></div>';
+const{data:all}=await sb.from("predictions").select("verdict").not("verdict","is",null).limit(5000);
+const n=all?all.length:0;
+if(n){const c=f=>all.filter(f).length,pc=x=>Math.round(100*x/n)+" %";
+$("bilan").innerHTML='<div class="card bilan"><b>Bilan des pronostics</b><div class="stats"><div>Résultat 1X2 juste<b>'+c(x=>x.verdict.ok1x2)+'/'+n+' · '+pc(c(x=>x.verdict.ok1x2))+'</b></div><div>Les deux marquent<b>'+pc(c(x=>x.verdict.btts&&x.verdict.btts.ok))+'</b></div><div>Plus de 2,5 buts<b>'+pc(c(x=>x.verdict.over25&&x.verdict.over25.ok))+'</b></div></div></div>'}
+else $("bilan").innerHTML='<p class="sub" style="text-transform:none">Le score final et la comparaison avec le pronostic s’affichent ici après chaque match.</p>'})();
 $("out").onclick=async ev=>{ev.preventDefault();await sb.auth.signOut();location.href="index.html"};
 </script></body></html>
