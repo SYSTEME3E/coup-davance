@@ -1,0 +1,21 @@
+:root{--bg:#FFFFFF;--surface:#F6F7F4;--ink:#14201A;--muted:#5A6B61;--line:#E3E7E0;--accent:#F4D03F;--on-accent:#1A2A00;--brand:#1B4332;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 "Hanken Grotesk",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque","Hanken Grotesk",sans-serif;line-height:1.1;margin:0}
+a{color:var(--brand)}.wrap{max-width:720px;margin:0 auto;padding:0 20px}
+.logo{display:inline-block;font:800 22px "Bricolage Grotesque",sans-serif;color:var(--ink);text-decoration:none;padding:18px 0}
+.btn{display:inline-block;background:var(--accent);color:var(--on-accent);font:700 16px "Hanken Grotesk",sans-serif;border:0;border-radius:8px;padding:12px 20px;cursor:pointer;width:100%}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.box{max-width:420px;margin:24px auto 56px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px}
+.tabs{display:flex;gap:6px;margin-bottom:22px}.tabs a{flex:1;text-align:center;padding:10px;border-radius:8px;text-decoration:none;color:var(--muted);font-weight:700}
+.tabs a.on{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+label{display:block;font-weight:700;font-size:15px;margin:16px 0 6px}
+input[type=email],input[type=password]{width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;margin:18px 0}.check input{margin-top:5px;width:18px;height:18px;flex:none}
+#msg{min-height:1.6em;margin:12px 0;color:#B42318;font-size:15px}
+.legal h1{font-size:38px;margin:24px 0 8px}.legal h2{font-size:26px;margin:44px 0 10px}.legal p,.legal li{color:var(--muted);max-width:68ch}
+.top{display:flex;justify-content:space-between;align-items:center}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+.bar{display:flex;height:30px;border-radius:6px;overflow:hidden;gap:2px;margin:10px 0}.bar span{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.bar .h{background:var(--accent);color:#1A2A00}.bar .d{background:#C9D1CB}.bar .a{background:var(--brand);color:#fff}
+.mk{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:14px}.mk b{color:var(--ink)}
