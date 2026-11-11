@@ -37,3 +37,5 @@ input[type=email],input[type=password]{width:100%;padding:12px 14px;border-radiu
 .res .vd{text-align:right}.res.ok{border-color:#2E7D32;background:#EAF5EA}.res.ko{border-color:#B42318;background:#FDECEA}
 .res.wait{display:block;color:var(--muted);font-size:14px}.chk{color:var(--muted);font-size:13px;margin-top:8px}
 .bilan .stats{margin-top:10px}
+
+.cf{font-weight:700;font-size:.85em}.cf.hi{color:#1a9a4a}.cf.lo{opacity:.65}
