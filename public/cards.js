@@ -22,14 +22,18 @@ const result=m=>{
 const xt=d=>{const e=d.extra;if(!e)return"";let a="";
   if(e.corners)a+='<div>Corners prévus<b>'+fr(e.corners.total)+'</b></div><div>Plus de 9,5 corners<b>'+e.corners.over["9.5"]+'%</b></div>';
   if(e.fouls)a+='<div>Fautes prévues<b>'+fr(e.fouls.total)+'</b></div>';
+  if(e.cards)a+='<div>Cartons jaunes prévus<b>'+fr(e.cards.total)+'</b></div><div>Plus de 3,5 cartons<b>'+e.cards.over["3.5"]+'%</b></div>';
   return a?'<div class="stats x">'+a+'</div>':""};
+// Forme des 5 derniers matchs (V = victoire, N = nul, D = défaite), du plus récent au plus ancien
+const FM=s=>String(s||"").split("").map(x=>'<i class="f'+x+'">'+x+'</i>').join("");
+const frm=d=>d.form&&(d.form.home||d.form.away)?'<div class="frm"><span>Forme domicile '+FM(d.form.home)+'</span><span>Forme extérieur '+FM(d.form.away)+'</span></div>':"";
 const when=m=>new Date(m.kickoff).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+" · "+new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
 const tagOf=m=>{const p=m.data.result,cf=Math.max(p.home,p.draw,p.away);
   return /friendl/i.test(m.league||"")?'<span class="cf lo">Match amical · très imprévisible</span>':cf>=55?'<span class="cf hi">Favori probable</span>':'<span class="cf lo">Match incertain</span>'};
 const probs=d=>{const p=d.result;
   return '<div class="bar"><span class="h" style="flex:'+p.home+'">'+p.home+'%</span><span class="d" style="flex:'+p.draw+'">'+p.draw+'%</span><span class="a" style="flex:'+p.away+'">'+p.away+'%</span></div>'
   +'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
-  +'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div></div>'+xt(d)};
+  +'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div></div>'+xt(d)+frm(d)};
 const card=m=>{const d=m.data,me=META[m.fixture_id]||{};
   return '<div class="card" data-id="'+m.fixture_id+'" role="link" tabindex="0"><div class="tm"><b class="tn">'+lgo(me.home_logo)+esc(m.home)+'</b><span>contre</span><b class="tn">'+lgo(me.away_logo)+esc(m.away)+'</b></div>'
   +'<div class="mk">'+lgo(me.league_logo,"sm")+'<span>'+esc(m.league||"")+' · '+when(m)+'</span>'+tagOf(m)+'</div>'
