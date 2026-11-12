@@ -34,7 +34,7 @@ input[type=email],input[type=password]{width:100%;padding:12px 14px;border-radiu
 .dh{font-weight:700;margin:22px 0 8px;color:var(--ink)}
 .res{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
 .res .sc{font:800 26px/1 "Bricolage Grotesque",sans-serif}.res .sc small,.res .vd small{display:block;font:400 12px "Hanken Grotesk",sans-serif;color:var(--muted);margin-top:4px}
-.res .vd{text-align:right}.res.ok{border-color:#1D6FD8;background:#E8F1FD}.res.ko{border-color:#B42318;background:#FDECEA}
+.res .vd{text-align:right}.res.ok{border-color:#2E7D32;background:#EAF5EA}.res.ko{border-color:#B42318;background:#FDECEA}
 .res.wait{display:block;color:var(--muted);font-size:14px}.chk{color:var(--muted);font-size:13px;margin-top:8px}
 .bilan .stats{margin-top:10px}
 
