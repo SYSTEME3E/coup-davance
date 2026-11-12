@@ -9,33 +9,53 @@ const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const LB={home:"victoire à domicile",draw:"match nul",away:"victoire à l’extérieur"};
 const yn=b=>b?"✔":"✘";
+const fr=n=>String(n).replace(".",",");
 $("date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+// Match en cours : badge rouge + score en direct
+const liveBox=m=>{const ht=m.live_status==="HT";
+  return '<div class="res live"><div class="sc">'+(m.live_home==null?0:m.live_home)+' – '+(m.live_away==null?0:m.live_away)+'<small>Score en direct</small></div>'
+  +'<div class="vd"><span class="lv"><i></i>'+(ht?"MI-TEMPS":"EN COURS")+'</span>'+(!ht&&m.live_minute?'<small>'+m.live_minute+'’</small>':"")+'</div></div>'};
 const result=m=>{
   if(m.settled_at&&m.final_home!=null){const v=m.verdict||{};
     return '<div class="res '+(v.ok1x2?"ok":"ko")+'"><div class="sc">'+m.final_home+' – '+m.final_away+'<small>Score final</small></div>'
     +'<div class="vd"><b>'+(v.ok1x2?"✔ Pronostic juste":"✘ Pronostic raté")+'</b><small>Prévu : '+(LB[v.predicted]||"?")+(v.scoreHit?" · score exact !":"")+'</small></div></div>'
     +(v.btts&&v.over25?'<div class="chk">Les deux marquent '+yn(v.btts.ok)+' · Plus de 2,5 buts '+yn(v.over25.ok)+'</div>':"")}
   if(m.settled_at)return '<div class="res wait">Match annulé ou non joué ('+esc(m.final_status)+')</div>';
+  if(m.live_status)return liveBox(m);
   if(new Date(m.kickoff)<Date.now())return '<div class="res wait">Match en cours ou résultat en attente…</div>';
   return ""};
+// Corners et fautes prévus (si disponibles pour ce match)
+const xt=d=>{const e=d.extra;if(!e)return"";let a="";
+  if(e.corners)a+='<div>Corners prévus<b>'+fr(e.corners.total)+'</b></div><div>Plus de 9,5 corners<b>'+e.corners.over["9.5"]+'%</b></div>';
+  if(e.fouls)a+='<div>Fautes prévues<b>'+fr(e.fouls.total)+'</b></div>';
+  return a?'<div class="stats x">'+a+'</div>':""};
 const card=m=>{const d=m.data,p=d.result,cf=Math.max(p.home,p.draw,p.away),tag=cf>=55?'<span class="cf hi">Pronostic solide</span>':'<span class="cf lo">Match incertain</span>',t=new Date(m.kickoff).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+" · "+new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
 return '<div class="card"><div class="tm">'+esc(m.home)+' <span>contre</span> '+esc(m.away)+'</div><div class="mk">'+esc(m.league||"")+' · '+t+' · '+tag+'</div>'
 +'<div class="bar"><span class="h" style="flex:'+p.home+'">'+p.home+'%</span><span class="d" style="flex:'+p.draw+'">'+p.draw+'%</span><span class="a" style="flex:'+p.away+'">'+p.away+'%</span></div>'
 +'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
-+'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div></div>'+result(m)+'</div>'};
++'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div></div>'+xt(d)+result(m)+'</div>'};
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
 $("who").textContent=session.user.email;
-const s=new Date();s.setHours(0,0,0,0);
-const yd=new Date(s);yd.setDate(yd.getDate()-1);const tm=new Date(s);tm.setDate(tm.getDate()+1);const e=new Date(s);e.setDate(e.getDate()+2);
-const{data,error}=await sb.from("predictions").select("*").gte("kickoff",s.toISOString()).lt("kickoff",e.toISOString()).is("settled_at",null).order("kickoff");
-const live=(data||[]).filter(m=>!m.settled_at&&new Date(m.kickoff).getTime()>Date.now()-3*36e5);
-const day=d=>live.filter(m=>new Date(m.kickoff).toDateString()===d.toDateString());
-const part=(t,d,hideEmpty)=>{const a=day(d);if(!a.length&&hideEmpty)return"";return '<p class="sub dh">'+t+' ('+a.length+')</p>'+(a.length?a.map(card).join(""):'<div class="card"><p class="sub" style="margin:0">Plus aucun match à venir pour le moment.</p></div>')};
-$("list").innerHTML=error?'<div class="card">Impossible de charger les matchs. Réessaie dans un instant.</div>':live.length?part("Aujourd’hui",s)+part("Demain",tm):'<div class="card"><b>Pas encore de pronostics pour aujourd’hui ni demain.</b><p class="sub" style="margin:8px 0 0">Ils sont calculés toutes les 5 minutes. Il peut aussi n’y avoir aucun match dans les compétitions couvertes.</p></div>';
-let homeHTML=$("list").innerHTML,tok=0;
+let homeHTML="",tok=0;
+const searching=()=>$("q").value.replace(/[%_,()*\\]/g," ").trim().length>=2||!!$("qd").value;
+// Liste du jour : matchs en cours en premier (rouge), puis aujourd’hui et demain. Actualisée toutes les 60 s.
+const loadHome=async first=>{
+ const s=new Date();s.setHours(0,0,0,0);
+ const yd=new Date(s);yd.setDate(yd.getDate()-1);const tm=new Date(s);tm.setDate(tm.getDate()+1);const e=new Date(s);e.setDate(e.getDate()+2);
+ const{data,error}=await sb.from("predictions").select("*").gte("kickoff",yd.toISOString()).lt("kickoff",e.toISOString()).is("settled_at",null).order("kickoff");
+ if(error&&!first)return;
+ const all=(data||[]).filter(m=>m.live_status||new Date(m.kickoff).getTime()>Date.now()-3*36e5);
+ const liveNow=all.filter(m=>m.live_status),rest=all.filter(m=>!m.live_status);
+ const day=d=>rest.filter(m=>new Date(m.kickoff).toDateString()===d.toDateString());
+ const part=(t,d,hideEmpty)=>{const a=day(d);if(!a.length&&hideEmpty)return"";return '<p class="sub dh">'+t+' ('+a.length+')</p>'+(a.length?a.map(card).join(""):'<div class="card"><p class="sub" style="margin:0">Plus aucun match à venir pour le moment.</p></div>')};
+ homeHTML=error?'<div class="card">Impossible de charger les matchs. Réessaie dans un instant.</div>':all.length?(liveNow.length?'<p class="sub dh rd">En cours ('+liveNow.length+')</p>'+liveNow.map(card).join(""):"")+part("Aujourd’hui",s,liveNow.length>0)+part("Demain",tm):'<div class="card"><b>Pas encore de pronostics pour aujourd’hui ni demain.</b><p class="sub" style="margin:8px 0 0">Ils sont calculés toutes les 5 minutes. Il peut aussi n’y avoir aucun match dans les compétitions couvertes.</p></div>';
+ if(!searching())$("list").innerHTML=homeHTML};
+await loadHome(true);
+setInterval(()=>{if(!document.hidden)loadHome(false)},60000);
 const render=(t,a)=>a.length?'<p class="sub dh">'+t+' ('+a.length+')</p>'+a.map(card).join(""):"";
 const doSearch=async()=>{const my=++tok,q=$("q").value.replace(/[%_,()*\\]/g," ").trim(),dv=$("qd").value;
  if(q.length<2&&!dv){$("list").innerHTML=homeHTML;return}
+ const s=new Date();s.setHours(0,0,0,0);
  let a=sb.from("predictions").select("*").order("kickoff",{ascending:false}).limit(80);
  if(q.length>=2)a=a.or("home.ilike.%"+q+"%,away.ilike.%"+q+"%,league.ilike.%"+q+"%");
  if(dv){const d0=new Date(dv+"T00:00:00"),d1=new Date(d0);d1.setDate(d1.getDate()+1);a=a.gte("kickoff",d0.toISOString()).lt("kickoff",d1.toISOString())}
