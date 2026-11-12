@@ -1,0 +1,50 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Historique – Coup d’Avance</title></head><body><div class="wrap">
+<header class="top"><a class="logo" href="index.html">Coup d’Avance</a><div class="user"><span id="who"></span><a href="dashboard.html" class="out">Matchs du jour</a><a href="#" id="out" class="out">Quitter</a></div></header>
+<h1 class="pt">Historique</h1><p class="sub">Scores finaux et pronostics des matchs terminés</p>
+<div id="bilan"></div>
+<div class="flt" id="flt"><button data-f="all" class="on">Tous</button><button data-f="ok">Justes</button><button data-f="ko">Ratés</button></div>
+<div id="list"><p class="sub">Chargement…</p></div>
+<button id="more" class="more" style="display:none">Voir plus de matchs</button></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LB={home:"victoire à domicile",draw:"match nul",away:"victoire à l’extérieur"};
+const yn=b=>b?"✔":"✘";
+const result=m=>{
+  if(m.settled_at&&m.final_home!=null){const v=m.verdict||{};
+    return '<div class="res '+(v.ok1x2?"ok":"ko")+'"><div class="sc">'+m.final_home+' – '+m.final_away+'<small>Score final</small></div>'
+    +'<div class="vd"><b>'+(v.ok1x2?"✔ Pronostic juste":"✘ Pronostic raté")+'</b><small>Prévu : '+(LB[v.predicted]||"?")+(v.scoreHit?" · score exact !":"")+'</small></div></div>'
+    +(v.btts&&v.over25?'<div class="chk">Les deux marquent '+yn(v.btts.ok)+' · Plus de 2,5 buts '+yn(v.over25.ok)+'</div>':"")}
+  if(m.settled_at)return '<div class="res wait">Match annulé ou non joué ('+esc(m.final_status)+')</div>';
+  if(new Date(m.kickoff)<Date.now())return '<div class="res wait">Match en cours ou résultat en attente…</div>';
+  return ""};
+const card=m=>{const d=m.data,p=d.result,cf=Math.max(p.home,p.draw,p.away),tag=cf>=55?'<span class="cf hi">Pronostic solide</span>':'<span class="cf lo">Match incertain</span>',t=new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+return '<div class="card"><div class="tm">'+esc(m.home)+' <span>contre</span> '+esc(m.away)+'</div><div class="mk">'+esc(m.league||"")+' · '+t+' · '+tag+'</div>'
++'<div class="bar"><span class="h" style="flex:'+p.home+'">'+p.home+'%</span><span class="d" style="flex:'+p.draw+'">'+p.draw+'%</span><span class="a" style="flex:'+p.away+'">'+p.away+'%</span></div>'
++'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
++'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div></div>'+result(m)+'</div>'};
+
+const PAGE=40;let rows=[],filter="all",from=0,more=true;
+const dayLabel=k=>new Date(k+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+const keyOf=m=>{const x=new Date(m.kickoff);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
+function draw(){
+  const f=rows.filter(m=>filter==="all"||(filter==="ok"?m.verdict&&m.verdict.ok1x2:m.verdict&&!m.verdict.ok1x2));
+  if(!f.length){$("list").innerHTML='<div class="card"><p class="sub" style="margin:0">Aucun match terminé pour le moment.</p></div>';return}
+  const g={};f.forEach(m=>(g[keyOf(m)]=g[keyOf(m)]||[]).push(m));
+  $("list").innerHTML=Object.keys(g).sort().reverse().map(k=>'<p class="sub dh">'+dayLabel(k)+' ('+g[k].length+')</p>'+g[k].map(card).join("")).join("");
+  $("more").style.display=more?"block":"none"}
+async function load(){
+  const{data,error}=await sb.from("predictions").select("*").not("settled_at","is",null).order("kickoff",{ascending:false}).range(from,from+PAGE-1);
+  if(error){$("list").innerHTML='<div class="card">Impossible de charger l’historique. Réessaie dans un instant.</div>';return}
+  rows=rows.concat(data||[]);from+=PAGE;more=(data||[]).length===PAGE;draw()}
+(async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
+$("who").textContent=session.user.email;
+const{data:all}=await sb.from("predictions").select("verdict").not("verdict","is",null).limit(5000);
+const n=all?all.length:0;
+if(n){const c=f=>all.filter(f).length,pc=x=>Math.round(100*x/n)+" %";
+$("bilan").innerHTML='<div class="card bilan"><b>Bilan global ('+n+' matchs)</b><div class="stats"><div>Résultat 1X2 juste<b>'+c(x=>x.verdict.ok1x2)+'/'+n+' · '+pc(c(x=>x.verdict.ok1x2))+'</b></div><div>Les deux marquent<b>'+pc(c(x=>x.verdict.btts&&x.verdict.btts.ok))+'</b></div><div>Plus de 2,5 buts<b>'+pc(c(x=>x.verdict.over25&&x.verdict.over25.ok))+'</b></div></div></div>'}
+document.querySelectorAll("#flt button").forEach(b=>b.onclick=()=>{filter=b.dataset.f;document.querySelectorAll("#flt button").forEach(x=>x.classList.toggle("on",x===b));draw()});
+$("more").onclick=load;
+load()})();
+$("out").onclick=async ev=>{ev.preventDefault();await sb.auth.signOut();location.href="index.html"};
+</script></body></html>
