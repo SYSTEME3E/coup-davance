@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Matchs du jour – Coup d’Avance</title></head><body><div class="wrap">
 <header class="top"><a class="logo" href="index.html">Coup d’Avance</a><div class="user"><span id="who"></span><a href="historique.html" class="out">Historique</a><a href="#" id="out" class="out">Quitter</a></div></header>
 <h1 class="pt">Matchs du jour</h1><p class="sub" id="date"></p>
+<div class="srch"><input id="q" type="search" placeholder="Rechercher une équipe ou une compétition…" autocomplete="off"><input id="qd" type="date" aria-label="Date du match"></div>
 <div id="bilan"></div>
 <div id="list"><p class="sub">Chargement des matchs…</p></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
@@ -17,7 +18,7 @@ const result=m=>{
   if(m.settled_at)return '<div class="res wait">Match annulé ou non joué ('+esc(m.final_status)+')</div>';
   if(new Date(m.kickoff)<Date.now())return '<div class="res wait">Match en cours ou résultat en attente…</div>';
   return ""};
-const card=m=>{const d=m.data,p=d.result,cf=Math.max(p.home,p.draw,p.away),tag=cf>=55?'<span class="cf hi">Pronostic solide</span>':'<span class="cf lo">Match incertain</span>',t=new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+const card=m=>{const d=m.data,p=d.result,cf=Math.max(p.home,p.draw,p.away),tag=cf>=55?'<span class="cf hi">Pronostic solide</span>':'<span class="cf lo">Match incertain</span>',t=new Date(m.kickoff).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+" · "+new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
 return '<div class="card"><div class="tm">'+esc(m.home)+' <span>contre</span> '+esc(m.away)+'</div><div class="mk">'+esc(m.league||"")+' · '+t+' · '+tag+'</div>'
 +'<div class="bar"><span class="h" style="flex:'+p.home+'">'+p.home+'%</span><span class="d" style="flex:'+p.draw+'">'+p.draw+'%</span><span class="a" style="flex:'+p.away+'">'+p.away+'%</span></div>'
 +'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
@@ -31,6 +32,18 @@ const live=(data||[]).filter(m=>!m.settled_at&&new Date(m.kickoff).getTime()>Dat
 const day=d=>live.filter(m=>new Date(m.kickoff).toDateString()===d.toDateString());
 const part=(t,d,hideEmpty)=>{const a=day(d);if(!a.length&&hideEmpty)return"";return '<p class="sub dh">'+t+' ('+a.length+')</p>'+(a.length?a.map(card).join(""):'<div class="card"><p class="sub" style="margin:0">Plus aucun match à venir pour le moment.</p></div>')};
 $("list").innerHTML=error?'<div class="card">Impossible de charger les matchs. Réessaie dans un instant.</div>':live.length?part("Aujourd’hui",s)+part("Demain",tm):'<div class="card"><b>Pas encore de pronostics pour aujourd’hui ni demain.</b><p class="sub" style="margin:8px 0 0">Ils sont calculés toutes les 5 minutes. Il peut aussi n’y avoir aucun match dans les compétitions couvertes.</p></div>';
+let homeHTML=$("list").innerHTML,tok=0;
+const render=(t,a)=>a.length?'<p class="sub dh">'+t+' ('+a.length+')</p>'+a.map(card).join(""):"";
+const doSearch=async()=>{const my=++tok,q=$("q").value.replace(/[%_,()*\\]/g," ").trim(),dv=$("qd").value;
+ if(q.length<2&&!dv){$("list").innerHTML=homeHTML;return}
+ let a=sb.from("predictions").select("*").order("kickoff",{ascending:false}).limit(80);
+ if(q.length>=2)a=a.or("home.ilike.%"+q+"%,away.ilike.%"+q+"%,league.ilike.%"+q+"%");
+ if(dv){const d0=new Date(dv+"T00:00:00"),d1=new Date(d0);d1.setDate(d1.getDate()+1);a=a.gte("kickoff",d0.toISOString()).lt("kickoff",d1.toISOString())}
+ const{data:r,error:er}=await a;if(my!==tok)return;
+ if(er){$("list").innerHTML='<div class="card">Recherche impossible pour le moment. Réessaie dans un instant.</div>';return}
+ const up=(r||[]).filter(m=>new Date(m.kickoff)>=s).reverse(),past=(r||[]).filter(m=>new Date(m.kickoff)<s);
+ $("list").innerHTML=(up.length||past.length)?render("À venir",up)+render("Déjà joués",past):'<div class="card"><b>Aucun match trouvé.</b><p class="sub" style="margin:8px 0 0">Essaie un autre nom d’équipe, de compétition ou une autre date.</p></div>'};
+let tm_;$("q").oninput=()=>{clearTimeout(tm_);tm_=setTimeout(doSearch,300)};$("qd").onchange=doSearch;
 const{data:all}=await sb.from("predictions").select("verdict").not("verdict","is",null).limit(5000);
 const n=all?all.length:0;
 if(n){const c=f=>all.filter(f).length,pc=x=>Math.round(100*x/n)+" %";
