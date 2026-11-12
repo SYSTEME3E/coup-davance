@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Match – Coup d’Avance</title></head><body><div class="wrap">
+<header class="top"><a class="logo" href="index.html">Coup d’Avance</a><div class="user"><span id="who"></span><a href="dashboard.html" class="out">Matchs du jour</a><a href="historique.html" class="out">Historique</a></div></header>
+<a class="back" href="dashboard.html" id="back">← Retour aux matchs</a>
+<div id="mh"><p class="sub">Chargement du match…</p></div>
+<div id="pred"></div>
+<div id="st"></div>
+<div id="ev"></div>
+<p class="note" id="src"></p>
+<div style="height:40px"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+</script><script src="cards.js"></script><script>
+const LIVE=["1H","2H","ET","BT","P","LIVE","INT","SUSP","HT"],DONE=["FT","AET","PEN"];
+const ROWS=[["expected_goals","Buts attendus (xG)"],["Ball Possession","Possession"],["Total Shots","Total de tirs"],["Shots on Goal","Tirs cadrés"],["Corner Kicks","Corners"],["Fouls","Fautes"],["Yellow Cards","Cartons jaunes"],["Red Cards","Cartons rouges"],["Offsides","Hors-jeu"],["Goalkeeper Saves","Arrêts du gardien"],["Total passes","Passes"],["Passes %","Passes réussies"]];
+const num=v=>v==null?0:(parseFloat(String(v))||0);
+const id=Number(new URLSearchParams(location.search).get("id"));
+(async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
+$("who").textContent=session.user.email;
+if(document.referrer&&new URL(document.referrer).origin===location.origin){$("back").onclick=e=>{e.preventDefault();history.back()}}
+if(!id){$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
+let pr=null,d=null,meta=null;
+const loadRow=async()=>{const{data}=await sb.from("predictions").select("*").eq("fixture_id",id).maybeSingle();if(data)pr=data};
+await loadRow();
+if(!pr){$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
+try{const{data}=await sb.from("match_meta").select("*").eq("fixture_id",id).maybeSingle();meta=data}catch(e){}
+document.title=pr.home+" – "+pr.away+" · Coup d’Avance";
+const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" onerror="this.remove()">':"";
+const team=(side)=>{const t=(d&&d[side])||{},logo=t.logo||(meta&&meta[side+"_logo"]);
+  return '<div class="t">'+lg(logo)+'<b>'+esc(pr[side])+'</b></div>'};
+const isLive=()=>(d&&LIVE.includes(d.status))||(!!pr.live_status&&!(pr.settled_at));
+const draw=()=>{
+  const lgLogo=(d&&d.league&&d.league.logo)||(meta&&meta.league_logo);
+  let center="";
+  const g=d&&d.goals&&d.goals.home!=null?d.goals:(pr.live_status?{home:pr.live_home,away:pr.live_away}:null);
+  if(pr.settled_at&&pr.final_home!=null)center='<div class="scr">'+pr.final_home+' – '+pr.final_away+'<small>Terminé</small></div>';
+  else if(isLive()){const ht=(d&&d.status==="HT")||pr.live_status==="HT",mn=(d&&d.elapsed)||pr.live_minute;
+    center='<div class="scr live">'+(g?g.home+' – '+g.away:'0 – 0')+'<small><span class="lv"><i></i>'+(ht?"MI-TEMPS":"EN COURS")+'</span>'+(!ht&&mn?' '+mn+'’':"")+'</small></div>'}
+  else if(d&&DONE.includes(d.status)&&g)center='<div class="scr">'+g.home+' – '+g.away+'<small>Terminé</small></div>';
+  else if(new Date(pr.kickoff)<Date.now())center='<div class="scr">– –<small>Résultat en attente</small></div>';
+  else center='<div class="scr" style="font-size:30px">'+new Date(pr.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'<small>'+new Date(pr.kickoff).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+'</small></div>';
+  const extra=[d&&d.league&&d.league.round,d&&d.venue].filter(Boolean).join(" · ");
+  $("mh").innerHTML='<div class="mh"><div class="lgl">'+lg(lgLogo,"lgo sm")+'<span>'+esc(pr.league||"")+(extra?' · '+esc(extra):"")+'</span></div><div class="tt">'+team("home")+center+team("away")+'</div></div>';
+  $("pred").innerHTML=pr.data&&pr.data.result?'<div class="sec"><h2>Pronostic</h2><div class="mk" style="margin-bottom:8px">'+tagOf(pr)+'</div>'+probs(pr.data)+'</div>':"";
+  // statistiques
+  let st='<div class="sec"><h2>Statistiques du match</h2>';
+  const hs=d&&d.statistics&&d.statistics.find(s=>s.team===d.home.id),as=d&&d.statistics&&d.statistics.find(s=>s.team===d.away.id);
+  if(!d)st+='<p class="note">Chargement…</p>';
+  else if(hs&&as){let n=0;
+    ROWS.forEach(([k,lab])=>{const l=hs.stats[k],r=as.stats[k];if(l==null&&r==null)return;n++;
+      const a=num(l),b=num(r),pct=/%/.test(String(l))||/%/.test(String(r)),mx=Math.max(a,b),
+        wl=pct?a:(mx?a/mx*100:0),wr=pct?b:(mx?b/mx*100:0);
+      st+='<div class="sr"><div class="sv"><b>'+fr(l==null?0:l)+'</b><span>'+lab+'</span><b>'+fr(r==null?0:r)+'</b></div><div class="sb"><div class="l"><i style="width:'+Math.min(100,wl)+'%"></i></div><div class="r"><i style="width:'+Math.min(100,wr)+'%"></i></div></div></div>'});
+    if(!n)st+='<p class="note">Aucune statistique disponible pour le moment.</p>'}
+  else if(d.noStats)st+='<p class="note">Les statistiques en direct ne sont pas disponibles pour cette compétition.</p>';
+  else if(d.quota)st+='<p class="note">Limite quotidienne de requêtes atteinte : statistiques indisponibles pour le moment, réessaie plus tard.</p>';
+  else if(isLive()||(pr.settled_at)||(d.status&&d.status!=="NS"))st+='<p class="note">Les statistiques de ce match ne sont pas encore disponibles.</p>';
+  else st+='<p class="note">Les statistiques apparaîtront dès le coup d’envoi.</p>';
+  $("st").innerHTML=st+'</div>';
+  // événements
+  const evs=((d&&d.events)||[]).filter(e=>["Goal","Card","subst","Var"].includes(e.type)).slice().reverse();
+  const ic=e=>e.type==="Goal"?(e.detail==="Missed Penalty"?"❌":"⚽"):e.type==="Card"?(/Red/.test(e.detail||"")?"🟥":"🟨"):e.type==="subst"?"🔄":"📺";
+  $("ev").innerHTML=evs.length?'<div class="sec"><h2>Temps forts</h2>'+evs.map(e=>{
+    const home=d.home&&e.team===d.home.id,txt=ic(e)+' '+esc(e.player||"")+(e.type==="Goal"&&e.assist?'<small>passe : '+esc(e.assist)+'</small>':e.type==="subst"&&e.assist?'<small>entre : '+esc(e.assist)+'</small>':"");
+    return '<div class="evr"><div class="h">'+(home?txt:"")+'</div><div class="m">'+(e.min==null?"":e.min+(e.extra?"+"+e.extra:"")+"’")+'</div><div class="a">'+(home?"":txt)+'</div></div>'}).join("")+'</div>':"";
+  $("src").textContent=d&&!d.noStats?"Statistiques : API-Football. Mise à jour automatique toutes les 45 secondes pendant le match.":""};
+const refresh=async()=>{
+  await loadRow();
+  try{const{data,error}=await sb.functions.invoke("match-info",{body:{action:"detail",id}});if(!error&&data&&!data.error)d=data}catch(e){}
+  draw()};
+draw();await refresh();
+setInterval(()=>{if(document.hidden)return;if(pr.settled_at&&d&&d.statistics&&d.statistics.length)return;refresh()},45000);
+})();
+</script></body></html>
