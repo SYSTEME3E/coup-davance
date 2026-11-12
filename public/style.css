@@ -86,3 +86,5 @@ html,body{max-width:100%;overflow-x:hidden}
 .evr .m{text-align:center;font-weight:700;color:var(--muted)}.evr .a{text-align:right}
 .evr small{display:block;color:var(--muted)}
 .note{color:var(--muted);font-size:14px;margin:6px 0 0}
+
+.frm{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:13px;color:var(--muted)}.frm i{font-style:normal;display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;font-size:11px;font-weight:700;margin-left:3px;color:#fff}.frm .fV{background:#1a9a4a}.frm .fN{background:#8a8f98}.frm .fD{background:#D93B3B}
