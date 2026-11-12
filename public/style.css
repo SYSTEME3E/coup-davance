@@ -41,3 +41,5 @@ input[type=email],input[type=password]{width:100%;padding:12px 14px;border-radiu
 .cf{font-weight:700;font-size:.85em}.cf.hi{color:#1a9a4a}.cf.lo{opacity:.65}
 
 .flt{display:flex;gap:8px;margin:14px 0}.flt button,.more{font:inherit;font-weight:700;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;border-radius:999px;padding:8px 16px;cursor:pointer}.flt button.on{background:#1a9a4a;border-color:#1a9a4a;color:#fff}.more{display:block;margin:18px auto}
+
+.srch{display:flex;gap:8px;margin:12px 0}.srch input{font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit;min-width:0}.srch #q{flex:1}
