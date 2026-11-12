@@ -18,7 +18,7 @@ const result=m=>{
   if(m.settled_at)return '<div class="res wait">Match annulé ou non joué ('+esc(m.final_status)+')</div>';
   if(new Date(m.kickoff)<Date.now())return '<div class="res wait">Match en cours ou résultat en attente…</div>';
   return ""};
-const card=m=>{const d=m.data,p=d.result,cf=Math.max(p.home,p.draw,p.away),tag=cf>=55?'<span class="cf hi">Pronostic solide</span>':'<span class="cf lo">Match incertain</span>',t=new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+const card=m=>{const d=m.data,p=d.result,cf=Math.max(p.home,p.draw,p.away),tag=cf>=55?'<span class="cf hi">Pronostic solide</span>':'<span class="cf lo">Match incertain</span>',t=new Date(m.kickoff).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+" · "+new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
 return '<div class="card"><div class="tm">'+esc(m.home)+' <span>contre</span> '+esc(m.away)+'</div><div class="mk">'+esc(m.league||"")+' · '+t+' · '+tag+'</div>'
 +'<div class="bar"><span class="h" style="flex:'+p.home+'">'+p.home+'%</span><span class="d" style="flex:'+p.draw+'">'+p.draw+'%</span><span class="a" style="flex:'+p.away+'">'+p.away+'%</span></div>'
 +'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
