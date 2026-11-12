@@ -1,17 +1,16 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Match – Coup d’Avance</title></head><body><div class="wrap">
-<header class="top"><a class="logo" href="index.html">Coup d’Avance</a><div class="user"><span id="who"></span><a href="dashboard.html" class="out">Matchs du jour</a><a href="historique.html" class="out">Historique</a></div></header>
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Match – Pronos-bet</title></head><body><div class="wrap">
+<header class="top"><a class="logo" href="index.html">Pronos-bet</a><div class="user"><span id="who"></span><a href="dashboard.html" class="out">Matchs du jour</a><a href="historique.html" class="out">Historique</a></div></header>
 <a class="back" href="dashboard.html" id="back">← Retour aux matchs</a>
 <div id="mh"><p class="sub">Chargement du match…</p></div>
 <div id="pred"></div>
 <div id="st"></div>
 <div id="ev"></div>
-<p class="note" id="src"></p>
 <div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="cards.js"></script><script>
 const LIVE=["1H","2H","ET","BT","P","LIVE","INT","SUSP","HT"],DONE=["FT","AET","PEN"];
-const ROWS=[["expected_goals","Buts attendus (xG)"],["Ball Possession","Possession"],["Total Shots","Total de tirs"],["Shots on Goal","Tirs cadrés"],["Corner Kicks","Corners"],["Fouls","Fautes"],["Yellow Cards","Cartons jaunes"],["Red Cards","Cartons rouges"],["Offsides","Hors-jeu"],["Goalkeeper Saves","Arrêts du gardien"],["Total passes","Passes"],["Passes %","Passes réussies"]];
+const ROWS=[["expected_goals","Buts attendus (xG)"],["Ball Possession","Possession"],["Total Shots","Total de tirs"],["Shots on Goal","Tirs cadrés"],["Shots off Goal","Tirs non cadrés"],["Blocked Shots","Tirs contrés"],["Shots insidebox","Tirs dans la surface"],["Shots outsidebox","Tirs hors de la surface"],["Corner Kicks","Corners"],["Fouls","Fautes"],["Offsides","Hors-jeu"],["Yellow Cards","Cartons jaunes"],["Red Cards","Cartons rouges"],["Goalkeeper Saves","Arrêts du gardien"],["goals_prevented","Buts évités"],["Total passes","Passes"],["Passes accurate","Passes réussies"],["Passes %","Précision des passes"]];
 const num=v=>v==null?0:(parseFloat(String(v))||0);
 const id=Number(new URLSearchParams(location.search).get("id"));
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
@@ -23,7 +22,7 @@ const loadRow=async()=>{const{data}=await sb.from("predictions").select("*").eq(
 await loadRow();
 if(!pr){$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
 try{const{data}=await sb.from("match_meta").select("*").eq("fixture_id",id).maybeSingle();meta=data}catch(e){}
-document.title=pr.home+" – "+pr.away+" · Coup d’Avance";
+document.title=pr.home+" – "+pr.away+" · Pronos-bet";
 const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" onerror="this.remove()">':"";
 const team=(side)=>{const t=(d&&d[side])||{},logo=t.logo||(meta&&meta[side+"_logo"]);
   return '<div class="t">'+lg(logo)+'<b>'+esc(pr[side])+'</b></div>'};
@@ -46,7 +45,8 @@ const draw=()=>{
   const hs=d&&d.statistics&&d.statistics.find(s=>s.team===d.home.id),as=d&&d.statistics&&d.statistics.find(s=>s.team===d.away.id);
   if(!d)st+='<p class="note">Chargement…</p>';
   else if(hs&&as){let n=0;
-    ROWS.forEach(([k,lab])=>{const l=hs.stats[k],r=as.stats[k];if(l==null&&r==null)return;n++;
+    const known=new Set(ROWS.map(r=>r[0])),more=[...new Set([...Object.keys(hs.stats),...Object.keys(as.stats)])].filter(k=>!known.has(k)).map(k=>[k,k.replace(/_/g," ")]);
+    ROWS.concat(more).forEach(([k,lab])=>{const l=hs.stats[k],r=as.stats[k];if(l==null&&r==null)return;n++;
       const a=num(l),b=num(r),pct=/%/.test(String(l))||/%/.test(String(r)),mx=Math.max(a,b),
         wl=pct?a:(mx?a/mx*100:0),wr=pct?b:(mx?b/mx*100:0);
       st+='<div class="sr"><div class="sv"><b>'+fr(l==null?0:l)+'</b><span>'+lab+'</span><b>'+fr(r==null?0:r)+'</b></div><div class="sb"><div class="l"><i style="width:'+Math.min(100,wl)+'%"></i></div><div class="r"><i style="width:'+Math.min(100,wr)+'%"></i></div></div></div>'});
@@ -62,7 +62,7 @@ const draw=()=>{
   $("ev").innerHTML=evs.length?'<div class="sec"><h2>Temps forts</h2>'+evs.map(e=>{
     const home=d.home&&e.team===d.home.id,txt=ic(e)+' '+esc(e.player||"")+(e.type==="Goal"&&e.assist?'<small>passe : '+esc(e.assist)+'</small>':e.type==="subst"&&e.assist?'<small>entre : '+esc(e.assist)+'</small>':"");
     return '<div class="evr"><div class="h">'+(home?txt:"")+'</div><div class="m">'+(e.min==null?"":e.min+(e.extra?"+"+e.extra:"")+"’")+'</div><div class="a">'+(home?"":txt)+'</div></div>'}).join("")+'</div>':"";
-  $("src").textContent=d&&!d.noStats?"Statistiques : API-Football. Mise à jour automatique toutes les 45 secondes pendant le match.":""};
+};
 const refresh=async()=>{
   await loadRow();
   try{const{data,error}=await sb.functions.invoke("match-info",{body:{action:"detail",id}});if(!error&&data&&!data.error)d=data}catch(e){}
