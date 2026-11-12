@@ -4,6 +4,7 @@
 <div id="mh"><p class="sub">Chargement du match…</p></div>
 <div id="pred"></div>
 <div id="st"></div>
+<div id="hs"></div>
 <div id="ev"></div>
 <div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
@@ -56,6 +57,8 @@ const draw=()=>{
   else if(isLive()||(pr.settled_at)||(d.status&&d.status!=="NS"))st+='<p class="note">Les statistiques de ce match ne sont pas encore disponibles.</p>';
   else st+='<p class="note">Les statistiques apparaîtront dès le coup d’envoi.</p>';
   $("st").innerHTML=st+'</div>';
+  const fs=pr.final_stats,rowsHS=[["Corners","corners"],["Fautes","fouls"],["Touches","throwIns"],["Cartons jaunes","yellow"]].filter(r=>fs&&fs[r[1]]);
+  $("hs").innerHTML=rowsHS.length?'<div class="sec"><h2>Statistiques officielles</h2>'+rowsHS.map(r=>'<div class="sr"><div class="sv"><b>'+fr(fs[r[1]][0]==null?0:fs[r[1]][0])+'</b><span>'+r[0]+'</span><b>'+fr(fs[r[1]][1]==null?0:fs[r[1]][1])+'</b></div></div>').join("")+'</div>':"";
   // événements
   const evs=((d&&d.events)||[]).filter(e=>["Goal","Card","subst","Var"].includes(e.type)).slice().reverse();
   const ic=e=>e.type==="Goal"?(e.detail==="Missed Penalty"?"❌":"⚽"):e.type==="Card"?(/Red/.test(e.detail||"")?"🟥":"🟨"):e.type==="subst"?"🔄":"📺";
