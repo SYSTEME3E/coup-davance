@@ -34,12 +34,21 @@ input[type=email],input[type=password]{width:100%;padding:12px 14px;border-radiu
 .dh{font-weight:700;margin:22px 0 8px;color:var(--ink)}
 .res{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
 .res .sc{font:800 26px/1 "Bricolage Grotesque",sans-serif}.res .sc small,.res .vd small{display:block;font:400 12px "Hanken Grotesk",sans-serif;color:var(--muted);margin-top:4px}
-.res .vd{text-align:right}.res.ok{border-color:#2E7D32;background:#EAF5EA}.res.ko{border-color:#B42318;background:#FDECEA}
+.res .vd{text-align:right}.res.ok{border-color:#1D6FD8;background:#E8F1FD}.res.ko{border-color:#B42318;background:#FDECEA}
 .res.wait{display:block;color:var(--muted);font-size:14px}.chk{color:var(--muted);font-size:13px;margin-top:8px}
 .bilan .stats{margin-top:10px}
 
-.cf{font-weight:700;font-size:.85em}.cf.hi{color:#1a9a4a}.cf.lo{opacity:.65}
+.cf{font-weight:700;font-size:.85em}.cf.hi{color:#1D6FD8}.cf.lo{opacity:.65}
 
-.flt{display:flex;gap:8px;margin:14px 0}.flt button,.more{font:inherit;font-weight:700;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;border-radius:999px;padding:8px 16px;cursor:pointer}.flt button.on{background:#1a9a4a;border-color:#1a9a4a;color:#fff}.more{display:block;margin:18px auto}
+.flt{display:flex;gap:8px;margin:14px 0}.flt button,.more{font:inherit;font-weight:700;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;border-radius:999px;padding:8px 16px;cursor:pointer}.flt button.on{background:#1D6FD8;border-color:#1D6FD8;color:#fff}.more{display:block;margin:18px auto}
 
 .srch{display:flex;gap:8px;margin:12px 0}.srch input{font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit;min-width:0}.srch #q{flex:1}
+
+/* Matchs en cours : rouge + score en direct */
+.res.live{border-color:#D93B3B;background:#FDECEA}.res.live .sc{color:#B42318}
+.lv{display:inline-flex;align-items:center;gap:6px;font:800 12px "Hanken Grotesk",sans-serif;letter-spacing:.06em;color:#fff;background:#D93B3B;border-radius:999px;padding:4px 10px}
+.lv i{width:8px;height:8px;border-radius:50%;background:#fff;animation:pl 1.2s infinite}
+@keyframes pl{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.lv i{animation:none}}
+.dh.rd{color:#B42318}
+.stats.x{margin-top:10px}
