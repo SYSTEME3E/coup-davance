@@ -17,16 +17,16 @@ function draw(){
   const g={};f.forEach(m=>(g[keyOf(m)]=g[keyOf(m)]||[]).push(m));
   $("list").innerHTML=Object.keys(g).sort().reverse().map(k=>'<p class="sub dh">'+dayLabel(k)+' ('+g[k].length+')</p>'+g[k].map(card).join("")).join("");
   $("more").style.display=more?"block":"none"}
+const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute,final_stats";
 async function load(){
-  const{data,error}=await sb.from("predictions").select("*").not("settled_at","is",null).order("kickoff",{ascending:false}).range(from,from+PAGE-1);
+  const{data,error}=await sb.from("predictions").select(COLS).not("settled_at","is",null).order("kickoff",{ascending:false}).range(from,from+PAGE-1);
   if(error){$("list").innerHTML='<div class="card">Impossible de charger l’historique. Réessaie dans un instant.</div>';return}
   rows=rows.concat(data||[]);from+=PAGE;more=(data||[]).length===PAGE;draw();ensureLogos(data||[],draw)}
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
 $("who").textContent=session.user.email;
-const{data:all}=await sb.from("predictions").select("verdict").not("verdict","is",null).limit(5000);
-const n=all?all.length:0;
-if(n){const c=f=>all.filter(f).length,pc=x=>Math.round(100*x/n)+" %";
-$("bilan").innerHTML='<div class="card bilan"><b>Bilan global ('+n+' matchs)</b><div class="stats"><div>Résultat 1X2 juste<b>'+c(x=>x.verdict.ok1x2)+'/'+n+' · '+pc(c(x=>x.verdict.ok1x2))+'</b></div><div>Les deux marquent<b>'+pc(c(x=>x.verdict.btts&&x.verdict.btts.ok))+'</b></div><div>Plus de 2,5 buts<b>'+pc(c(x=>x.verdict.over25&&x.verdict.over25.ok))+'</b></div></div></div>'}
+const{data:bl}=await sb.rpc("bilan");const n=bl?bl.n:0;
+if(n){const pc=x=>Math.round(100*x/n)+" %";
+$("bilan").innerHTML='<div class="card bilan"><b>Bilan global ('+n+' matchs)</b><div class="stats"><div>Résultat 1X2 juste<b>'+bl.ok1x2+'/'+n+' · '+pc(bl.ok1x2)+'</b></div><div>Les deux marquent<b>'+pc(bl.btts)+'</b></div><div>Plus de 2,5 buts<b>'+pc(bl.over25)+'</b></div></div></div>'}
 document.querySelectorAll("#flt button").forEach(b=>b.onclick=()=>{filter=b.dataset.f;document.querySelectorAll("#flt button").forEach(x=>x.classList.toggle("on",x===b));draw()});
 $("more").onclick=load;
 load()})();
