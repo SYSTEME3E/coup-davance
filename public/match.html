@@ -5,6 +5,7 @@
 <div id="pred"></div>
 <div id="st"></div>
 <div id="hs"></div>
+<div id="l10"></div>
 <div id="ev"></div>
 <div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
@@ -24,6 +25,24 @@ await loadRow();
 if(!pr){$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
 try{const{data}=await sb.from("match_meta").select("*").eq("fixture_id",id).maybeSingle();meta=data}catch(e){}
 document.title=pr.home+" – "+pr.away+" · Pronos-bet";
+// 10 derniers matchs de chaque équipe, lus dans notre archive (table match_archive)
+const SFX=["united","town","city","county","rovers","athletic","wanderers","albion","argyle","rvs","utd"];
+const keysFor=k=>{const p=String(k||"").split(" "),ss=p.length>1&&SFX.includes(p[p.length-1])?p.slice(0,-1).join(" "):k;return[...new Set([k,ss])].filter(Boolean)};
+const l10=async()=>{
+  if(!pr.home_key||!pr.away_key)return;
+  const blk=async(name,key)=>{const ks=keysFor(key),list=ks.map(x=>'"'+x+'"').join(",");
+    const{data,error}=await sb.from("match_archive").select("*").or("home_key.in.("+list+"),away_key.in.("+list+")").order("kickoff",{ascending:false}).limit(10);
+    if(error)return"";
+    const rows=data||[];
+    const li=rows.map(r=>{const home=ks.includes(r.home_key),gf=home?r.home_goals:r.away_goals,ga=home?r.away_goals:r.home_goals,opp=home?r.away:r.home,res=gf>ga?"V":gf<ga?"D":"N",
+      dt=new Date(r.kickoff).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"}),
+      sm=(a,b)=>a!=null&&b!=null?a+b:null,
+      st=[["Corners",sm(r.corners_home,r.corners_away)],["Fautes",sm(r.fouls_home,r.fouls_away)],["Jaunes",sm(r.yellow_home,r.yellow_away)],["Touches",sm(r.throwins_home,r.throwins_away)]].filter(x=>x[1]!=null).map(x=>x[0]+" "+x[1]).join(" · ");
+      return '<div class="lr"><span class="ld">'+dt+'</span><span class="lo">'+(home?"vs ":"à ")+esc(opp)+(st?'<small>'+st+'</small>':"")+'</span><b class="ls">'+gf+' – '+ga+'</b><span class="frm"><i class="f'+res+'">'+res+'</i></span></div>'}).join("");
+    return '<div class="lb"><h3>'+esc(name)+'</h3>'+(li||'<p class="note">Aucun match enregistré pour l’instant.</p>')+(rows.length&&rows.length<10?'<p class="note">'+rows.length+'/10 matchs enregistrés pour cette équipe.</p>':"")+'</div>'};
+  const[h,a]=await Promise.all([blk(pr.home,pr.home_key),blk(pr.away,pr.away_key)]);
+  if(h||a)$("l10").innerHTML='<div class="sec l10"><h2>10 derniers matchs</h2>'+h+a+'</div>'};
+l10().catch(()=>{});
 const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" onerror="this.remove()">':"";
 let lead=null;
 const S=(h,a)=>{h=+h;a=+a;lead=h>a?"home":a>h?"away":null;return '<span class="g'+(lead==="home"?' w':'')+'">'+h+'</span> – <span class="g'+(lead==="away"?' w':'')+'">'+a+'</span>'};
