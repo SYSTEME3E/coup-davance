@@ -13,7 +13,7 @@ let homeHTML="",tok=0,cache=null;
 const clean=()=>$("q").value.replace(/[%_,()*\\]/g," ").trim();
 const searching=()=>clean().length>=2||!!$("qd").value;
 // Liste du jour : matchs en cours en premier (rouge), puis aujourd’hui et demain. Actualisée toutes les 60 s.
-let LIM=30,lastSig="";const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute";
+let LIM=30,lastSig="";const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute,kind,unlocked";
 document.addEventListener("click",e=>{if(e.target&&e.target.id==="moreHome"){LIM+=30;build()}});
 const build=()=>{const{all,error,s,tm}=cache;
  const liveNow=all.filter(m=>m.live_status),rest=all.filter(m=>!m.live_status);
@@ -26,7 +26,7 @@ const build=()=>{const{all,error,s,tm}=cache;
 const loadHome=async first=>{
  const s=new Date();s.setHours(0,0,0,0);
  const yd=new Date(s);yd.setDate(yd.getDate()-1);const tm=new Date(s);tm.setDate(tm.getDate()+1);const e=new Date(s);e.setDate(e.getDate()+2);
- const{data,error}=await sb.from("predictions").select(COLS).gte("kickoff",yd.toISOString()).lt("kickoff",e.toISOString()).is("settled_at",null).order("kickoff");
+ const{data,error}=await sb.from("predictions_safe").select(COLS).gte("kickoff",yd.toISOString()).lt("kickoff",e.toISOString()).is("settled_at",null).order("kickoff");
  if(error&&!first)return;
  const all=(data||[]).filter(m=>m.live_status||new Date(m.kickoff).getTime()>Date.now()-3*36e5);
  const sig=s.toDateString()+JSON.stringify(all.map(m=>[m.fixture_id,m.live_status,m.live_home,m.live_away,m.live_minute]));
@@ -39,7 +39,7 @@ const render=(t,a)=>a.length?'<p class="sub dh">'+t+' ('+a.length+')</p>'+a.map(
 const doSearch=async()=>{const my=++tok,q=clean(),dv=$("qd").value;
  if(q.length<2&&!dv){$("list").innerHTML=homeHTML;return}
  const s=new Date();s.setHours(0,0,0,0);
- let a=sb.from("predictions").select(COLS).order("kickoff",{ascending:false}).limit(60);
+ let a=sb.from("predictions_safe").select(COLS).order("kickoff",{ascending:false}).limit(60);
  if(q.length>=2)a=a.or("home.ilike.%"+q+"%,away.ilike.%"+q+"%,league.ilike.%"+q+"%");
  if(dv){const d0=new Date(dv+"T00:00:00"),d1=new Date(d0);d1.setDate(d1.getDate()+1);a=a.gte("kickoff",d0.toISOString()).lt("kickoff",d1.toISOString())}
  const{data:r,error:er}=await a;if(my!==tok)return;
