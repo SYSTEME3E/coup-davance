@@ -1,35 +1,42 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1D6FD8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Connexion – Pronos-bet</title></head><body><div class="wrap">
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1D6FD8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}</style><title>Connexion – Pronos-bet</title></head><body><div class="wrap">
 <a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a>
 <main class="box"><div class="tabs"><a id="t-login" href="#login">Connexion</a><a id="t-signup" href="#signup">Créer un compte</a></div>
 <h1 id="title"></h1>
 <div id="nm"><label for="fn">Nom complet</label><input id="fn" type="text" autocomplete="name" maxlength="100"></div>
 <label for="email">Adresse e-mail</label><input id="email" type="email" autocomplete="email">
 <label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="current-password">
+<div id="rf"><label for="rc">Code de parrainage <span class="nn">(facultatif)</span></label><input id="rc" type="text" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>
 <label class="check" id="terms"><input id="ok" type="checkbox"><span>J’ai 18 ans ou plus et j’accepte les <a href="legal.html#cgu">conditions d’utilisation</a> et la <a href="legal.html#confidentialite">politique de confidentialité</a>.</span></label>
 <div id="msg" role="alert"></div><button class="btn" id="go"></button>
 <a href="#" id="rs" style="display:none;margin-top:14px;text-align:center;font-weight:700">Renvoyer l’e-mail de confirmation</a></main></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);let mode="login";
+// Code de parrainage : lien de partage auth.html?ref=CODE#signup (mémorisé au cas où la personne change d’onglet).
+const cleanRef=s=>String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,12);
+let REF=cleanRef(new URLSearchParams(location.search).get("ref"));
+try{if(REF)localStorage.setItem("ref",REF);else REF=cleanRef(localStorage.getItem("ref"))}catch(e){}
+$("rc").value=REF;
 function view(){mode=location.hash==="#signup"?"signup":"login";const s=mode==="signup";
 $("t-login").className=s?"":"on";$("t-signup").className=s?"on":"";
 $("title").textContent=s?"Crée ton compte gratuit":"Content de te revoir";
-$("go").textContent=s?"Créer mon compte":"Me connecter";$("terms").hidden=!s;$("nm").hidden=!s;
+$("go").textContent=s?"Créer mon compte":"Me connecter";$("terms").hidden=!s;$("nm").hidden=!s;$("rf").hidden=!s;
 $("pw").autocomplete=s?"new-password":"current-password";say("")}
 function say(t,ok){$("msg").style.color=ok?"#1B4332":"";$("msg").textContent=t}
 addEventListener("hashchange",view);view();
 const q=new URLSearchParams(location.search).get("email");if(q)$("email").value=q;
 $("go").onclick=async()=>{say("");const email=$("email").value.trim(),password=$("pw").value;
-const fullName=$("fn").value.trim();
+const fullName=$("fn").value.trim(),refCode=cleanRef($("rc").value);
 if(mode==="signup"&&fullName.length<2)return say("Saisis ton nom complet.");
 if(!/^\S+@\S+\.\S+$/.test(email))return say("Adresse e-mail invalide.");
 if(mode==="signup"&&password.length<8)return say("Le mot de passe doit contenir au moins 8 caractères.");
 if(mode==="signup"&&!$("ok").checked)return say("Confirme que tu as 18 ans et que tu acceptes les conditions.");
 $("go").disabled=true;
-if(mode==="signup"){const{data,error}=await sb.auth.signUp({email,password,options:{data:{accepted_terms:true,full_name:fullName},emailRedirectTo:location.origin+"/dashboard.html"}});
+if(mode==="signup"){const meta={accepted_terms:true,full_name:fullName};if(refCode)meta.ref_code=refCode;
+ const{data,error}=await sb.auth.signUp({email,password,options:{data:meta,emailRedirectTo:location.origin+"/dashboard.html"}});
  if(error)say(/registered/i.test(error.message)?"Un compte existe déjà avec cette adresse e-mail.":/rate|seconds|limit/i.test(error.message)?"Trop de demandes d’e-mail pour le moment. Patiente quelques minutes puis réessaie.":"Inscription impossible : "+error.message);
- else if(data.session)location.href="dashboard.html";
+ else if(data.session){try{localStorage.removeItem("ref")}catch(e){}location.href="dashboard.html"}
  else if(data.user&&data.user.identities&&data.user.identities.length===0)say("Un compte existe déjà avec cette adresse e-mail. Connecte-toi.");
- else{say("Compte créé. Vérifie ta boîte mail (et les spams) pour confirmer ton adresse, puis connecte-toi.",true);$("rs").style.display="block"}}
+ else{try{localStorage.removeItem("ref")}catch(e){}say("Compte créé. Vérifie ta boîte mail (et les spams) pour confirmer ton adresse, puis connecte-toi.",true);$("rs").style.display="block"}}
 else{const{error}=await sb.auth.signInWithPassword({email,password});
  if(error){if(/confirm/i.test(error.message)){say("Ton adresse e-mail n’est pas encore confirmée. Ouvre l’e-mail reçu (vérifie les spams) ou renvoie-le.");$("rs").style.display="block"}else say("E-mail ou mot de passe incorrect.")}else location.href="dashboard.html"}
 $("go").disabled=false};
