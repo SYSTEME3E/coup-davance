@@ -1,0 +1,179 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1D6FD8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}</style><title>Abonnement – Pronos-bet</title></head><body><div class="wrap wide ab">
+<header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
+<h1 class="pt">Abonnement</h1><p class="sub" style="text-transform:none">Choisis le plan qui te convient. Paiement par Mobile Money, activation automatique.</p>
+<div id="st" class="ab-st" role="status" hidden></div>
+<div id="app"><p class="sub">Chargement…</p></div>
+<div style="height:48px"></div></div>
+
+<dialog class="ck" id="ck" aria-labelledby="ckT"><form id="ckF" novalidate>
+<div class="hd"><h2 id="ckT">Abonnement</h2><button type="button" class="x" id="ckX" aria-label="Fermer">✕</button></div>
+<div class="sum"><span id="ckS">30 jours</span><b id="ckA"></b></div>
+<p class="note" id="ckU" style="margin:4px 0 0"></p>
+<fieldset><legend>Moyen de paiement</legend><div class="ops" id="ckO"></div></fieldset>
+<label for="ckN">Nom complet</label><div class="ab-f"><input id="ckN" type="text" autocomplete="name" maxlength="60"></div>
+<label for="ckP">Numéro de téléphone</label><div class="ph ab-f"><span id="ckD"></span><input id="ckP" type="text" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="Numéro sans l’indicatif"></div>
+<div class="fm" id="ckM" role="alert"></div>
+<button class="btn go" id="ckG" type="submit">Payer</button>
+<button class="btn ghost cx" id="ckC" type="button">Annuler</button>
+<p class="sec2">Tu seras redirigé vers la page sécurisée Money Fusion pour valider le paiement sur ton téléphone.</p>
+</form></dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+</script><script src="menu.js"></script><script>
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const USD={basic:5.33,gold:17.5};
+const PN={free:"Gratuit",basic:"Basic",gold:"Gold"};
+const OPS={mtn:["MTN MoMo","mtn.png"],moov:["Moov Money","moov.png"],orange:["Orange Money","orange.png","#FF7900"],wave:["Wave","wave.png"],free:["Free Money","free.png"],airtel:["Airtel Money","airtel.png"],airteltigo:["AirtelTigo","airteltigo.png"],mpesa:["M-Pesa","mpesa.png"],bank:["Virement bancaire"],card:["Carte bancaire"]};
+const ICON={bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></svg>'};
+const CK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>';
+const LK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="9" width="11" height="8" rx="2"/><path d="M7 9V6.5a3 3 0 016 0V9"/></svg>';
+const num=n=>Number(n||0).toLocaleString("fr-FR");
+const money=(n,c)=>num(n)+(c==="XOF"||c==="XAF"?" F":c==="NGN"?" ₦":" "+c);
+const usd=v=>v.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" $";
+const dt=s=>s?new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):"";
+const dtt=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+const BD={pending:["in","En attente"],paid:["ok","Payé"],failed:["ko","Échoué"]};
+let PR=[],ME=null,PAYS=[],CTRY="BJ",NAME="",CUR=null,busy=false;
+
+// Appel de la fonction serveur « subscribe » avec le jeton de connexion
+async function call(body){
+  const{data,error}=await sb.functions.invoke("subscribe",{body});
+  if(error){let m="Service indisponible pour le moment. Réessaie dans un instant.";
+    try{const j=await error.context.json();if(j&&j.message)m=j.message}catch(e){}
+    return{ok:false,message:m}}
+  return data||{ok:false,message:"Réponse vide du serveur."}}
+
+const country=()=>PR.find(x=>x.country_code===CTRY)||PR[0];
+
+async function load(){
+  const[p,m,h]=await Promise.all([
+    sb.from("plan_prices").select("*").order("sort"),
+    sb.rpc("my_plan"),
+    sb.from("payments").select("id,plan,currency,amount,operator,status,created_at").order("created_at",{ascending:false}).limit(8)]);
+  if(p.error||m.error||!(p.data||[]).length){$("app").innerHTML='<div class="card">Impossible de charger les abonnements pour le moment. Réessaie dans un instant.</div>';return false}
+  PR=p.data;ME=m.data;PAYS=h.data||[];
+  if(!PR.some(x=>x.country_code===CTRY))CTRY=PR[0].country_code;
+  return true}
+
+// ---------- Bandeau « mon plan » ----------
+function meBox(){
+  const pl=ME.plan,u=ME.solid,v=ME.uncertain;
+  const q=(t,o)=>{const lim=o.limit;
+    return '<div class="q"><b><span>'+t+'</span><span>'+(lim==null?"Illimité":o.used+" / "+lim)+'</span></b><div class="pb" role="progressbar" aria-label="'+t+'" aria-valuemin="0" aria-valuemax="'+(lim==null?1:lim)+'" aria-valuenow="'+(lim==null?1:Math.min(o.used,lim))+'"><i style="width:'+(lim==null?100:Math.min(100,Math.round(o.used/lim*100)))+'%"></i></div></div>'};
+  const ex=pl==="free"?"Aucun abonnement actif.":ME.ends_at?"Actif jusqu’au "+dt(ME.ends_at)+".":"Accès sans limite de durée.";
+  return '<section class="ab-me" aria-label="Mon abonnement"><div><h2>Ton plan actuel</h2><div class="pl">'+PN[pl]+'</div><div class="ex">'+ex+'</div></div>'
+    +'<div class="qs">'+q("Pronostics solides débloqués aujourd’hui",u)+q("Matchs incertains débloqués aujourd’hui",v)+'</div></section>'}
+
+// ---------- Cartes des plans ----------
+const li=(t,ok)=>'<li'+(ok===false?' class="no"':"")+'>'+(ok===false?LK:CK)+'<span>'+t+'</span></li>';
+function plansBox(){
+  const c=country(),pl=ME.plan;
+  const act=(plan)=>{
+    if(plan==="basic"){
+      if(pl==="gold")return'<button class="btn" type="button" disabled>Inclus dans ton plan Gold</button>';
+      return'<button class="btn" type="button" data-p="basic">'+(pl==="basic"?"Prolonger de 30 jours":"Choisir Basic")+'</button>'}
+    return'<button class="btn" type="button" data-p="gold">'+(pl==="gold"?"Prolonger de 30 jours":pl==="basic"?"Passer à Gold":"Choisir Gold")+'</button>'};
+  return '<div class="plans">'
+   +'<article class="plan free"><h3>Gratuit</h3><p class="tl">Pour découvrir</p><div class="pr">0 <small>F</small></div><p class="usd">Sans abonnement</p><ul>'
+     +li("Tous les matchs, les lives et les statistiques")+li("<b>2</b> pronostics solides par jour")+li("<b>3</b> matchs incertains par jour")+li("Les autres pronostics restent floutés",false)+'</ul>'
+     +'<button class="btn" type="button" disabled>'+(pl==="free"?"Ton plan actuel":"Plan de départ")+'</button></article>'
+   +'<article class="plan basic"><h3>Basic</h3><p class="tl">Pour suivre plus de matchs</p><div class="pr">'+money(c.basic,c.currency)+' <small>/ mois</small></div><p class="usd">soit '+usd(USD.basic)+' par mois</p><ul>'
+     +li("Tous les matchs, les lives et les statistiques")+li("<b>10</b> pronostics solides par jour")+li("<b>5</b> matchs incertains par jour")+li("Pronostics débloqués, plus de flou dans ton quota")+'</ul>'+act("basic")+'</article>'
+   +'<article class="plan gold"><span class="tag">Le plus complet</span><h3>Gold</h3><p class="tl">Sans aucune limite</p><div class="pr">'+money(c.gold,c.currency)+' <small>/ mois</small></div><p class="usd">soit '+usd(USD.gold)+' par mois</p><ul>'
+     +li("Tous les pronostics solides, en illimité")+li("Tous les matchs incertains, en illimité")+li("Tous les matchs, lives et stats, sans flou")+li("Aucun quota à surveiller au quotidien")+'</ul>'+act("gold")+'</article></div>'}
+
+function pickBox(){
+  const c=country();
+  return '<div class="ab-pick"><div><label for="cs">Ton pays</label><select id="cs">'+PR.map(x=>'<option value="'+esc(x.country_code)+'"'+(x.country_code===c.country_code?" selected":"")+'>'+esc(x.flag)+" "+esc(x.country_name)+" · "+esc(x.currency)+'</option>').join("")+'</select></div>'
+    +'<p>Les prix sont fixés en dollars puis convertis dans la monnaie de ton pays.</p></div>'}
+
+function extra(){
+  const rows=PR.map(x=>'<tr><td>'+esc(x.flag)+" "+esc(x.country_name)+'</td><td>'+esc(x.currency)+'</td><td>'+money(x.basic,x.currency)+'</td><td>'+money(x.gold,x.currency)+'</td><td>'+x.operators.map(o=>esc((OPS[o]||[o])[0])).join(", ")+'</td></tr>').join("");
+  return '<section class="ab-sec"><h2>Comment ça marche</h2><ol class="steps"><li>Tu choisis ton pays.</li><li>Le prix s’affiche dans ta monnaie.</li><li>Tu sélectionnes ton opérateur.</li><li>Tu paies avec Money Fusion.</li><li>Ton plan s’active tout seul.</li></ol>'
+   +'<p class="note">L’abonnement dure 30 jours et ne se renouvelle pas automatiquement : tu choisis quand le prolonger.</p></section>'
+   +'<section class="ab-sec"><h2>Solide ou incertain ?</h2><div class="kind"><div><b>Pronostic solide</b>Une issue du match dépasse 55 % de probabilité : le favori est net.</div><div><b>Match incertain</b>Aucune issue n’atteint 55 % : le résultat est plus difficile à prévoir.</div></div>'
+   +'<p class="note">Les quotas se renouvellent chaque jour. Un pronostic déjà débloqué reste visible, et les matchs commencés ne comptent pas dans ton quota.</p></section>'
+   +'<section class="ab-sec"><h2>Parraine et gagne</h2><p class="lead">Quand ton filleul active un plan, tu touches une récompense créditée automatiquement sur ton solde.</p><div class="ref"><div><b>500 F</b><span>quand ton filleul active Basic</span></div><div><b>1 500 F</b><span>quand ton filleul active Gold</span></div></div>'
+   +'<p class="note">Ton code de parrainage est disponible dès que ton abonnement est actif. Les gains se retirent via Money Fusion.</p><a class="btn" href="balance.html">Voir mon solde et mon code</a></section>'
+   +'<section class="ab-sec"><h2>Prix par pays</h2><details class="dt"><summary>Afficher le détail des tarifs et des moyens de paiement</summary><div class="tbw"><table class="pt2"><thead><tr><th>Pays</th><th>Devise</th><th>Basic</th><th>Gold</th><th>Moyens de paiement</th></tr></thead><tbody>'+rows+'</tbody></table></div></details></section>'}
+
+function histBox(){
+  if(!PAYS.length)return"";
+  const now=Date.now();
+  return '<section class="ab-sec"><h2>Mes paiements</h2>'+PAYS.map(x=>{const b=BD[x.status]||["mu",x.status],recent=x.status==="pending"&&now-new Date(x.created_at).getTime()<36e5*3;
+    return '<div class="pay"><div><b>Plan '+esc(PN[x.plan]||x.plan)+'</b> · '+money(x.amount,x.currency)+'<small>'+dtt(x.created_at)+(x.operator?" · "+esc((OPS[x.operator]||[x.operator])[0]):"")+'</small></div><div class="rt"><span class="bd '+b[0]+'">'+b[1]+'</span>'+(recent?'<button class="lk2" type="button" data-chk="'+esc(x.id)+'">Vérifier</button>':"")+'</div></div>'}).join("")+'</section>'}
+
+function draw(){
+  $("app").innerHTML=meBox()+pickBox()+plansBox()+extra()+histBox()+'<p class="disc">Aucun pronostic n’est garanti : ce sont des estimations statistiques. Service réservé aux personnes majeures. Joue de façon responsable.</p>';
+  $("cs").onchange=e=>{CTRY=e.target.value;try{localStorage.setItem("pb_country",CTRY)}catch(x){}draw()};
+  document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>openCk(b.dataset.p));
+  document.querySelectorAll("[data-chk]").forEach(b=>b.onclick=()=>verify(b.dataset.chk,true))}
+
+// ---------- Fenêtre de paiement ----------
+const ck=$("ck");
+function opTile(o){
+  const d=OPS[o]||[o],img=d[1],col=d[2]||"#5A6B61";
+  let logo=ICON[o]||"";
+  if(!logo)logo='<img src="'+img+'" alt="" width="44" height="44" onerror="this.outerHTML=\'<span class=&quot;lgx&quot; style=&quot;background:'+col+'&quot;>'+esc(d[0].charAt(0))+'</span>\'">';
+  return '<label class="op"><input type="radio" name="op" value="'+esc(o)+'"><span class="opb">'+logo+'<span>'+esc(d[0])+'</span></span></label>'}
+function openCk(plan){
+  const c=country(),amt=plan==="gold"?c.gold:c.basic;CUR={plan,c,amt};
+  $("ckT").textContent="Abonnement "+PN[plan];
+  $("ckA").textContent=money(amt,c.currency);
+  $("ckS").textContent="30 jours · "+c.country_name;
+  $("ckU").textContent="Prix de base : "+usd(USD[plan])+" par mois, converti en "+c.currency+".";
+  $("ckO").innerHTML=c.operators.map(opTile).join("");
+  $("ckD").textContent="+"+c.dial;
+  $("ckN").value=NAME;$("ckP").value="";$("ckM").textContent="";
+  $("ckG").disabled=false;$("ckG").textContent="Payer "+money(amt,c.currency);
+  busy=false;
+  if(typeof ck.showModal==="function")ck.showModal();else ck.setAttribute("open","")}
+const closeCk=()=>{if(busy)return;ck.close?ck.close():ck.removeAttribute("open")};
+$("ckX").onclick=closeCk;$("ckC").onclick=closeCk;
+ck.addEventListener("click",e=>{if(e.target===ck)closeCk()});
+ck.addEventListener("cancel",e=>{if(busy)e.preventDefault()});
+$("ckF").onsubmit=async e=>{
+  e.preventDefault();if(busy||!CUR)return;
+  const say=t=>{$("ckM").textContent=t||""};say("");
+  const op=(document.querySelector('input[name="op"]:checked')||{}).value,name=$("ckN").value.trim(),phone=$("ckP").value.replace(/\D/g,"");
+  if(!op)return say("Choisis ton moyen de paiement.");
+  if(name.length<2)return say("Saisis ton nom complet.");
+  if(phone.length<8)return say("Numéro de téléphone invalide.");
+  busy=true;$("ckG").disabled=true;$("ckG").textContent="Redirection en cours…";
+  const r=await call({action:"create",plan:CUR.plan,country:CUR.c.country_code,operator:op,phone,name});
+  if(r.ok&&typeof r.url==="string"&&/^https:\/\//.test(r.url)){location.href=r.url;return}
+  busy=false;$("ckG").disabled=false;$("ckG").textContent="Payer "+money(CUR.amt,CUR.c.currency);
+  say(r.message||"Impossible de démarrer le paiement. Réessaie dans un instant.")};
+
+// ---------- Retour de Money Fusion / vérification ----------
+function showSt(kind,title,msg){
+  const s=$("st");s.hidden=false;s.className="ab-st"+(kind==="ok"||kind==="ko"?" "+kind:"");
+  s.innerHTML=(kind==="wait"?'<div class="spin" aria-hidden="true"></div>':"")+'<div><b>'+esc(title)+'</b><span>'+esc(msg)+'</span></div>'}
+async function verify(id,manual){
+  showSt("wait","Vérification du paiement…","Cela prend quelques secondes.");
+  window.scrollTo({top:0,behavior:"smooth"});
+  for(let i=0;i<(manual?3:30);i++){
+    const r=await call({action:"check",id});
+    if(r.ok&&r.status==="paid"){
+      showSt("ok","Paiement confirmé","Ton plan "+(PN[r.plan]||"")+" est actif. Merci !");
+      try{history.replaceState(null,"",location.pathname)}catch(e){}
+      if(await load())draw();return}
+    if(r.ok&&r.status==="failed"){
+      showSt("ko","Le paiement n’a pas abouti","Tu peux réessayer avec un autre moyen de paiement.");
+      try{history.replaceState(null,"",location.pathname)}catch(e){}
+      if(await load())draw();return}
+    if(!r.ok&&r.message&&!/instant/i.test(r.message)){showSt("ko","Vérification impossible",r.message);return}
+    await new Promise(k=>setTimeout(k,4000))}
+  showSt("wait","Paiement en attente de confirmation","Ton plan s’activera automatiquement dès que l’opérateur confirme. Tu peux fermer cette page.");
+  if(await load())draw()}
+
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
+  try{CTRY=localStorage.getItem("pb_country")||CTRY}catch(e){}
+  const pf=await sb.from("profiles").select("full_name").eq("id",session.user.id).maybeSingle();NAME=(pf.data&&pf.data.full_name)||"";
+  if(!await load())return;
+  draw();
+  const pid=new URLSearchParams(location.search).get("pid");
+  if(pid)verify(pid,false)})();
+</script><script src="pwa.js" defer></script></body></html>
