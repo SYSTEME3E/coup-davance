@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1D6FD8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css">
+<style>
+[hidden]{display:none!important}
+.code{font:800 34px/1 "Bricolage Grotesque",sans-serif;letter-spacing:.14em;text-align:center;padding:18px 10px;margin:12px 0;background:var(--bg);border:1px dashed var(--brand);border-radius:12px;overflow-wrap:anywhere}
+.code.blur{filter:blur(9px);user-select:none;pointer-events:none}
+.lock{position:relative}
+.lock .lk{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;text-align:center;padding:0 12px}
+.row2{display:flex;gap:8px;flex-wrap:wrap}.row2 .btn{flex:1;min-width:140px;width:auto}
+.bal{font:800 46px/1.05 "Bricolage Grotesque",sans-serif;margin:6px 0 2px}
+select,input.fld{width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.ph{display:flex;gap:8px;align-items:center}.ph span{padding:12px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-weight:700;white-space:nowrap}
+.alln{background:none;border:0;padding:0;color:var(--brand);font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
+#wm{margin:0 0 8px;font-size:15px;font-weight:700}#wm.ok{color:#0B6B33}#wm.ko{color:#B42318}
+.hr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line);font-size:15px}
+.hr:first-of-type{border-top:0}.hr small{display:block;color:var(--muted);font-size:13px}
+.hr b{white-space:nowrap}.hr .pos{color:#0B6B33}.hr .neg{color:#B42318}
+.lk2{border:1px solid var(--line);background:transparent;border-radius:8px;padding:6px 10px;font:700 13px "Hanken Grotesk",sans-serif;cursor:pointer;color:var(--ink);margin-top:6px}
+</style><title>Parrainage et gains – Pronos-bet</title></head><body><div class="wrap">
+<header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
+<h1 class="pt">Parrainage et gains</h1><p class="sub" style="text-transform:none">Parraine tes amis : tu gagnes <b>500 F</b> pour chaque filleul qui s’abonne.</p>
+<div id="wm" role="status"></div>
+<div id="app"><p class="sub">Chargement…</p></div>
+<div style="height:40px"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+</script><script src="menu.js"></script><script>
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const F=n=>Number(n||0).toLocaleString("fr-FR")+" F";
+const dt=s=>s?new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
+const ST={pending:["in","En attente"],processing:["in","En cours"],paid:["ok","Payé"],failed:["ko","Échoué"],canceled:["mu","Annulé"]};
+const KD={referral_reward:"Parrainage",withdrawal:"Retrait",withdrawal_refund:"Retrait recrédité",adjustment:"Ajustement"};
+let NETS=[],NMAP={},R=null,WD=[],TX=[],busy=false;
+
+// Appel des fonctions serveur (/api/...) avec le jeton de connexion
+async function api(path,body){const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error("session");
+  const r=await fetch(path,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify(body||{})});
+  return r.json().catch(()=>({ok:false}))}
+
+async function load(){
+  const [a,n,w,t]=await Promise.all([
+    sb.rpc("my_referral"),
+    sb.from("payout_networks").select("country_code,country_name,dial,network,label").eq("enabled",true),
+    sb.from("withdrawals").select("*").order("created_at",{ascending:false}).limit(15),
+    sb.from("wallet_transactions").select("kind,amount,note,created_at").order("created_at",{ascending:false}).limit(30)]);
+  if(a.error){$("app").innerHTML='<div class="card">Impossible de charger tes gains pour le moment. Réessaie dans un instant.</div>';return false}
+  R=a.data;NETS=n.data||[];WD=w.data||[];TX=t.data||[];
+  NMAP={};NETS.forEach(x=>NMAP[x.country_code+"|"+x.network]=x);
+  return true}
+
+function codeCard(){
+  if(R.has_sub){const link=location.origin+"/auth.html?ref="+encodeURIComponent(R.code)+"#signup";
+    return '<div class="sec"><h2>Ton code de parrainage</h2><div class="code" id="cd">'+esc(R.code)+'</div>'
+      +'<div class="row2"><button class="btn" id="cp" type="button">Copier le lien</button><button class="btn ghost" id="sh" type="button">Partager</button></div>'
+      +'<p class="note">Lien à envoyer : <span style="overflow-wrap:anywhere">'+esc(link)+'</span></p></div>'}
+  return '<div class="sec"><h2>Ton code de parrainage</h2><div class="lock"><div class="code blur" aria-hidden="true">A7K9M2QX</div><div class="lk">🔒 Visible avec un abonnement actif</div></div>'
+    +'<p class="note">Active ton abonnement pour débloquer ton code et gagner 500 F par filleul. L’abonnement arrive très bientôt.</p></div>'}
+
+function statCard(){return '<div class="sec"><h2>Mon solde</h2><div class="bal">'+F(R.balance)+'</div>'
+  +'<p class="note" style="margin-top:0">Retrait minimum : '+F(R.min_withdrawal)+'</p>'
+  +'<div class="stats" style="margin-top:12px"><div><b>'+R.referred+'</b>filleuls inscrits</div><div><b>'+R.rewarded+'</b>filleuls abonnés</div><div><b>'+F(R.earned)+'</b>gagnés au total</div></div></div>'}
+
+function formCard(){
+  const active=WD.find(w=>w.status==="pending"||w.status==="processing");
+  const countries=[...new Map(NETS.map(x=>[x.country_code,x.country_name])).entries()];
+  let off="";
+  if(active)off="Un retrait est déjà en cours de traitement. Tu pourras en demander un autre dès qu’il sera terminé.";
+  else if(R.balance<R.min_withdrawal)off="Il te faut au moins "+F(R.min_withdrawal)+" pour retirer. Il te manque "+F(R.min_withdrawal-R.balance)+".";
+  return '<div class="sec"><h2>Retirer mes gains</h2>'+(off?'<p class="note">'+esc(off)+'</p>':"")
+   +'<form id="wf" novalidate'+(off?' hidden':"")+'>'
+   +'<label for="wc">Pays</label><select id="wc">'+countries.map(c=>'<option value="'+esc(c[0])+'">'+esc(c[1])+'</option>').join("")+'</select>'
+   +'<label for="wn">Réseau</label><select id="wn"></select>'
+   +'<label for="wp">Numéro Mobile Money</label><div class="ph"><span id="wd"></span><input class="fld" id="wp" type="text" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="Numéro sans l’indicatif"></div>'
+   +'<label for="wa">Montant (F CFA)</label><input class="fld" id="wa" type="text" inputmode="numeric" maxlength="9" value="'+R.balance+'">'
+   +'<p class="note">Solde disponible : '+F(R.balance)+' · <button type="button" class="alln" id="all">Tout retirer</button></p>'
+   +'<button class="btn" id="wb" type="submit" style="margin-top:14px">Retirer</button></form></div>'}
+
+function histCard(){
+  const w=WD.length?WD.map(x=>{const n=NMAP[x.country+"|"+x.network],s=ST[x.status]||["mu",x.status];
+    return '<div class="hr"><div><b>'+F(x.amount)+'</b> · '+esc(n?n.label:x.network)+'<small>'+dt(x.created_at)+' · ••• '+esc(String(x.phone).slice(-3))+'</small>'
+      +(x.status==="failed"&&x.error?'<small>'+esc(x.error)+'</small>':"")
+      +(x.status==="pending"?'<button class="lk2" data-c="'+esc(x.id)+'" type="button">Annuler ce retrait</button>':"")+'</div><span class="bd '+s[0]+'">'+s[1]+'</span></div>'}).join("")
+    :'<p class="note">Aucun retrait pour le moment.</p>';
+  const t=TX.length?TX.map(x=>'<div class="hr"><div>'+esc(KD[x.kind]||x.kind)+'<small>'+dt(x.created_at)+'</small></div><b class="'+(x.amount>=0?"pos":"neg")+'">'+(x.amount>=0?"+":"−")+F(Math.abs(x.amount))+'</b></div>').join("")
+    :'<p class="note">Aucun mouvement pour le moment.</p>';
+  return '<div class="sec"><h2>Mes retraits</h2>'+w+'</div><div class="sec"><h2>Mouvements du solde</h2>'+t+'</div>'}
+
+function draw(){
+  $("app").innerHTML=codeCard()+statCard()+formCard()+histCard();
+  if($("cp")){const link=location.origin+"/auth.html?ref="+encodeURIComponent(R.code)+"#signup";
+    $("cp").onclick=async()=>{try{await navigator.clipboard.writeText(link);$("cp").textContent="Lien copié ✓"}catch(e){prompt("Copie ce lien :",link)}};
+    $("sh").onclick=()=>{const txt="Rejoins Pronos-bet avec mon code "+R.code+" : "+link;
+      if(navigator.share)navigator.share({title:"Pronos-bet",text:txt,url:link}).catch(()=>{});else open("https://wa.me/?text="+encodeURIComponent(txt),"_blank","noopener")}}
+  if($("wf")){
+    const sync=()=>{const c=$("wc").value,l=NETS.filter(x=>x.country_code===c);
+      $("wn").innerHTML=l.map(x=>'<option value="'+esc(x.network)+'">'+esc(x.label)+'</option>').join("");
+      $("wd").textContent="+"+(l[0]?l[0].dial:"")};
+    $("wc").onchange=sync;sync();
+    $("all").onclick=()=>{$("wa").value=R.balance};
+    $("wf").onsubmit=submit}
+  document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>cancel(b.dataset.c))}
+
+const say=(t,ok)=>{const m=$("wm");if(m){m.textContent=t||"";m.className=t?(ok?"ok":"ko"):""}};
+async function submit(e){e.preventDefault();if(busy)return;say("");
+  const amount=parseInt($("wa").value.replace(/\D/g,""),10),phone=$("wp").value.replace(/\D/g,"");
+  if(!amount||amount<R.min_withdrawal)return say("Le retrait minimum est de "+F(R.min_withdrawal)+".");
+  if(amount>R.balance)return say("Solde insuffisant.");
+  if(phone.length<8)return say("Numéro de téléphone invalide.");
+  busy=true;$("wb").disabled=true;$("wb").textContent="Envoi en cours…";
+  const{data:wid,error}=await sb.rpc("request_withdrawal",{p_amount:amount,p_country:$("wc").value,p_network:$("wn").value,p_phone:phone});
+  if(error){busy=false;$("wb").disabled=false;$("wb").textContent="Retirer";return say(error.message)}
+  let res=null;try{res=await api("/api/withdraw",{id:wid})}catch(x){}
+  busy=false;await refresh();
+  say(res&&res.ok===false?(res.message||"Retrait échoué."):"Demande envoyée. Le paiement arrive sur ton Mobile Money dans quelques instants.",!(res&&res.ok===false))}
+async function cancel(id){if(busy||!confirm("Annuler ce retrait ? Le montant sera remis sur ton solde."))return;busy=true;
+  const{error}=await sb.rpc("cancel_my_withdrawal",{wid:id});busy=false;await refresh();if(error)say(error.message)}
+
+async function refresh(){if(await load())draw()}
+(async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
+  if(!await load())return;
+  // Reprise : retrait créé mais pas encore envoyé (page fermée) ou en attente de confirmation de l'opérateur
+  if(WD.some(w=>w.status==="pending"))for(const w of WD.filter(w=>w.status==="pending"))await api("/api/withdraw",{id:w.id}).catch(()=>{});
+  if(WD.some(w=>w.status==="processing"))await api("/api/sync").catch(()=>{});
+  await load();draw();
+  setInterval(async()=>{if(document.hidden||busy||!WD.some(w=>w.status==="processing"))return;await api("/api/sync").catch(()=>{});
+    const f=$("wf")&&$("wf").contains(document.activeElement);if(!f)await refresh()},20000);
+})();
+</script><script src="pwa.js" defer></script></body></html>
