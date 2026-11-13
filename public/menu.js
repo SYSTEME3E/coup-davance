@@ -14,7 +14,7 @@
   const dr=document.createElement("aside");dr.className="drw";dr.setAttribute("role","dialog");dr.setAttribute("aria-modal","true");dr.setAttribute("aria-label","Mon compte");
   dr.innerHTML=''
     +'<div class="dtop"><b>Mon compte</b><button type="button" class="dx" aria-label="Fermer le menu">✕</button></div>'
-    +'<nav class="mn"><a href="dashboard.html">Matchs du jour</a><a href="historique.html">Historique</a><a href="balance.html">Parrainage et gains</a><a href="admin.html" id="mAdmin" hidden>Espace administrateur</a><a href="admin-retraits.html" id="mAdminW" hidden>Retraits à suivre (admin)</a></nav>'
+    +'<nav class="mn"><a href="dashboard.html">Matchs du jour</a><a href="historique.html">Historique</a><a href="abonnement.html">Abonnement</a><a href="balance.html">Parrainage et gains</a><a href="admin.html" id="mAdmin" hidden>Espace administrateur</a><a href="admin-retraits.html" id="mAdminW" hidden>Retraits à suivre (admin)</a></nav>'
     +'<form id="pf" novalidate><h3>Mes informations</h3>'
     +'<label for="pfn">Nom complet</label><input id="pfn" type="text" autocomplete="name" maxlength="100">'
     +'<label for="pfe">Adresse e-mail</label><input id="pfe" type="email" autocomplete="email">'
