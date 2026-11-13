@@ -22,7 +22,7 @@ const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final
 let tok=0;
 const clean=()=>$("hq").value.replace(/[%_,()*\\]/g," ").trim();
 const searching=()=>clean().length>=2||!!$("hd").value;
-function qb(){let a=sb.from("predictions").select(COLS).not("settled_at","is",null).order("kickoff",{ascending:false});
+function qb(){let a=sb.from("predictions_safe").select(COLS).not("settled_at","is",null).order("kickoff",{ascending:false});
   const q=clean(),dv=$("hd").value;
   if(q.length>=2)a=a.or("home.ilike.%"+q+"%,away.ilike.%"+q+"%,league.ilike.%"+q+"%");
   if(dv){const d0=new Date(dv+"T00:00:00"),d1=new Date(d0);d1.setDate(d1.getDate()+1);a=a.gte("kickoff",d0.toISOString()).lt("kickoff",d1.toISOString())}
