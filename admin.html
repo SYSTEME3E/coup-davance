@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#1D6FD8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Administration – Pronos-bet</title></head><body><div class="wrap">
+<header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
+<h1 class="pt">Espace administrateur</h1><p class="sub" style="text-transform:none">Vue d’ensemble de Pronos-bet</p>
+<div id="kpi" class="kpi"><p class="sub">Chargement…</p></div>
+<div id="bil"></div>
+<div id="chart"></div>
+<h2 class="ah">Utilisateurs</h2>
+<div class="srch"><input id="uq" type="search" placeholder="Rechercher un nom ou un e-mail…" autocomplete="off"></div>
+<div id="ulist"><p class="sub">Chargement…</p></div>
+<button id="umore" class="more" style="display:none">Voir plus d’utilisateurs</button>
+<div style="height:40px"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+</script><script src="menu.js"></script><script>
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dt=s=>s?new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"}):"—";
+const pc=(a,b)=>b?Math.round(100*a/b):0;
+const kp=(label,val,cls,sub)=>'<div class="kp"><span>'+label+'</span><b class="'+(cls||"")+'">'+val+'</b>'+(sub?'<small>'+sub+'</small>':"")+'</div>';
+const bar=(label,a,b)=>'<div class="sr"><div class="sv2"><span>'+label+'</span><b>'+pc(a,b)+' %</b></div><div class="pb"><i style="width:'+pc(a,b)+'%"></i></div><div class="note" style="margin:4px 0 0">'+a+' sur '+b+'</div></div>';
+function drawStats(s){
+  $("kpi").innerHTML=kp("Utilisateurs",s.users,"","+"+s.users_7d+" cette semaine")
+    +kp("Abonnements actifs",s.subs_active,"")
+    +kp("Matchs en cours",s.live,s.live>0?"rd":"")
+    +kp("Matchs à venir",s.upcoming,"")
+    +kp("Victoires validées",s.won,"gn","pronostics justes")
+    +kp("Défaites",s.lost,"rd","pronostics ratés")
+    +kp("Matchs terminés",s.settled,"")
+    +kp("Utilisateurs bloqués",s.blocked,s.blocked>0?"rd":"");
+  $("bil").innerHTML='<div class="sec"><h2>Bilan des pronostics</h2>'
+    +bar("Résultat 1X2 juste",s.won,s.settled)+bar("Les deux marquent",s.btts_ok,s.settled)+bar("Plus de 2,5 buts",s.over25_ok,s.settled)+bar("Score exact",s.score_ok,s.settled)+'</div>';
+  const days=s.by_day||[];
+  if(days.length){const mx=Math.max(1,...days.map(d=>d.won+d.lost));
+    $("chart").innerHTML='<div class="sec"><h2>Gagnés et perdus par jour</h2><div class="ch">'+days.map(d=>{
+      const lbl=new Date(d.day+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"numeric"});
+      return '<div title="'+lbl+' : '+d.won+' gagnés, '+d.lost+' perdus"><div class="cs"><i class="lo" style="height:'+(d.lost/mx*100)+'%"></i><i class="wo" style="height:'+(d.won/mx*100)+'%"></i></div><small>'+lbl+'</small></div>'}).join("")
+      +'</div><p class="note"><span class="dotg"></span> gagnés &nbsp; <span class="dotr"></span> perdus (14 derniers jours)</p></div>'}
+  else $("chart").innerHTML=""}
+async function loadStats(){const{data,error}=await sb.rpc("admin_stats");
+  if(error){if(error.code==="42501"){location.href="dashboard.html";return}$("kpi").innerHTML='<div class="card">Statistiques indisponibles : '+esc(error.message)+'</div>';return}
+  drawStats(data)}
+// Liste des utilisateurs
+const PG=30;let off=0,rows=[],tok=0,total=0;
+const badges=u=>(u.is_admin?'<span class="bd in">Admin</span>':"")+(u.blocked?'<span class="bd ko">Bloqué</span>':"")+(u.sub_status==="active"?'<span class="bd ok">Abonné'+(u.sub_plan?" · "+esc(u.sub_plan):"")+'</span>':'<span class="bd mu">Sans abonnement</span>');
+const row=u=>'<a class="card ur" href="admin-user.html?id='+encodeURIComponent(u.id)+'"><div class="un">'+(u.full_name?esc(u.full_name):'<i class="nn">Nom non renseigné</i>')+'</div><div class="ue">'+esc(u.email)+'</div><div class="ub">'+badges(u)+'</div><div class="note" style="margin:6px 0 0">Inscrit le '+dt(u.created_at)+' · Dernière connexion : '+dt(u.last_sign_in_at)+'</div></a>';
+function drawUsers(){$("ulist").innerHTML=rows.length?rows.map(row).join(""):'<div class="card"><p class="sub" style="margin:0">Aucun utilisateur trouvé.</p></div>';
+  $("umore").style.display=rows.length<total?"block":"none"}
+async function loadUsers(reset){if(reset){tok++;off=0;rows=[]}const my=tok;
+  const{data,error}=await sb.rpc("admin_users",{q:$("uq").value.trim(),lim:PG,off:off});
+  if(my!==tok)return;
+  if(error){$("ulist").innerHTML='<div class="card">Liste indisponible : '+esc(error.message)+'</div>';return}
+  rows=rows.concat(data||[]);off+=PG;total=data&&data.length?Number(data[0].total):rows.length;drawUsers()}
+(async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
+  const{data:adm}=await sb.rpc("is_admin");if(!adm)return location.href="dashboard.html";
+  loadStats();loadUsers(true);
+  setInterval(()=>{if(!document.hidden)loadStats()},30000);
+  let t_;$("uq").oninput=()=>{clearTimeout(t_);t_=setTimeout(()=>loadUsers(true),300)};
+  $("umore").onclick=()=>loadUsers(false);
+})();
+</script></body></html>
