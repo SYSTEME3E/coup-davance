@@ -1,60 +1,110 @@
-// Code commun à dashboard.html, historique.html et match.html (nécessite la variable globale `sb`, le client Supabase)
-const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const LB={home:"victoire à domicile",draw:"match nul",away:"victoire à l’extérieur"};
-const yn=b=>b?"✔":"✘";
-const fr=n=>String(n).replace(".",",");
-const META={};
-const lgo=(u,c)=>u?'<img class="lgo'+(c?" "+c:"")+'" src="'+esc(u)+'" alt="" loading="lazy" onerror="this.remove()">':"";
-// Match en cours : badge rouge + score en direct
-const liveBox=m=>{const ht=m.live_status==="HT";
-  return '<div class="res live"><div class="sc">'+(m.live_home==null?0:m.live_home)+' – '+(m.live_away==null?0:m.live_away)+'<small>Score en direct</small></div>'
-  +'<div class="vd"><span class="lv"><i></i>'+(ht?"MI-TEMPS":"EN COURS")+'</span>'+(!ht&&m.live_minute?'<small>'+m.live_minute+'’</small>':"")+'</div></div>'};
-const result=m=>{
-  if(m.settled_at&&m.final_home!=null){const v=m.verdict||{};
-    return '<div class="res '+(v.ok1x2?"ok":"ko")+'"><div class="sc">'+m.final_home+' – '+m.final_away+'<small>Score final</small></div>'
-    +'<div class="vd"><b>'+(v.ok1x2?"✔ Pronostic juste":"✘ Pronostic raté")+'</b><small>Prévu : '+(LB[v.predicted]||"?")+'</small></div></div>'
-    +(v.btts&&v.over25?'<div class="chk">Les deux marquent '+yn(v.btts.ok)+' · Plus de 2,5 buts '+yn(v.over25.ok)+' · Score exact '+yn(v.scoreHit)+'</div>':"")}
-  if(m.settled_at)return '<div class="res wait">Match annulé ou non joué ('+esc(m.final_status)+')</div>';
-  if(m.live_status)return liveBox(m);
-  if(new Date(m.kickoff)<Date.now())return '<div class="res wait">Match en cours ou résultat en attente…</div>';
-  return ""};
-// Corners et fautes prévus (si disponibles pour ce match)
-const xt=d=>{const e=d.extra;if(!e)return"";let a="";
-  if(e.corners)a+='<div>Corners prévus<b>'+fr(e.corners.total)+'</b></div><div>Plus de 9,5 corners<b>'+e.corners.over["9.5"]+'%</b></div>';
-  if(e.fouls)a+='<div>Fautes prévues<b>'+fr(e.fouls.total)+'</b></div>';
-  if(e.cards)a+='<div>Cartons jaunes prévus<b>'+fr(e.cards.total)+'</b></div><div>Plus de 3,5 cartons<b>'+e.cards.over["3.5"]+'%</b></div>';
-  if(e.throwIns)a+='<div>Touches prévues<b>'+fr(e.throwIns.total)+'</b></div>';
-  return a?'<div class="stats x">'+a+'</div>':""};
-// Forme des 5 derniers matchs (V = victoire, N = nul, D = défaite), du plus récent au plus ancien
-const FM=s=>String(s||"").split("").map(x=>'<i class="f'+x+'">'+x+'</i>').join("");
-const frm=d=>d.form&&(d.form.home||d.form.away)?'<div class="frm"><span>Forme domicile '+FM(d.form.home)+'</span><span>Forme extérieur '+FM(d.form.away)+'</span></div>':"";
-const when=m=>new Date(m.kickoff).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+" · "+new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
-const tagOf=m=>{const p=m.data.result,cf=Math.max(p.home,p.draw,p.away);
-  return /friendl/i.test(m.league||"")?'<span class="cf lo">Match amical · très imprévisible</span>':cf>=55?'<span class="cf hi">Favori probable</span>':'<span class="cf lo">Match incertain</span>'};
-const probs=d=>{const p=d.result;
-  return '<div class="bar"><span class="h" style="flex:'+p.home+'">'+p.home+'%</span><span class="d" style="flex:'+p.draw+'">'+p.draw+'%</span><span class="a" style="flex:'+p.away+'">'+p.away+'%</span></div>'
-  +'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
-  +'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div></div>'+xt(d)+frm(d)};
-const card=m=>{const d=m.data,me=META[m.fixture_id]||{};
-  return '<div class="card" data-id="'+m.fixture_id+'" role="link" tabindex="0"><div class="tm"><b class="tn">'+lgo(me.home_logo)+esc(m.home)+'</b><span>contre</span><b class="tn">'+lgo(me.away_logo)+esc(m.away)+'</b></div>'
-  +'<div class="mk">'+lgo(me.league_logo,"sm")+'<span>'+esc(m.league||"")+' · '+when(m)+'</span>'+tagOf(m)+'</div>'
-  +probs(d)+result(m)+'<div class="chk go">Voir le détail et les statistiques ›</div></div>'};
-// Un clic sur une carte ouvre la page du match
-const openCard=e=>{const c=e.target.closest&&e.target.closest(".card[data-id]");if(!c||e.target.closest("a,button"))return;
-  if(String(getSelection()).length)return;location.href="match.html?id="+c.dataset.id};
-document.addEventListener("click",openCard);
-document.addEventListener("keydown",e=>{if(e.key==="Enter")openCard(e)});
-// Charge les logos des matchs affichés ; redessine la liste (rerender) si de nouveaux logos arrivent
-let logoAsked=false;
-async function ensureLogos(rows,rerender){
-  const ids=[...new Set((rows||[]).map(m=>m.fixture_id))].filter(i=>!(i in META)).slice(0,200);
-  if(!ids.length)return;
-  const load=async()=>{const{data}=await sb.from("match_meta").select("*").in("fixture_id",ids);let n=0;
-    (data||[]).forEach(r=>{if(!META[r.fixture_id]){META[r.fixture_id]=r;n++}});return n};
-  let n=0;
-  try{n=await load()}catch(e){}
-  const missing=ids.filter(i=>!(i in META)&&i>=1e9);
-  if(missing.length&&!logoAsked){logoAsked=true;
-    try{await sb.functions.invoke("match-info",{body:{action:"logos",ids:missing.slice(0,100)}});n+=await load()}catch(e){}}
-  ids.forEach(i=>{if(!(i in META))META[i]=null});
-  if(n&&rerender)rerender()}
+:root{--bg:#FFFFFF;--surface:#F6F7F4;--ink:#14201A;--muted:#5A6B61;--line:#E3E7E0;--accent:#F4D03F;--on-accent:#1A2A00;--brand:#1B4332;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 "Hanken Grotesk",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque","Hanken Grotesk",sans-serif;line-height:1.1;margin:0}
+a{color:var(--brand)}.wrap{width:100%;max-width:760px;margin:0 auto;padding:0 14px}
+.logo{display:inline-block;font:800 22px "Bricolage Grotesque",sans-serif;color:var(--ink);text-decoration:none;padding:18px 0}
+.btn{display:inline-block;background:var(--accent);color:var(--on-accent);font:700 16px "Hanken Grotesk",sans-serif;border:0;border-radius:8px;padding:12px 20px;cursor:pointer;width:100%}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.box{max-width:420px;margin:24px auto 56px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px}
+.tabs{display:flex;gap:6px;margin-bottom:22px}.tabs a{flex:1;text-align:center;padding:10px;border-radius:8px;text-decoration:none;color:var(--muted);font-weight:700}
+.tabs a.on{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+label{display:block;font-weight:700;font-size:15px;margin:16px 0 6px}
+input[type=email],input[type=password]{width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;margin:18px 0}.check input{margin-top:5px;width:18px;height:18px;flex:none}
+#msg{min-height:1.6em;margin:12px 0;color:#B42318;font-size:15px}
+.legal h1{font-size:38px;margin:24px 0 8px}.legal h2{font-size:26px;margin:44px 0 10px}.legal p,.legal li{color:var(--muted);max-width:68ch}
+.top{display:flex;justify-content:space-between;align-items:center}
+.card{background:rgba(29,111,216,.08);border:1px solid rgba(29,111,216,.28);border-radius:14px;padding:18px;margin:14px 0}
+.bar{display:flex;height:30px;border-radius:6px;overflow:hidden;gap:2px;margin:10px 0}.bar span{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.bar .h{background:var(--accent);color:#1A2A00}.bar .d{background:#C9D1CB}.bar .a{background:#D93B3B;color:#fff}
+.mk{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:14px}.mk b{color:var(--ink)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--line)}
+.top .logo{padding:14px 0;white-space:nowrap}
+.user{display:flex;align-items:center;gap:10px;min-width:0}
+#who{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
+.out{border:1px solid var(--line);border-radius:8px;padding:8px 12px;text-decoration:none;font-size:14px;font-weight:700;white-space:nowrap;color:var(--ink)}
+.pt{font-size:36px;margin:30px 0 4px}.sub{color:var(--muted);margin:0 0 20px;text-transform:capitalize}
+#list .sub{text-transform:none}
+.tm{font:800 20px/1.2 "Bricolage Grotesque",sans-serif}.tm span{font:400 14px "Hanken Grotesk",sans-serif;color:var(--muted)}
+.card .mk{margin:4px 0 8px}
+.lg{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:13px;color:var(--muted)}
+.stats div{border-top:1px solid var(--line);padding-top:8px}.stats b{display:block;color:var(--ink);font-size:18px}
+.dh{font-weight:700;margin:22px 0 8px;color:var(--ink)}
+.res{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.res .sc{font:800 26px/1 "Bricolage Grotesque",sans-serif}.res .sc small,.res .vd small{display:block;font:400 12px "Hanken Grotesk",sans-serif;color:var(--muted);margin-top:4px}
+.res .vd{text-align:right}.res.ok{border-color:#2E7D32;background:#EAF5EA}.res.ko{border-color:#B42318;background:#FDECEA}
+.res.wait{display:block;color:var(--muted);font-size:14px}.chk{color:var(--muted);font-size:13px;margin-top:8px}
+.bilan .stats{margin-top:10px}
+
+.cf{font-weight:700;font-size:.85em}.cf.hi{color:#1a9a4a}.cf.lo{color:#E67700}
+
+.flt{display:flex;gap:8px;margin:14px 0}.flt button,.more{font:inherit;font-weight:700;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;border-radius:999px;padding:8px 16px;cursor:pointer}.flt button.on{background:#1D6FD8;border-color:#1D6FD8;color:#fff}.more{display:block;margin:18px auto}
+
+.srch{display:flex;gap:8px;margin:12px 0}.srch input{font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit;min-width:0}.srch #q{flex:1}
+
+/* Matchs en cours : rouge + score en direct */
+.res.live{border-color:#D93B3B;background:#FDECEA}.res.live .sc{color:#B42318}
+.lv{display:inline-flex;align-items:center;gap:6px;font:800 12px "Hanken Grotesk",sans-serif;letter-spacing:.06em;color:#fff;background:#D93B3B;border-radius:999px;padding:4px 10px}
+.lv i{width:8px;height:8px;border-radius:50%;background:#fff;animation:pl 1.2s infinite}
+@keyframes pl{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.lv i{animation:none}}
+.dh.rd{color:#B42318}
+.stats.x{margin-top:10px}
+
+/* Marges : aucune barre de défilement horizontale */
+html,body{max-width:100%;overflow-x:hidden}
+.card,.res,.stats>div{min-width:0}
+/* Logos et cartes cliquables */
+.card[data-id]{cursor:pointer}
+.tm{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.tm .tn{display:inline-flex;align-items:center;gap:8px}
+.lgo{width:28px;height:28px;object-fit:contain;flex:none}.lgo.sm{width:18px;height:18px}
+.mk{align-items:center}.mk>span{display:inline}
+.chk.go{color:#1D6FD8;font-weight:700}
+/* Page détail d'un match */
+.back{display:inline-block;margin:10px 0;color:var(--muted);text-decoration:none;font-weight:700}
+.mh{background:rgba(29,111,216,.08);border:1px solid rgba(29,111,216,.28);border-radius:14px;padding:16px;margin:8px 0}
+.mh .lgl{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;margin-bottom:14px}
+.mh .tt{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;text-align:center}
+.mh .tt .t img{width:56px;height:56px;object-fit:contain}
+.mh .tt .t b{display:block;font:800 17px/1.2 "Bricolage Grotesque",sans-serif;margin-top:6px;overflow-wrap:anywhere}
+.mh .scr{font:800 38px/1 "Bricolage Grotesque",sans-serif;white-space:nowrap}
+.mh .scr.live{color:#B42318}
+.mh .scr small{display:block;font:400 13px "Hanken Grotesk",sans-serif;color:var(--muted);margin-top:8px}
+.sec{background:rgba(29,111,216,.08);border:1px solid rgba(29,111,216,.28);border-radius:14px;padding:16px;margin:14px 0}
+.sec h2{font-size:18px;margin-bottom:6px}
+.sr{margin:14px 0}
+.sv{display:grid;grid-template-columns:1fr auto 1fr;align-items:baseline;gap:8px;font-size:14px;color:var(--muted)}
+.sv b{font-size:17px;color:var(--ink)}.sv b:last-child{text-align:right}.sv span{text-align:center}
+.sb{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.sb div{height:8px;border-radius:99px;background:rgba(20,32,26,.08);position:relative;overflow:hidden}
+.sb div i{position:absolute;top:0;bottom:0;border-radius:99px}
+.sb .l i{right:0;background:#2E7D32}.sb .r i{left:0;background:#1D6FD8}
+.evr{display:grid;grid-template-columns:1fr 54px 1fr;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.evr .m{text-align:center;font-weight:700;color:var(--muted)}.evr .a{text-align:right}
+.evr small{display:block;color:var(--muted)}
+.note{color:var(--muted);font-size:14px;margin:6px 0 0}
+
+.frm{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:13px;color:var(--muted)}.frm i{font-style:normal;display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;font-size:11px;font-weight:700;margin-left:3px;color:#fff}.frm .fV{background:#1a9a4a}.frm .fN{background:#8a8f98}.frm .fD{background:#D93B3B}
+
+/* Équipe qui gagne : vert clair lisible */
+.mh .scr .g{display:inline-block}
+.mh .scr .g.w{color:#0B6B33;background:#CFF3DB;border-radius:10px;padding:2px 10px;box-shadow:0 0 0 2px #7FD9A0 inset}
+.mh .tt .t.win b{color:#0B6B33;background:#CFF3DB;border-radius:8px;padding:2px 8px;display:inline-block}
+
+/* Logo dans l'en-tête */
+.logo{display:inline-flex;align-items:center;gap:10px}
+.logo img{width:34px;height:34px;border-radius:9px;flex:none}
+
+/* Bandeau « Installer l'app » (dashboard) */
+.inst{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;background:#EAF5EA;border:1px solid #7FD9A0;border-radius:14px;padding:14px;margin:0 0 14px}
+.inst[hidden],.inst .note[hidden]{display:none}
+.inst img{border-radius:11px}
+.inst b{display:block;font:800 16px/1.2 "Bricolage Grotesque",sans-serif}
+.inst span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.inst .btn{grid-column:1/-1;background:var(--brand);color:#fff}
+.inst .note{grid-column:1/-1;margin:0;color:var(--ink)}
+
+.l10 .lb{margin-top:14px}.l10 h3{font-size:15px;margin:0 0 4px}.lr{display:grid;grid-template-columns:44px 1fr auto 24px;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px}.lr .ld{color:var(--muted)}.lr small{display:block;color:var(--muted);font-size:12px}.lr .ls{white-space:nowrap}.lr .frm{margin:0}
