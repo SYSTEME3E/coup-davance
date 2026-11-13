@@ -106,3 +106,7 @@ html,body{max-width:100%;overflow-x:hidden}
 .inst span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
 .inst .btn{grid-column:1/-1;background:var(--brand);color:#fff}
 .inst .note{grid-column:1/-1;margin:0;color:var(--ink)}
+
+.l10 .lb{margin-top:14px}.l10 h3{font-size:15px;margin:0 0 4px}.lr{display:grid;grid-template-columns:44px 1fr auto 24px;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px}.lr .ld{color:var(--muted)}.lr small{display:block;color:var(--muted);font-size:12px}.lr .ls{white-space:nowrap}.lr .frm{margin:0}
+
+.card{content-visibility:auto;contain-intrinsic-size:auto 300px}
