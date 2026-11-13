@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#1D6FD8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}.ab{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.ab .btn{width:auto;flex:1;min-width:130px;padding:10px 14px}</style><title>Retraits – Administration</title></head><body><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
 <h1 class="pt">Retraits</h1><p class="sub" style="text-transform:none">Les retraits « en attente » ou « en cours » depuis longtemps sont à vérifier ici. <a href="admin.html">← Administration</a></p>
+<div id="tot" class="kpi" style="margin:6px 0 14px"></div>
 <div class="flt" id="flt"><button data-s="open" class="on" type="button">À suivre</button><button data-s="" type="button">Tous</button></div>
 <div id="msg" class="pfm" role="status"></div>
 <div id="list"><p class="sub">Chargement…</p></div><div style="height:40px"></div></div>
@@ -21,7 +22,11 @@ const draw=()=>{const l=filter==="open"?rows.filter(w=>w.status==="pending"||w.s
   +(w.error?'<p class="note">'+esc(w.error)+'</p>':"")
   +(open?'<div class="ab"><button class="btn" data-w="'+w.id+'" data-s="paid" type="button">Marquer payé</button><button class="btn danger" data-w="'+w.id+'" data-s="failed" type="button">Échoué + recréditer</button></div>':"")+'</div>'}).join(""):'<div class="card"><p class="sub" style="margin:0">Aucun retrait.</p></div>';
  document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>act(b.dataset.w,b.dataset.s))};
-async function load(){const{data,error}=await sb.rpc("admin_withdrawals",{lim:100});
+const F=n=>Number(n||0).toLocaleString("fr-FR")+" F";
+async function totals(){const{data}=await sb.rpc("admin_wallet_totals");if(!data)return;
+ const k=(l,v,s)=>'<div class="kp"><span>'+l+'</span><b style="font-size:22px">'+F(v)+'</b>'+(s?'<small>'+s+'</small>':"")+'</div>';
+ $("tot").innerHTML=k("À devoir aux utilisateurs",data.owed,"soldes actuels")+k("Gagné par parrainage",data.earned)+k("Déjà payé",data.paid)+k("Retraits en cours",data.in_progress)}
+async function load(){totals();const{data,error}=await sb.rpc("admin_withdrawals",{lim:100});
  if(error){if(error.code==="42501")return location.href="dashboard.html";$("list").innerHTML='<div class="card">'+esc(error.message)+'</div>';return}
  rows=data||[];draw()}
 async function act(id,st){
