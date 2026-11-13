@@ -93,3 +93,16 @@ html,body{max-width:100%;overflow-x:hidden}
 .mh .scr .g{display:inline-block}
 .mh .scr .g.w{color:#0B6B33;background:#CFF3DB;border-radius:10px;padding:2px 10px;box-shadow:0 0 0 2px #7FD9A0 inset}
 .mh .tt .t.win b{color:#0B6B33;background:#CFF3DB;border-radius:8px;padding:2px 8px;display:inline-block}
+
+/* Logo dans l'en-tête */
+.logo{display:inline-flex;align-items:center;gap:10px}
+.logo img{width:34px;height:34px;border-radius:9px;flex:none}
+
+/* Bandeau « Installer l'app » (dashboard) */
+.inst{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;background:#EAF5EA;border:1px solid #7FD9A0;border-radius:14px;padding:14px;margin:0 0 14px}
+.inst[hidden],.inst .note[hidden]{display:none}
+.inst img{border-radius:11px}
+.inst b{display:block;font:800 16px/1.2 "Bricolage Grotesque",sans-serif}
+.inst span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.inst .btn{grid-column:1/-1;background:var(--brand);color:#fff}
+.inst .note{grid-column:1/-1;margin:0;color:var(--ink)}
