@@ -1,5 +1,5 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Match – Pronos-bet</title></head><body><div class="wrap">
-<header class="top"><a class="logo" href="index.html">Pronos-bet</a><div class="user"><span id="who"></span><a href="dashboard.html" class="out">Matchs du jour</a><a href="historique.html" class="out">Historique</a></div></header>
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1D6FD8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Match – Pronos-bet</title></head><body><div class="wrap">
+<header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a><span id="who" hidden></span></header>
 <a class="back" href="dashboard.html" id="back">← Retour aux matchs</a>
 <div id="mh"><p class="sub">Chargement du match…</p></div>
 <div id="pred"></div>
@@ -10,7 +10,7 @@
 <div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="cards.js"></script><script>
+</script><script src="cards.js"></script><script src="menu.js"></script><script>
 const LIVE=["1H","2H","ET","BT","P","LIVE","INT","SUSP","HT"],DONE=["FT","AET","PEN"];
 const ROWS=[["expected_goals","Buts attendus (xG)"],["Ball Possession","Possession"],["Total Shots","Total de tirs"],["Shots on Goal","Tirs cadrés"],["Shots off Goal","Tirs non cadrés"],["Blocked Shots","Tirs contrés"],["Shots insidebox","Tirs dans la surface"],["Shots outsidebox","Tirs hors de la surface"],["Corner Kicks","Corners"],["Fouls","Fautes"],["Offsides","Hors-jeu"],["Yellow Cards","Cartons jaunes"],["Red Cards","Cartons rouges"],["Goalkeeper Saves","Arrêts du gardien"],["goals_prevented","Buts évités"],["Total passes","Passes"],["Passes accurate","Passes réussies"],["Passes %","Précision des passes"]];
 const num=v=>v==null?0:(parseFloat(String(v))||0);
@@ -20,7 +20,8 @@ $("who").textContent=session.user.email;
 if(document.referrer&&new URL(document.referrer).origin===location.origin){$("back").onclick=e=>{e.preventDefault();history.back()}}
 if(!id){$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
 let pr=null,d=null,meta=null;
-const loadRow=async()=>{const{data}=await sb.from("predictions").select("*").eq("fixture_id",id).maybeSingle();if(data)pr=data};
+const loadRow=async()=>{const{data}=await sb.from("predictions_safe").select("*").eq("fixture_id",id).maybeSingle();if(data)pr=data};
+window.afterUnlock=r=>{pr=r;draw()};
 await loadRow();
 if(!pr){$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
 try{const{data}=await sb.from("match_meta").select("*").eq("fixture_id",id).maybeSingle();meta=data}catch(e){}
@@ -61,7 +62,7 @@ const draw=()=>{
   else center='<div class="scr" style="font-size:30px">'+new Date(pr.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'<small>'+new Date(pr.kickoff).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+'</small></div>';
   const extra=[d&&d.league&&d.league.round,d&&d.venue].filter(Boolean).join(" · ");
   $("mh").innerHTML='<div class="mh"><div class="lgl">'+lg(lgLogo,"lgo sm")+'<span>'+esc(pr.league||"")+(extra?' · '+esc(extra):"")+'</span></div><div class="tt">'+team("home")+center+team("away")+'</div></div>';
-  $("pred").innerHTML=pr.data&&pr.data.result?'<div class="sec"><h2>Pronostic</h2><div class="mk" style="margin-bottom:8px">'+tagOf(pr)+'</div>'+probs(pr.data)+'</div>':"";
+  $("pred").innerHTML=pr.data?'<div class="sec"><h2>Pronostic</h2><div class="mk" style="margin-bottom:8px">'+tagOf(pr)+'</div>'+(isOpen(pr)?probs(pr.data):lockBox(pr))+'</div>':"";
   // statistiques
   let st='<div class="sec"><h2>Statistiques du match</h2>';
   const hs=d&&d.statistics&&d.statistics.find(s=>s.team===d.home.id),as=d&&d.statistics&&d.statistics.find(s=>s.team===d.away.id);
