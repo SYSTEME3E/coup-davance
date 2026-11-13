@@ -23,6 +23,7 @@ const xt=d=>{const e=d.extra;if(!e)return"";let a="";
   if(e.corners)a+='<div>Corners prévus<b>'+fr(e.corners.total)+'</b></div><div>Plus de 9,5 corners<b>'+e.corners.over["9.5"]+'%</b></div>';
   if(e.fouls)a+='<div>Fautes prévues<b>'+fr(e.fouls.total)+'</b></div>';
   if(e.cards)a+='<div>Cartons jaunes prévus<b>'+fr(e.cards.total)+'</b></div><div>Plus de 3,5 cartons<b>'+e.cards.over["3.5"]+'%</b></div>';
+  if(e.throwIns)a+='<div>Touches prévues<b>'+fr(e.throwIns.total)+'</b></div>';
   return a?'<div class="stats x">'+a+'</div>':""};
 // Forme des 5 derniers matchs (V = victoire, N = nul, D = défaite), du plus récent au plus ancien
 const FM=s=>String(s||"").split("").map(x=>'<i class="f'+x+'">'+x+'</i>').join("");
