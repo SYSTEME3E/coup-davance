@@ -1,34 +1,41 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1D6FD8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Historique – Pronos-bet</title></head><body><div class="wrap">
-<header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a><div class="user"><span id="who"></span><a href="dashboard.html" class="out">Matchs du jour</a><a href="#" id="out" class="out">Quitter</a></div></header>
+<header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
 <h1 class="pt">Historique</h1><p class="sub">Scores finaux et pronostics des matchs terminés</p>
-<div id="bilan"></div>
+<div class="srch"><input id="hq" type="search" placeholder="Rechercher une équipe ou une compétition…" autocomplete="off"><input id="hd" type="date" aria-label="Date du match"></div>
 <div class="flt" id="flt"><button data-f="all" class="on">Tous</button><button data-f="ok">Justes</button><button data-f="ko">Ratés</button></div>
 <div id="list"><p class="sub">Chargement…</p></div>
 <button id="more" class="more" style="display:none">Voir plus de matchs</button></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="cards.js"></script><script>
+</script><script src="cards.js"></script><script src="menu.js"></script><script>
 const PAGE=40;let rows=[],filter="all",from=0,more=true;
 const dayLabel=k=>new Date(k+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
 const keyOf=m=>{const x=new Date(m.kickoff);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
 function draw(){
   const f=rows.filter(m=>filter==="all"||(filter==="ok"?m.verdict&&m.verdict.ok1x2:m.verdict&&!m.verdict.ok1x2));
-  if(!f.length){$("list").innerHTML='<div class="card"><p class="sub" style="margin:0">Aucun match terminé pour le moment.</p></div>';return}
+  if(!f.length){$("list").innerHTML='<div class="card"><p class="sub" style="margin:0">'+(searching()?"Aucun match trouvé pour cette recherche.":"Aucun match terminé pour le moment.")+'</p></div>';$("more").style.display=more?"block":"none";return}
   const g={};f.forEach(m=>(g[keyOf(m)]=g[keyOf(m)]||[]).push(m));
   $("list").innerHTML=Object.keys(g).sort().reverse().map(k=>'<p class="sub dh">'+dayLabel(k)+' ('+g[k].length+')</p>'+g[k].map(card).join("")).join("");
   $("more").style.display=more?"block":"none"}
 const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute,final_stats";
-async function load(){
-  const{data,error}=await sb.from("predictions").select(COLS).not("settled_at","is",null).order("kickoff",{ascending:false}).range(from,from+PAGE-1);
+// Recherche : équipe, compétition ou date (côté serveur, sur tous les matchs terminés)
+let tok=0;
+const clean=()=>$("hq").value.replace(/[%_,()*\\]/g," ").trim();
+const searching=()=>clean().length>=2||!!$("hd").value;
+function qb(){let a=sb.from("predictions").select(COLS).not("settled_at","is",null).order("kickoff",{ascending:false});
+  const q=clean(),dv=$("hd").value;
+  if(q.length>=2)a=a.or("home.ilike.%"+q+"%,away.ilike.%"+q+"%,league.ilike.%"+q+"%");
+  if(dv){const d0=new Date(dv+"T00:00:00"),d1=new Date(d0);d1.setDate(d1.getDate()+1);a=a.gte("kickoff",d0.toISOString()).lt("kickoff",d1.toISOString())}
+  return a}
+function reset(){tok++;rows=[];from=0;more=true;$("more").style.display="none";$("list").innerHTML='<p class="sub">Recherche…</p>';load()}
+async function load(){const my=tok;
+  const{data,error}=await qb().range(from,from+PAGE-1);
+  if(my!==tok)return;
   if(error){$("list").innerHTML='<div class="card">Impossible de charger l’historique. Réessaie dans un instant.</div>';return}
   rows=rows.concat(data||[]);from+=PAGE;more=(data||[]).length===PAGE;draw();ensureLogos(data||[],draw)}
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
-$("who").textContent=session.user.email;
-const{data:bl}=await sb.rpc("bilan");const n=bl?bl.n:0;
-if(n){const pc=x=>Math.round(100*x/n)+" %";
-$("bilan").innerHTML='<div class="card bilan"><b>Bilan global ('+n+' matchs)</b><div class="stats"><div>Résultat 1X2 juste<b>'+bl.ok1x2+'/'+n+' · '+pc(bl.ok1x2)+'</b></div><div>Les deux marquent<b>'+pc(bl.btts)+'</b></div><div>Plus de 2,5 buts<b>'+pc(bl.over25)+'</b></div></div></div>'}
 document.querySelectorAll("#flt button").forEach(b=>b.onclick=()=>{filter=b.dataset.f;document.querySelectorAll("#flt button").forEach(x=>x.classList.toggle("on",x===b));draw()});
 $("more").onclick=load;
+let t_;$("hq").oninput=()=>{clearTimeout(t_);t_=setTimeout(reset,300)};$("hd").onchange=reset;
 load()})();
-$("out").onclick=async ev=>{ev.preventDefault();await sb.auth.signOut();location.href="index.html"};
 </script><script src="pwa.js" defer></script></body></html>
