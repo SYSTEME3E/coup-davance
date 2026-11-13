@@ -25,17 +25,19 @@ if(!pr){$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
 try{const{data}=await sb.from("match_meta").select("*").eq("fixture_id",id).maybeSingle();meta=data}catch(e){}
 document.title=pr.home+" – "+pr.away+" · Pronos-bet";
 const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" onerror="this.remove()">':"";
+let lead=null;
+const S=(h,a)=>{h=+h;a=+a;lead=h>a?"home":a>h?"away":null;return '<span class="g'+(lead==="home"?' w':'')+'">'+h+'</span> – <span class="g'+(lead==="away"?' w':'')+'">'+a+'</span>'};
 const team=(side)=>{const t=(d&&d[side])||{},logo=t.logo||(meta&&meta[side+"_logo"]);
-  return '<div class="t">'+lg(logo)+'<b>'+esc(pr[side])+'</b></div>'};
+  return '<div class="t'+(lead===side?' win':'')+'">'+lg(logo)+'<b>'+esc(pr[side])+'</b></div>'};
 const isLive=()=>(d&&LIVE.includes(d.status))||(!!pr.live_status&&!(pr.settled_at));
 const draw=()=>{
   const lgLogo=(d&&d.league&&d.league.logo)||(meta&&meta.league_logo);
   let center="";
   const g=d&&d.goals&&d.goals.home!=null?d.goals:(pr.live_status?{home:pr.live_home,away:pr.live_away}:null);
-  if(pr.settled_at&&pr.final_home!=null)center='<div class="scr">'+pr.final_home+' – '+pr.final_away+'<small>Terminé</small></div>';
+  if(pr.settled_at&&pr.final_home!=null)center='<div class="scr">'+S(pr.final_home,pr.final_away)+'<small>Terminé</small></div>';
   else if(isLive()){const ht=(d&&d.status==="HT")||pr.live_status==="HT",mn=(d&&d.elapsed)||pr.live_minute;
-    center='<div class="scr live">'+(g?g.home+' – '+g.away:'0 – 0')+'<small><span class="lv"><i></i>'+(ht?"MI-TEMPS":"EN COURS")+'</span>'+(!ht&&mn?' '+mn+'’':"")+'</small></div>'}
-  else if(d&&DONE.includes(d.status)&&g)center='<div class="scr">'+g.home+' – '+g.away+'<small>Terminé</small></div>';
+    center='<div class="scr live">'+(g?S(g.home,g.away):S(0,0))+'<small><span class="lv"><i></i>'+(ht?"MI-TEMPS":"EN COURS")+'</span>'+(!ht&&mn?' '+mn+'’':"")+'</small></div>'}
+  else if(d&&DONE.includes(d.status)&&g)center='<div class="scr">'+S(g.home,g.away)+'<small>Terminé</small></div>';
   else if(new Date(pr.kickoff)<Date.now())center='<div class="scr">– –<small>Résultat en attente</small></div>';
   else center='<div class="scr" style="font-size:30px">'+new Date(pr.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'<small>'+new Date(pr.kickoff).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+'</small></div>';
   const extra=[d&&d.league&&d.league.round,d&&d.venue].filter(Boolean).join(" · ");
