@@ -6,9 +6,9 @@ const fr=n=>String(n).replace(".",",");
 const META={};
 const lgo=(u,c)=>u?'<img class="lgo'+(c?" "+c:"")+'" src="'+esc(u)+'" alt="" loading="lazy" onerror="this.remove()">':"";
 // Match en cours : badge rouge + score en direct
-const liveBox=m=>{const ht=m.live_status==="HT";
-  return '<div class="res live"><div class="sc">'+(m.live_home==null?0:m.live_home)+' – '+(m.live_away==null?0:m.live_away)+'<small>Score en direct</small></div>'
-  +'<div class="vd"><span class="lv"><i></i>'+(ht?"MI-TEMPS":"EN COURS")+'</span>'+(!ht&&m.live_minute?'<small>'+m.live_minute+'’</small>':"")+'</div></div>'};
+const liveBox=m=>{const ht=m.live_status==="HT",has=m.live_home!=null&&m.live_away!=null;
+  return '<div class="res live">'+(has?'<div class="sc">'+m.live_home+' – '+m.live_away+'<small>Score en direct</small></div>':'<div class="sc"><small>Le score s’affichera à la fin du match</small></div>')
+  +'<div class="vd"><span class="lv"><i></i>'+(ht?"MI-TEMPS":has?"EN COURS":"MATCH EN LIVE")+'</span>'+(!ht&&m.live_minute?'<small>'+m.live_minute+'’</small>':"")+'</div></div>'};
 const result=m=>{
   if(m.settled_at&&m.final_home!=null){const v=m.verdict||{};
     return '<div class="res '+(v.ok1x2?"ok":"ko")+'"><div class="sc">'+m.final_home+' – '+m.final_away+'<small>Score final</small></div>'
