@@ -24,7 +24,7 @@ const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const USD={basic:5.33,gold:17.5};
 const PN={free:"Gratuit",basic:"Basic",gold:"Gold"};
-const OPS={mtn:["MTN MoMo","mtn.png"],moov:["Moov Money","moov.png"],orange:["Orange Money","orange.png","#FF7900"],wave:["Wave","wave.png"],free:["Free Money","free.png"],airtel:["Airtel Money","airtel.png"],airteltigo:["AirtelTigo","airteltigo.png"],mpesa:["M-Pesa","mpesa.png"],bank:["Virement bancaire"],card:["Carte bancaire"]};
+const OPS={mtn:["MTN MoMo","mtn.png"],moov:["Moov Money","moov.png"],orange:["Orange Money","orange.png","#FF7900"],celtiis:["Celtiis Cash","celtiis.png","#0B7A3E"],africell:["Africell Money","africell.png","#8E24AA"],telecel:["Telecel Cash","telecel.png","#E60000"],kulu:["Kulu","kulu.png","#6C3FC5"],soutra:["Soutra Money","soutra.png","#F28C00"],amana:["Amana","amana.png","#1B75BC"],zamanicash:["Zamani Cash","zamanicash.png","#0E8A5F"],nita:["NITA","nita.png","#B5121B"],tmoney:["T-Money","tmoney.png","#E4002B"],wave:["Wave","wave.png"],free:["Free Money","free.png"],airtel:["Airtel Money","airtel.png"],airteltigo:["AirtelTigo","airteltigo.png"],mpesa:["M-Pesa","mpesa.png"],bank:["Virement bancaire"],card:["Carte bancaire"]};
 const ICON={bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></svg>'};
 const CK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>';
 const LK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="9" width="11" height="8" rx="2"/><path d="M7 9V6.5a3 3 0 016 0V9"/></svg>';
@@ -61,15 +61,16 @@ function meBox(){
   const pl=ME.plan,u=ME.solid,v=ME.uncertain;
   const q=(t,o)=>{const lim=o.limit;
     return '<div class="q"><b><span>'+t+'</span><span>'+(lim==null?"Illimité":o.used+" / "+lim)+'</span></b><div class="pb" role="progressbar" aria-label="'+t+'" aria-valuemin="0" aria-valuemax="'+(lim==null?1:lim)+'" aria-valuenow="'+(lim==null?1:Math.min(o.used,lim))+'"><i style="width:'+(lim==null?100:Math.min(100,Math.round(o.used/lim*100)))+'%"></i></div></div>'};
-  const ex=pl==="free"?"Aucun abonnement actif.":ME.ends_at?"Actif jusqu’au "+dt(ME.ends_at)+".":"Accès sans limite de durée.";
-  return '<section class="ab-me" aria-label="Mon abonnement"><div><h2>Ton plan actuel</h2><div class="pl">'+PN[pl]+'</div><div class="ex">'+ex+'</div></div>'
+  const ex=ME.trial?"Essai gratuit : accès Gold complet jusqu’au "+dt(ME.trial_ends_at)+". Ensuite, le plan Gratuit s’applique.":pl==="free"?"Aucun abonnement actif.":ME.ends_at?"Actif jusqu’au "+dt(ME.ends_at)+".":"Accès sans limite de durée.";
+  return '<section class="ab-me" aria-label="Mon abonnement"><div><h2>Ton plan actuel</h2><div class="pl">'+(ME.trial?"Essai gratuit":PN[pl])+'</div><div class="ex">'+ex+'</div></div>'
     +'<div class="qs">'+q("Pronostics solides débloqués aujourd’hui",u)+q("Matchs incertains débloqués aujourd’hui",v)+'</div></section>'}
 
 // ---------- Cartes des plans ----------
 const li=(t,ok)=>'<li'+(ok===false?' class="no"':"")+'>'+(ok===false?LK:CK)+'<span>'+t+'</span></li>';
 function plansBox(){
-  const c=country(),pl=ME.plan;
+  const c=country(),pl=ME.plan,none=!c.operators.length;
   const act=(plan)=>{
+    if(none)return'<button class="btn" type="button" disabled>Bientôt disponible dans ton pays</button>';
     if(plan==="basic"){
       if(pl==="gold")return'<button class="btn" type="button" disabled>Inclus dans ton plan Gold</button>';
       return'<button class="btn" type="button" data-p="basic">'+(pl==="basic"?"Prolonger de 30 jours":"Choisir Basic")+'</button>'}
@@ -77,7 +78,7 @@ function plansBox(){
   return '<div class="plans">'
    +'<article class="plan free"><h3>Gratuit</h3><p class="tl">Pour découvrir</p><div class="pr">0 <small>F</small></div><p class="usd">Sans abonnement</p><ul>'
      +li("Tous les matchs, les lives et les statistiques")+li("<b>2</b> pronostics solides par jour")+li("<b>3</b> matchs incertains par jour")+li("Les autres pronostics restent floutés",false)+'</ul>'
-     +'<button class="btn" type="button" disabled>'+(pl==="free"?"Ton plan actuel":"Plan de départ")+'</button></article>'
+     +'<button class="btn" type="button" disabled>'+(ME.trial?"Après ton essai":pl==="free"?"Ton plan actuel":"Plan de départ")+'</button></article>'
    +'<article class="plan basic"><h3>Basic</h3><p class="tl">Pour suivre plus de matchs</p><div class="pr">'+money(c.basic,c.currency)+' <small>/ mois</small></div><p class="usd">soit '+usd(USD.basic)+' par mois</p><ul>'
      +li("Tous les matchs, les lives et les statistiques")+li("<b>10</b> pronostics solides par jour")+li("<b>5</b> matchs incertains par jour")+li("Pronostics débloqués, plus de flou dans ton quota")+'</ul>'+act("basic")+'</article>'
    +'<article class="plan gold"><span class="tag">Le plus complet</span><h3>Gold</h3><p class="tl">Sans aucune limite</p><div class="pr">'+money(c.gold,c.currency)+' <small>/ mois</small></div><p class="usd">soit '+usd(USD.gold)+' par mois</p><ul>'
@@ -89,13 +90,11 @@ function pickBox(){
     +'<p>Les prix sont fixés en dollars puis convertis dans la monnaie de ton pays.</p></div>'}
 
 function extra(){
-  const rows=PR.map(x=>'<tr><td>'+esc(x.flag)+" "+esc(x.country_name)+'</td><td>'+esc(x.currency)+'</td><td>'+money(x.basic,x.currency)+'</td><td>'+money(x.gold,x.currency)+'</td><td>'+x.operators.map(o=>esc((OPS[o]||[o])[0])).join(", ")+'</td></tr>').join("");
+  const rows=PR.map(x=>'<tr><td>'+esc(x.flag)+" "+esc(x.country_name)+'</td><td>'+esc(x.currency)+'</td><td>'+money(x.basic,x.currency)+'</td><td>'+money(x.gold,x.currency)+'</td><td>'+(x.operators.length?x.operators.map(o=>esc((OPS[o]||[o])[0])).join(", "):"Bientôt disponible")+'</td></tr>').join("");
   return '<section class="ab-sec"><h2>Comment ça marche</h2><ol class="steps"><li>Tu choisis ton pays.</li><li>Le prix s’affiche dans ta monnaie.</li><li>Tu sélectionnes ton opérateur.</li><li>Tu paies avec Money Fusion.</li><li>Ton plan s’active tout seul.</li></ol>'
    +'<p class="note">L’abonnement dure 30 jours et ne se renouvelle pas automatiquement : tu choisis quand le prolonger.</p></section>'
    +'<section class="ab-sec"><h2>Solide ou incertain ?</h2><div class="kind"><div><b>Pronostic solide</b>Une issue du match dépasse 55 % de probabilité : le favori est net.</div><div><b>Match incertain</b>Aucune issue n’atteint 55 % : le résultat est plus difficile à prévoir.</div></div>'
    +'<p class="note">Les quotas se renouvellent chaque jour. Un pronostic déjà débloqué reste visible, et les matchs commencés ne comptent pas dans ton quota.</p></section>'
-   +'<section class="ab-sec"><h2>Parraine et gagne</h2><p class="lead">Quand ton filleul active un plan, tu touches une récompense créditée automatiquement sur ton solde.</p><div class="ref"><div><b>500 F</b><span>quand ton filleul active Basic</span></div><div><b>1 500 F</b><span>quand ton filleul active Gold</span></div></div>'
-   +'<p class="note">Ton code de parrainage est disponible dès que ton abonnement est actif. Les gains se retirent via Money Fusion.</p><a class="btn" href="balance.html">Voir mon solde et mon code</a></section>'
    +'<section class="ab-sec"><h2>Prix par pays</h2><details class="dt"><summary>Afficher le détail des tarifs et des moyens de paiement</summary><div class="tbw"><table class="pt2"><thead><tr><th>Pays</th><th>Devise</th><th>Basic</th><th>Gold</th><th>Moyens de paiement</th></tr></thead><tbody>'+rows+'</tbody></table></div></details></section>'}
 
 function histBox(){
@@ -105,7 +104,7 @@ function histBox(){
     return '<div class="pay"><div><b>Plan '+esc(PN[x.plan]||x.plan)+'</b> · '+money(x.amount,x.currency)+'<small>'+dtt(x.created_at)+(x.operator?" · "+esc((OPS[x.operator]||[x.operator])[0]):"")+'</small></div><div class="rt"><span class="bd '+b[0]+'">'+b[1]+'</span>'+(recent?'<button class="lk2" type="button" data-chk="'+esc(x.id)+'">Vérifier</button>':"")+'</div></div>'}).join("")+'</section>'}
 
 function draw(){
-  $("app").innerHTML=meBox()+pickBox()+plansBox()+extra()+histBox()+'<p class="disc">Aucun pronostic n’est garanti : ce sont des estimations statistiques. Service réservé aux personnes majeures. Joue de façon responsable.</p>';
+  $("app").innerHTML=meBox()+pickBox()+plansBox()+extra()+histBox();
   $("cs").onchange=e=>{CTRY=e.target.value;try{localStorage.setItem("pb_country",CTRY)}catch(x){}draw()};
   document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>openCk(b.dataset.p));
   document.querySelectorAll("[data-chk]").forEach(b=>b.onclick=()=>verify(b.dataset.chk,true))}
@@ -115,6 +114,7 @@ const ck=$("ck");
 function opTile(o){
   const d=OPS[o]||[o],img=d[1],col=d[2]||"#5A6B61";
   let logo=ICON[o]||"";
+  if(!logo&&!img)logo='<span class="lgx" style="background:'+col+'">'+esc(d[0].charAt(0).toUpperCase())+'</span>';
   if(!logo)logo='<img src="'+img+'" alt="" width="44" height="44" onerror="this.outerHTML=\'<span class=&quot;lgx&quot; style=&quot;background:'+col+'&quot;>'+esc(d[0].charAt(0))+'</span>\'">';
   return '<label class="op"><input type="radio" name="op" value="'+esc(o)+'"><span class="opb">'+logo+'<span>'+esc(d[0])+'</span></span></label>'}
 function openCk(plan){
