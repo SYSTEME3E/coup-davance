@@ -56,7 +56,8 @@ const draw=()=>{
   const g=d&&d.goals&&d.goals.home!=null?d.goals:(pr.live_status?{home:pr.live_home,away:pr.live_away}:null);
   if(pr.settled_at&&pr.final_home!=null)center='<div class="scr">'+S(pr.final_home,pr.final_away)+'<small>Terminé</small></div>';
   else if(isLive()){const ht=(d&&d.status==="HT")||pr.live_status==="HT",mn=(d&&d.elapsed)||pr.live_minute;
-    center='<div class="scr live">'+(g?S(g.home,g.away):S(0,0))+'<small><span class="lv"><i></i>'+(ht?"MI-TEMPS":"EN COURS")+'</span>'+(!ht&&mn?' '+mn+'’':"")+'</small></div>'}
+    const hasG=g&&g.home!=null&&g.away!=null;
+    center='<div class="scr live">'+(hasG?S(g.home,g.away):'– –')+'<small><span class="lv"><i></i>'+(ht?"MI-TEMPS":hasG?"EN COURS":"MATCH EN LIVE")+'</span>'+(!ht&&mn?' '+mn+'’':"")+'</small></div>'}
   else if(d&&DONE.includes(d.status)&&g)center='<div class="scr">'+S(g.home,g.away)+'<small>Terminé</small></div>';
   else if(new Date(pr.kickoff)<Date.now())center='<div class="scr">– –<small>Résultat en attente</small></div>';
   else center='<div class="scr" style="font-size:30px">'+new Date(pr.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'<small>'+new Date(pr.kickoff).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+'</small></div>';
@@ -90,6 +91,7 @@ const draw=()=>{
 };
 const refresh=async()=>{
   await loadRow();
+  if(pr.live_status&&!pr.settled_at){draw();return} // match en cours : pas d'appel API, on attend le score final
   try{const{data,error}=await sb.functions.invoke("match-info",{body:{action:"detail",id}});if(!error&&data&&!data.error)d=data}catch(e){}
   draw()};
 draw();await refresh();
