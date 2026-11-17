@@ -10,9 +10,13 @@ const liveBox=m=>{const ht=m.live_status==="HT",has=m.live_home!=null&&m.live_aw
   return '<div class="res live">'+(has?'<div class="sc">'+m.live_home+' – '+m.live_away+'<small>Score en direct</small></div>':'<div class="sc"><small>Le score s’affichera à la fin du match</small></div>')
   +'<div class="vd"><span class="lv"><i></i>'+(ht?"MI-TEMPS":has?"EN COURS":"MATCH EN LIVE")+'</span>'+(!ht&&m.live_minute?'<small>'+m.live_minute+'’</small>':"")+'</div></div>'};
 const result=m=>{
-  if(m.settled_at&&m.final_home!=null){const v=m.verdict||{};
-    return '<div class="res '+(v.ok1x2?"ok":"ko")+'"><div class="sc">'+m.final_home+' – '+m.final_away+'<small>Score final</small></div>'
-    +'<div class="vd"><b>'+(v.ok1x2?"✔ Pronostic juste":"✘ Pronostic raté")+'</b><small>Prévu : '+(LB[v.predicted]||"?")+'</small></div></div>'
+  if(m.settled_at&&m.final_home!=null){const v=m.verdict||{},hit=!!v.scoreHit,good=!!v.ok1x2||hit;
+    // Vert si le résultat 1X2 est juste OU si le score exact est trouvé ; autocollants Gagné / Échoué / Score exact
+    const title=v.ok1x2?"✔ Pronostic juste":hit?"✔ Score exact":"✘ Pronostic raté";
+    const sub=!v.ok1x2&&hit?"Score prévu : "+esc(v.likelyScore||m.final_home+"-"+m.final_away):"Prévu : "+(LB[v.predicted]||"?");
+    const stk=m.verdict?'<div class="stk">'+(v.ok1x2?'<span class="g">✔ Gagné</span>':hit?"":'<span class="x">✘ Échoué</span>')+(hit?'<span class="e">🎯 Score exact</span>':"")+'</div>':"";
+    return '<div class="res '+(good?"ok":"ko")+'"><div class="sc">'+m.final_home+' – '+m.final_away+'<small>Score final</small></div>'
+    +'<div class="vd"><b>'+title+'</b><small>'+sub+'</small></div></div>'+stk
     +(v.btts&&v.over25?'<div class="chk">Les deux marquent '+yn(v.btts.ok)+' · Plus de 2,5 buts '+yn(v.over25.ok)+' · Score exact '+yn(v.scoreHit)+'</div>':"")}
   if(m.settled_at)return '<div class="res wait">Match annulé ou non joué ('+esc(m.final_status)+')</div>';
   if(m.live_status)return liveBox(m);
