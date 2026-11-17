@@ -47,17 +47,33 @@ function draw(){
     +(act?line("Formule",esc(act.plan))+line("Depuis le",dt(act.started_at))+line("Fin prévue",act.ends_at?dt(act.ends_at):"Sans date de fin"):(u.is_admin?"":'<p class="note">Aucun abonnement actif.</p>'))
     +(subs.length?'<h3 class="hh">Historique</h3>'+subs.map(s=>'<div class="kv"><span>'+esc(s.plan)+' · depuis le '+dt(s.started_at)+(s.canceled_at?' · annulé le '+dt(s.canceled_at):"")+'</span><b>'+esc(ST[s.status]||s.status)+'</b></div>').join(""):"")
     +'</div>'
+  +'<div class="sec"><h2>Donner un abonnement</h2>'
+    +(u.is_admin?'<p class="note">Administrateur : accès Gold déjà actif, rien à donner.</p>'
+    :'<p class="note">Sans paiement. Si la personne a déjà cette formule, la durée s’ajoute à la fin de l’abonnement en cours.</p>'
+    +'<label for="gp">Formule</label><select class="fld" id="gp"><option value="gold">Gold – tous les pronostics</option><option value="basic">Basic – 10 solides et 5 incertains par jour</option></select>'
+    +'<label for="gd">Durée (jours)</label><input class="fld" id="gd" type="text" inputmode="numeric" maxlength="3" value="30">'
+    +'<div class="ab"><button type="button" class="btn" id="bGrant">Donner l’abonnement</button></div>'
+    +'<div id="gmsg" class="pfm" role="status"></div>')+'</div>'
   +walletBox()
   +'<div class="sec"><h2>Actions</h2>'
     +'<button type="button" class="btn danger" id="bBlock"'+(canBlock?"":" disabled")+'>'+(u.blocked?"Débloquer l’utilisateur":"Bloquer l’utilisateur")+'</button>'
     +(canBlock?"":'<p class="note">Un administrateur ne peut pas être bloqué.</p>')
     +'<button type="button" class="btn ghost" id="bSub"'+(act?"":" disabled")+'>Supprimer l’abonnement actif</button>'
     +'<div id="amsg" class="pfm" role="status"></div></div>';
-  $("bBlock").onclick=toggleBlock;$("bSub").onclick=cancelSub;
+  $("bBlock").onclick=toggleBlock;$("bSub").onclick=cancelSub;if($("bGrant"))$("bGrant").onclick=grant;
   if($("bAdd")){$("bAdd").onclick=()=>adjust(1);$("bTake").onclick=()=>adjust(-1)}}
 const say=(t,ok)=>{const m=$("amsg");if(m){m.textContent=t||"";m.className="pfm"+(t?(ok?" ok":" ko"):"")}};
 const wsay=(t,ok)=>{const m=$("wmsg");if(m){m.textContent=t||"";m.className="pfm"+(t?(ok?" ok":" ko"):"")}};
 const who=()=>U.full_name||U.email;
+const gsay=(t,ok)=>{const m=$("gmsg");if(m){m.textContent=t||"";m.className="pfm"+(t?(ok?" ok":" ko"):"")}};
+async function grant(){
+  const plan=$("gp").value,label=plan==="gold"?"Gold":"Basic",days=parseInt(($("gd").value||"").replace(/\D/g,""),10);
+  if(!days||days<1||days>366)return gsay("Durée : entre 1 et 366 jours.");
+  if(!confirm("Donner l’abonnement "+label+" pour "+days+" jour"+(days>1?"s":"")+" à "+who()+" ?\nAucun paiement ne sera demandé."))return;
+  $("bGrant").disabled=true;
+  const{data,error}=await sb.rpc("admin_grant_subscription",{uid:id,p_plan:plan,p_days:days});
+  if(error){$("bGrant").disabled=false;return gsay("Action impossible : "+error.message)}
+  await load();gsay("Abonnement "+label+" activé jusqu’au "+dt(data&&data.ends_at)+".",true)}
 async function adjust(sign){
   const n=parseInt(($("aw").value||"").replace(/\D/g,""),10),note=$("an").value.trim();
   if(!n)return wsay("Saisis un montant.");
