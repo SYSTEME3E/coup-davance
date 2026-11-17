@@ -36,6 +36,7 @@ input[type=email],input[type=password],input[type=text]{width:100%;padding:12px 
 .res .sc{font:800 26px/1 "Bricolage Grotesque",sans-serif}.res .sc small,.res .vd small{display:block;font:400 12px "Hanken Grotesk",sans-serif;color:var(--muted);margin-top:4px}
 .res .vd{text-align:right}.res.ok{border-color:#2E7D32;background:#EAF5EA}.res.ko{border-color:#B42318;background:#FDECEA}
 .res.wait{display:block;color:var(--muted);font-size:14px}.chk{color:var(--muted);font-size:13px;margin-top:8px}
+.stk{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.stk span{font:700 12px/1 "Hanken Grotesk",sans-serif;padding:6px 11px;border-radius:999px}.stk .g{background:#CFF3DB;color:#0B6B33}.stk .x{background:#FDECEA;color:#B42318}.stk .e{background:#FFF1C2;color:#8A5A00}
 .bilan .stats{margin-top:10px}
 
 .cf{font-weight:700;font-size:.85em}.cf.hi{color:#1a9a4a}.cf.lo{color:#E67700}
