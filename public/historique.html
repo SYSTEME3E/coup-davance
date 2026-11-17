@@ -13,7 +13,7 @@ const PAGE=40;let rows=[],filter="all",from=0,more=true;
 const dayLabel=k=>new Date(k+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
 const keyOf=m=>{const x=new Date(m.kickoff);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
 function draw(){
-  const f=rows.filter(m=>filter==="all"||(filter==="ok"?m.verdict&&m.verdict.ok1x2:m.verdict&&!m.verdict.ok1x2));
+  const f=rows.filter(m=>filter==="all"||(filter==="ok"?m.verdict&&(m.verdict.ok1x2||m.verdict.scoreHit):m.verdict&&!m.verdict.ok1x2&&!m.verdict.scoreHit));
   if(!f.length){$("list").innerHTML='<div class="card"><p class="sub" style="margin:0">'+(searching()?"Aucun match trouvé pour cette recherche.":"Aucun match terminé pour le moment.")+'</p></div>';$("more").style.display=more?"block":"none";return}
   const g={};f.forEach(m=>(g[keyOf(m)]=g[keyOf(m)]||[]).push(m));
   $("list").innerHTML=Object.keys(g).sort().reverse().map(k=>'<p class="sub dh">'+dayLabel(k)+' ('+g[k].length+')</p>'+g[k].map(card).join("")).join("");
