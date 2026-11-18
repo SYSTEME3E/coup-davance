@@ -71,7 +71,7 @@ let tm_;$("q").oninput=()=>{clearTimeout(tm_);tm_=setTimeout(doSearch,300)};$("q
 // bonus : texte de l'offre. N'y mets un pourcentage que s'il est identique à l'offre actuellement affichée par le partenaire, avec ses conditions.
 const GROUP_URL="";// lien d'invitation du groupe (WhatsApp ou Telegram)
 const PARTNERS=[
- {name:"1xBet",code:"1x_6232579",link:"https://refpa-65760.com/L?tag=d_6320689m_1599c_&site=6320689&ad=1599",bonus:"Bonus de bienvenue sur ton premier dépôt (conditions sur le site du partenaire)."},
+ {name:"1xBet",code:"1x_6232579",link:"https://refpa-65760.com/L?tag=d_6320689m_1599c_&site=6320689&ad=1599",bonus:"Bonus sport : 200 % sur le premier dépôt, jusqu’à 250 000 XOF au Bénin. Conditions de mise sur le site de 1xBet."},
  {name:"Melbet",code:"ml_3902811",link:"https://refpa3665.com/L?tag=d_6375130m_2170c_&site=6375130&ad=2170",bonus:"Bonus de bienvenue sur ton premier dépôt (conditions sur le site du partenaire)."},
  {name:"1win",code:"1w_13960",link:"https://1wymky.life/?open=register&p=k88j",bonus:"Bonus de bienvenue sur tes premiers dépôts (conditions sur le site du partenaire)."}
 ];
@@ -81,14 +81,17 @@ const PARTNERS=[
  PARTNERS.forEach(function(p,i){
   h+='<div class="pt-item"><h3>'+p.name+'</h3><p>'+p.bonus+'</p>'
    +'<div class="pt-code"><code>'+p.code+'</code><button type="button" data-copy="'+i+'">Copier</button></div>'
-   +(p.link?'<a class="pt-go" href="'+p.link+'" target="_blank" rel="noopener sponsored nofollow">Créer mon compte chez '+p.name+'</a>':'<p class="note" style="margin:0">Sur le site de '+p.name+', saisis ce code promo au moment de l’inscription.</p>')+'</div>';
+   +(p.link?'<a class="pt-go" data-pc="'+i+'" href="'+p.link+'" target="_blank" rel="noopener sponsored nofollow">Créer mon compte chez '+p.name+'</a><p class="note pt-hint" style="margin:6px 0 0">Le code sera copié : colle-le dans le champ « Code promo » à l’inscription.</p>':'<p class="note" style="margin:0">Sur le site de '+p.name+', saisis ce code promo au moment de l’inscription.</p>')+'</div>';
  });
  h+='<div class="pt-group"><p class="note"><b>Après ton inscription</b>, rejoins notre groupe pour recevoir des pronostics gratuits.</p>'
   +(GROUP_URL?'<a class="pt-go" href="'+GROUP_URL+'" target="_blank" rel="noopener">Rejoindre le groupe</a>':'<p class="note">Le lien du groupe arrive bientôt.</p>')+'</div>'
   +'<p class="note">Liens partenaires : nous touchons une commission si tu t’inscris, sans frais pour toi. Réservé aux 18 ans et plus. Les paris comportent des risques : joue avec modération et vérifie que les paris en ligne sont autorisés dans ton pays. Bonus soumis à conditions.</p>';
  box.innerHTML=h;
  btn.onclick=function(){var open=box.hidden;box.hidden=!open;btn.setAttribute("aria-expanded",open?"true":"false");btn.textContent=open?"🎁 Masquer les bonus":"🎁 Bonus partenaires"};
- box.addEventListener("click",function(e){var b=e.target.closest("[data-copy]");if(!b)return;var c=PARTNERS[+b.dataset.copy].code;
+ box.addEventListener("click",function(e){var g=e.target.closest("[data-pc]");if(g){var code=PARTNERS[+g.dataset.pc].code,h=g.nextElementSibling;
+   try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code)}catch(x){}
+   if(h&&h.classList.contains("pt-hint"))h.textContent="Code "+code+" copié ✓ Colle-le dans le champ « Code promo » à l’inscription.";return}
+  var b=e.target.closest("[data-copy]");if(!b)return;var c=PARTNERS[+b.dataset.copy].code;
   var done=function(){b.textContent="Copié ✓";setTimeout(function(){b.textContent="Copier"},1800)};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c).then(done,function(){});
   else{var t=document.createElement("textarea");t.value=c;document.body.appendChild(t);t.select();try{document.execCommand("copy");done()}catch(x){}t.remove()}});
