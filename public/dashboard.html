@@ -1,7 +1,21 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1D6FD8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Matchs du jour – Pronos-bet</title></head><body><div class="wrap">
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1D6FD8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Matchs du jour – Pronos-bet</title><style>
+.bonus{margin:14px 0}.bonus .btn{background:var(--navy);}
+#bonusList{margin-top:10px}
+.pt-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
+.pt-item h3{margin:0 0 4px;font:800 19px/1.2 "Bricolage Grotesque",sans-serif}
+.pt-item p{margin:4px 0 10px;color:var(--muted);font-size:15px}
+.pt-code{display:flex;gap:8px;align-items:center;margin:0 0 10px}
+.pt-code code{flex:1;padding:10px 12px;border:1px dashed var(--brand);border-radius:8px;background:var(--bg);font:700 16px ui-monospace,monospace;word-break:break-all}
+.pt-code button,.pt-go{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:10px 14px;font:700 15px "Hanken Grotesk",sans-serif;cursor:pointer;text-decoration:none;text-align:center}
+.pt-go{display:block;background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.pt-group{margin-top:14px}
+</style>
+</head><body><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
 <h1 class="pt">Matchs du jour</h1><p class="sub" id="date"></p>
 <div id="install" class="inst" hidden><img src="icon.svg" alt="" width="44" height="44"><div><b>Pronos-bet sur ton téléphone</b><span>Installe l’app pour y accéder en un geste.</span></div><button type="button" id="installBtn" class="btn">Installer l’app</button><p id="installHelp" class="note" hidden></p></div>
+<section class="bonus" id="bonus"><button type="button" class="btn" id="bonusBtn" aria-expanded="false" aria-controls="bonusList">🎁 Bonus partenaires</button>
+<div id="bonusList" hidden></div></section>
 <div class="srch"><input id="q" type="search" placeholder="Rechercher une équipe ou une compétition…" autocomplete="off"><input id="qd" type="date" aria-label="Date du match"></div>
 <div id="list"><p class="sub">Chargement des matchs…</p></div>
 <p class="note" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p></div>
@@ -51,4 +65,33 @@ const doSearch=async()=>{const my=++tok,q=clean(),dv=$("qd").value;
  ensureLogos(r||[],()=>{if(my===tok)$("list").innerHTML=html()})};
 let tm_;$("q").oninput=()=>{clearTimeout(tm_);tm_=setTimeout(doSearch,300)};$("qd").onchange=doSearch;
 })();
-</script><script src="pwa.js" defer></script></body></html>
+</script><script src="pwa.js" defer></script><script>
+// ---- Bonus partenaires : modifie uniquement cette configuration ----
+// code : code promo à saisir à l'inscription ; link : lien d'inscription affilié (laisser "" tant qu'il n'est pas renseigné)
+// bonus : texte de l'offre. N'y mets un pourcentage que s'il est identique à l'offre actuellement affichée par le partenaire, avec ses conditions.
+const GROUP_URL="";// lien d'invitation du groupe (WhatsApp ou Telegram)
+const PARTNERS=[
+ {name:"1xBet",code:"1x_6232579",link:"https://refpa-65760.com/L?tag=d_6320689m_1599c_&site=6320689&ad=1599",bonus:"Bonus de bienvenue sur ton premier dépôt (conditions sur le site du partenaire)."},
+ {name:"Melbet",code:"ml_3902811",link:"https://refpa3665.com/L?tag=d_6375130m_2170c_&site=6375130&ad=2170",bonus:"Bonus de bienvenue sur ton premier dépôt (conditions sur le site du partenaire)."},
+ {name:"1win",code:"1w_13960",link:"https://1wymky.life/?open=register&p=k88j",bonus:"Bonus de bienvenue sur tes premiers dépôts (conditions sur le site du partenaire)."}
+];
+(function(){
+ var btn=document.getElementById("bonusBtn"),box=document.getElementById("bonusList");
+ var h='<p class="note">Crée ton compte chez un partenaire avec notre code promo pour profiter de son bonus de bienvenue.</p>';
+ PARTNERS.forEach(function(p,i){
+  h+='<div class="pt-item"><h3>'+p.name+'</h3><p>'+p.bonus+'</p>'
+   +'<div class="pt-code"><code>'+p.code+'</code><button type="button" data-copy="'+i+'">Copier</button></div>'
+   +(p.link?'<a class="pt-go" href="'+p.link+'" target="_blank" rel="noopener sponsored nofollow">Créer mon compte chez '+p.name+'</a>':'<p class="note" style="margin:0">Sur le site de '+p.name+', saisis ce code promo au moment de l’inscription.</p>')+'</div>';
+ });
+ h+='<div class="pt-group"><p class="note"><b>Après ton inscription</b>, rejoins notre groupe pour recevoir des pronostics gratuits.</p>'
+  +(GROUP_URL?'<a class="pt-go" href="'+GROUP_URL+'" target="_blank" rel="noopener">Rejoindre le groupe</a>':'<p class="note">Le lien du groupe arrive bientôt.</p>')+'</div>'
+  +'<p class="note">Liens partenaires : nous touchons une commission si tu t’inscris, sans frais pour toi. Réservé aux 18 ans et plus. Les paris comportent des risques : joue avec modération et vérifie que les paris en ligne sont autorisés dans ton pays. Bonus soumis à conditions.</p>';
+ box.innerHTML=h;
+ btn.onclick=function(){var open=box.hidden;box.hidden=!open;btn.setAttribute("aria-expanded",open?"true":"false");btn.textContent=open?"🎁 Masquer les bonus":"🎁 Bonus partenaires"};
+ box.addEventListener("click",function(e){var b=e.target.closest("[data-copy]");if(!b)return;var c=PARTNERS[+b.dataset.copy].code;
+  var done=function(){b.textContent="Copié ✓";setTimeout(function(){b.textContent="Copier"},1800)};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c).then(done,function(){});
+  else{var t=document.createElement("textarea");t.value=c;document.body.appendChild(t);t.select();try{document.execCommand("copy");done()}catch(x){}t.remove()}});
+})();
+</script>
+</body></html>
