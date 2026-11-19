@@ -10,7 +10,7 @@
 .cmp{margin:14px 0 4px;font:800 14px "Hanken Grotesk",sans-serif;color:var(--muted);display:flex;align-items:center;gap:6px}
 .tw{overflow-x:auto}table.tb{width:100%;border-collapse:collapse;font-size:14px}.tb th,.tb td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}.tb td.n,.tb th.n{text-align:left}.tb td.n{font-weight:700}.tb tr[data-go]{cursor:pointer}
 .tr{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}.tr b{flex:1}.tr .v{font:800 18px "Bricolage Grotesque",sans-serif}
-.rd{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px}.rd .col{flex:none;width:210px}.rd h4{margin:0 0 6px;font-size:13px;color:var(--muted)}.rd .bm{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:8px;margin-bottom:8px;font-size:13px}.rd .bm div{display:flex;justify-content:space-between;gap:6px}
+.brk{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px}.brk .col{flex:none;width:210px}.brk h4{margin:0 0 6px;font-size:13px;color:var(--muted)}.brk .bm{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:8px;margin-bottom:8px;font-size:13px}.brk .bm div{display:flex;justify-content:space-between;gap:6px}
 .evl{padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.evl b{display:inline-block;min-width:38px}
 .kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kv div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13px;color:var(--muted)}.kv b{display:block;font:800 18px "Bricolage Grotesque",sans-serif;color:var(--ink)}
 </style></head><body><div class="wrap">
@@ -94,7 +94,7 @@ const P={
   return'<a class="back" href="#scorers">← Retour</a><div class="mh"><div class="lgl">'+lg(ssLogo(p)||p.photo)+'<span>'+esc(ssName(p))+(p.team?' · '+esc(ssName(p.team)):"")+'</span></div></div><div class="sec"><h2>Statistiques</h2><div class="kv">'+kv.concat(st).map(([k,v])=>'<div>'+esc(k.replace(/_/g," "))+'<b>'+esc(v)+'</b></div>').join("")+'</div></div>'},
  async bracket(){await loadComps();chips();const d=await byComp("bracket"),rounds=ssArr(d,["rounds","stages"]);
   if(!rounds.length)return'<div class="card">Pas de tableau pour cette compétition.</div>';
-  return'<div class="rd">'+rounds.map(r=>'<div class="col"><h4>'+esc(ssPick(r,["name","round","title"])||"")+'</h4>'+ssArr(r,["matches","events","ties"]).map(ssMatch).map(m=>'<div class="bm"'+(m.id?' data-go="'+mgo(m)+'"':'')+'><div><span>'+esc(m.home)+'</span><b>'+esc(m.hs??"")+'</b></div><div><span>'+esc(m.away)+'</span><b>'+esc(m.as??"")+'</b></div></div>').join("")+'</div>').join("")+'</div>'},
+  return'<div class="brk">'+rounds.map(r=>'<div class="col"><h4>'+esc(ssPick(r,["name","round","title"])||"")+'</h4>'+ssArr(r,["matches","events","ties"]).map(ssMatch).map(m=>'<div class="bm"'+(m.id?' data-go="'+mgo(m)+'"':'')+'><div><span>'+esc(m.home)+'</span><b>'+esc(m.hs??"")+'</b></div><div><span>'+esc(m.away)+'</span><b>'+esc(m.as??"")+'</b></div></div>').join("")+'</div>').join("")+'</div>'},
  async tracker(id){
   if(!id){const ms=ssArr(await SS("matches",{limit:50})).map(ssMatch).filter(m=>m.live);return'<div class="sec"><h2>Choisis un match en direct</h2>'+(ms.length?ms.map(m=>mrow(m,m.mid?"tracker/"+esc(m.mid):"")).join(""):'<p class="note">Aucun match en direct.</p>')+'</div>'}
   const d=await SS("tracker",{id}),r=d.data||d,m=ssMatch(r.match||r),ev=ssArr(r,["events","incidents","timeline","feed"]);
