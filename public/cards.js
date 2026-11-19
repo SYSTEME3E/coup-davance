@@ -4,7 +4,7 @@ const LB={home:"victoire à domicile",draw:"match nul",away:"victoire à l’ext
 const yn=b=>b?"✔":"✘";
 const fr=n=>String(n).replace(".",",");
 const META={};
-const lgo=(u,c)=>u?'<img class="lgo'+(c?" "+c:"")+'" src="'+esc(u)+'" alt="" loading="lazy" onerror="this.remove()">':"";
+const lgo=(u,c)=>u?'<img class="lgo'+(c?" "+c:"")+'" src="'+esc(u)+'" alt="" loading="lazy" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
 // Match en cours : badge rouge + score en direct
 const liveBox=m=>{const ht=m.live_status==="HT",has=m.live_home!=null&&m.live_away!=null;
   return '<div class="res live">'+(has?'<div class="sc">'+m.live_home+' – '+m.live_away+'<small>Score en direct</small></div>':'<div class="sc"><small>Le score s’affichera à la fin du match</small></div>')
