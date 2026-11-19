@@ -24,64 +24,88 @@
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="cards.js"></script><script src="sportscore.js"></script><script src="menu.js"></script><script>
 let COMP=null,TIMER=null,COMPS=[],MODE="goals";
+// Compétitions proposées (slugs de la doc : premier-league, uefa-champions-league ; les autres sont à vérifier)
+const POP=[["Premier League","premier-league"],["Champions League","uefa-champions-league"],["La Liga","la-liga"],["Serie A","serie-a"],["Bundesliga","bundesliga"],["Ligue 1","ligue-1"]];
 const lg=u=>u?'<img src="'+esc(u)+'" alt="" loading="lazy" onerror="this.remove()">':"";
 const err=e=>'<div class="card">Données indisponibles pour le moment. Réessaie dans un instant.<br><small class="note">'+esc(e.message||e)+'</small></div>';
 const hm=s=>{const d=new Date(typeof s==="number"&&s<1e12?s*1000:s);return isNaN(d)?"":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})};
-const mrow=x=>{const sc=x.hs!=null&&x.as!=null;
-  return '<div class="mr" data-go="match/'+esc(x.id)+'"><div class="t">'+lg(x.hl)+'<span>'+esc(x.home)+'</span></div><div class="s'+(x.live?' lv':'')+'">'+(sc?esc(x.hs)+' – '+esc(x.as):hm(x.start)||'vs')+'<small>'+(x.live?(x.minute?esc(x.minute)+'’':'EN DIRECT'):x.done?'Terminé':sc?'':'À venir')+'</small></div><div class="t r"><span>'+esc(x.away)+'</span>'+lg(x.al)+'</div></div>'};
+const mgo=x=>"match/"+esc(x.id)+(x.mid?"/"+esc(x.mid):"");
+// go : route au clic (undefined = fiche du match, "" = pas de lien)
+const mrow=(x,go)=>{const sc=x.hs!=null&&x.as!=null,g=go===""?"":' data-go="'+(go||mgo(x))+'"';
+  return '<div class="mr"'+g+'><div class="t">'+lg(x.hl)+'<span>'+esc(x.home)+'</span></div><div class="s'+(x.live?' lv':'')+'">'+(sc?esc(x.hs)+' – '+esc(x.as):hm(x.start)||'vs')+'<small>'+(x.live?(x.minute?esc(x.minute)+'’':'EN DIRECT'):x.done?'Terminé':sc?'':'À venir')+'</small></div><div class="t r"><span>'+esc(x.away)+'</span>'+lg(x.al)+'</div></div>'};
+const page=()=>(location.hash.slice(1)||"matches").split("/")[0];
 const chips=()=>{const el=$("chips");if(!COMPS.length||!/^(standings|scorers|bracket)$/.test(page())){el.innerHTML="";return}
   el.innerHTML=COMPS.map(c=>'<button data-c="'+esc(c.id)+'" class="'+(String(COMP)===String(c.id)?"on":"")+'">'+esc(c.name)+'</button>').join("")};
-const page=()=>(location.hash.slice(1)||"matches").split("/")[0];
 async function loadComps(){if(COMPS.length)return;
-  try{const d=await SS("matches",{}),seen={};ssArr(d).map(ssMatch).forEach(m=>{if(m.cid!=null&&!seen[m.cid]){seen[m.cid]=1;COMPS.push({id:m.cid,name:m.comp||("Compétition "+m.cid)})}});
-    if(COMP==null&&COMPS[0])COMP=COMPS[0].id}catch(e){}}
+  const seen={};POP.forEach(([name,id])=>{seen[id]=1;COMPS.push({id,name,alts:[]})});
+  try{ssArr(await SS("matches",{limit:50})).map(ssMatch).forEach(m=>{if(m.cid&&!seen[m.cid]){seen[m.cid]=1;COMPS.push({id:m.cid,name:m.comp||m.cid,alts:m.calt?[m.calt]:[]})}})}catch(e){}
+  if(COMP==null&&COMPS[0])COMP=COMPS[0].id}
+// Appelle un endpoint par compétition : essaie le slug, puis l'identifiant issu du logo
+async function byComp(endpoint,extra){const c=COMPS.find(x=>String(x.id)===String(COMP))||{id:COMP,alts:[]};let last=null,er=null;
+  for(const s of[c.id].concat(c.alts||[])){try{const d=await SS(endpoint,Object.assign({slug:s},extra||{}));if(ssArr(d).length)return d;last=d}catch(e){er=e}}
+  if(last)return last;throw er||new Error("Aucune donnée")}
+const evIcon=e=>{const t=String(e.type||"").toLowerCase();
+  return e.is_sub||/subst/.test(t)?"🔄":/red/.test(t)?"🟥":e.is_card||/yellow|card/.test(t)?"🟨":/goal|penalty/.test(t)?"⚽":/var/.test(t)?"📺":""};
+const evLine=(e,m)=>{const ic=evIcon(e),who=e.side==="home"?m.home:e.side==="away"?m.away:"";
+  const txt=e.is_sub||/subst/i.test(e.type||"")?'<span>'+esc(e.player_in||"")+'</span><small class="note"> remplace '+esc(e.player_out||"")+'</small>'
+    :'<span>'+esc(ssName(ssPick(e,["player","player_name","name"]))||"")+'</span>'+(ic?"":'<small class="note"> '+esc(e.type||"")+'</small>');
+  return '<div class="evl"><b>'+esc(ssPick(e,["time","minute","min"])??"")+'’</b>'+(ic?ic+' ':"")+txt+(who?' <small class="note">· '+esc(who)+'</small>':"")+'</div>'};
 // ---- pages ----
 const P={
- async matches(){const ms=ssArr(await SS("matches",{})).map(ssMatch);
+ async matches(){const ms=ssArr(await SS("matches",{limit:50})).map(ssMatch);
   if(!ms.length)return'<div class="card">Aucun match pour le moment.</div>';
   const live=ms.filter(m=>m.live),rest=ms.filter(m=>!m.live);let h="";
-  if(live.length)h+='<p class="sub dh rd">En direct ('+live.length+')</p>'+live.map(mrow).join("");
+  if(live.length)h+='<p class="sub dh rd">En direct ('+live.length+')</p>'+live.map(m=>mrow(m)).join("");
   const g={};rest.forEach(m=>(g[m.comp||"Autres"]=g[m.comp||"Autres"]||[]).push(m));
-  Object.keys(g).forEach(k=>h+='<div class="cmp">'+esc(k)+'</div>'+g[k].map(mrow).join(""));return h},
- async match(id){const d=await SS("match",{slug:id}),r=d.data||d.match||d,m=ssMatch(r);
-  let h='<a class="back" href="#matches">← Retour</a>'+mrow(m).replace('data-go="match/'+m.id+'"','');
-  h+='<p style="text-align:center"><a class="btn" href="#tracker/'+esc(m.tid||id)+'">Suivre en direct</a></p>';
+  Object.keys(g).forEach(k=>h+='<div class="cmp">'+esc(k)+'</div>'+g[k].map(m=>mrow(m)).join(""));return h},
+ async match(slug,mid){let d;
+  try{d=await SS("match",{slug})}catch(e){if(!mid)throw e;d=await SS("match",{slug:mid})}
+  const r=d.match||d.data||d,m=ssMatch(r);if(!m.id)m.id=slug;if(!m.mid)m.mid=mid;
+  let h='<a class="back" href="#matches">← Retour</a>'+mrow(m,"");
+  if(r.home_ht_score!=null&&r.away_ht_score!=null&&m.hs!=null)h+='<p class="note" style="text-align:center">Mi-temps : '+esc(r.home_ht_score)+' – '+esc(r.away_ht_score)+'</p>';
+  const tid=ssPick(r,["tracker.id"])||m.mid||mid;
+  if(tid&&!m.done)h+='<p style="text-align:center"><a class="btn" href="#tracker/'+esc(tid)+'">Suivre en direct</a></p>';
   const ev=ssArr(r,["incidents","events","timeline"]);
-  if(ev.length)h+='<div class="sec"><h2>Temps forts</h2>'+ev.map(e=>'<div class="evl"><b>'+esc(ssPick(e,["minute","time","min"])||"")+'’</b>'+esc(ssPick(e,["type","incident_type"])||"")+' · '+esc(ssName(ssPick(e,["player","player_name","name"])))+'</div>').join("")+'</div>';
+  if(ev.length)h+='<div class="sec"><h2>Temps forts</h2>'+ev.map(e=>evLine(e,m)).join("")+'</div>';
   const stt=ssPick(r,["statistics","stats"]);
   if(Array.isArray(stt)&&stt.length)h+='<div class="sec"><h2>Statistiques</h2>'+stt.map(s=>'<div class="evl"><b>'+esc(ssPick(s,["home","home_value"])??"")+'</b>'+esc(ssPick(s,["name","type","label"])||"")+' <b style="float:right">'+esc(ssPick(s,["away","away_value"])??"")+'</b></div>').join("")+'</div>';
-  const links='<div class="chk">'+(m.hid?'<a href="#team/'+esc(m.hid)+'">'+esc(m.home)+' ›</a> · ':'')+(m.aid?'<a href="#team/'+esc(m.aid)+'">'+esc(m.away)+' ›</a>':'')+'</div>';
-  return h+links},
- async team(id){const ms=ssArr(await SS("team",{slug:id})).map(ssMatch);
-  return'<a class="back" href="#matches">← Retour</a><div class="sec"><h2>Matchs de l’équipe</h2>'+(ms.length?ms.map(mrow).join(""):'<p class="note">Aucun match trouvé.</p>')+'</div>'},
- async standings(){await loadComps();chips();const d=await SS("standings",{slug:COMP});let rows=ssArr(d);
+  const L=r.lineups;
+  if(L&&((L.home_xi||[]).length||(L.away_xi||[]).length)){
+    const col=(s,n)=>'<div><b style="font-size:14px">'+esc(n)+(L[s+"_formation"]?' · '+esc(L[s+"_formation"]):"")+'</b>'+(L[s+"_coach"]?'<small>Coach : '+esc(ssName(L[s+"_coach"]))+'</small>':"")
+      +(L[s+"_xi"]||[]).map(p=>esc(p.number??"")+' '+esc(p.name)+(p.captain?" (C)":"")).join("<br>")
+      +((L[s+"_subs"]||[]).length?'<br><small>Remplaçants</small>'+L[s+"_subs"].map(p=>esc(p.number??"")+' '+esc(p.name)).join("<br>"):"")+'</div>';
+    h+='<div class="sec"><h2>Compositions'+(L.confirmed?"":" (probables)")+'</h2><div class="kv">'+col("home",m.home)+col("away",m.away)+'</div></div>'}
+  return h+'<div class="chk">'+(m.hid?'<a href="#team/'+esc(m.hid)+'">'+esc(m.home)+' ›</a> · ':'')+(m.aid?'<a href="#team/'+esc(m.aid)+'">'+esc(m.away)+' ›</a>':'')+'</div>'},
+ async team(slug){const ms=ssArr(await SS("team",{slug,limit:30})).map(ssMatch);
+  return'<a class="back" href="#matches">← Retour</a><div class="sec"><h2>Matchs de l’équipe</h2>'+(ms.length?ms.map(m=>mrow(m)).join(""):'<p class="note">Aucun match trouvé.</p>')+'</div>'},
+ async standings(){await loadComps();chips();const d=await byComp("standings");let rows=ssArr(d);
   const groups=rows.length&&rows[0]&&ssArr(rows[0],["rows","table","standings"]).length&&!ssPick(rows[0],["points","pts"])?rows:[{rows:rows}];
   const T=g=>{const r=ssArr(g,["rows","table","standings"]);return'<div class="sec">'+(g.name||g.group?'<h2>'+esc(g.name||g.group)+'</h2>':"")+'<div class="tw"><table class="tb"><tr><th>#</th><th class="n">Équipe</th><th>J</th><th>G</th><th>N</th><th>P</th><th>Diff</th><th>Pts</th></tr>'
-   +r.map((x,i)=>{const t=x.team||x;return'<tr'+(t.slug||t.id?' data-go="team/'+esc(t.slug||t.id)+'"':'')+'><td>'+esc(ssPick(x,["position","rank"])||i+1)+'</td><td class="n">'+lg(ssLogo(t))+' '+esc(ssName(t)||ssPick(x,["team_name","name"]))+'</td><td>'+esc(ssPick(x,["played","matches","mp","games"])??"")+'</td><td>'+esc(ssPick(x,["wins","won","w"])??"")+'</td><td>'+esc(ssPick(x,["draws","drawn","d"])??"")+'</td><td>'+esc(ssPick(x,["losses","lost","l"])??"")+'</td><td>'+esc(ssPick(x,["goal_difference","goal_diff","gd"])??"")+'</td><td><b>'+esc(ssPick(x,["points","pts"])??"")+'</b></td></tr>'}).join("")+'</table></div></div>'};
+   +r.map((x,i)=>{const t=x.team||x,nm=ssName(t)||ssPick(x,["team_name","name"])||"",sl=t.slug||ssSlug(nm);return'<tr'+(sl?' data-go="team/'+esc(sl)+'"':'')+'><td>'+esc(ssPick(x,["position","rank"])||i+1)+'</td><td class="n">'+lg(ssLogo(t)||x.logo||x.team_logo)+' '+esc(nm)+'</td><td>'+esc(ssPick(x,["played","matches","mp","games"])??"")+'</td><td>'+esc(ssPick(x,["wins","won","w"])??"")+'</td><td>'+esc(ssPick(x,["draws","drawn","d"])??"")+'</td><td>'+esc(ssPick(x,["losses","lost","l"])??"")+'</td><td>'+esc(ssPick(x,["goal_difference","goal_diff","gd"])??"")+'</td><td><b>'+esc(ssPick(x,["points","pts"])??"")+'</b></td></tr>'}).join("")+'</table></div></div>'};
   return groups.length&&COMP!=null?groups.map(T).join(""):'<div class="card">Choisis une compétition.</div>'},
  async scorers(){await loadComps();chips();
-  const d=await SS("topscorers",{slug:COMP,stat:MODE});
+  const d=await byComp("topscorers",{limit:30,stat:MODE});
   let rows=Array.isArray(d)||!d[MODE==="goals"?"scorers":"assists"]?ssArr(d):d[MODE==="goals"?"scorers":"assists"];
   const sw='<div class="chips"><button data-m="goals" class="'+(MODE==="goals"?"on":"")+'">Buteurs</button><button data-m="assists" class="'+(MODE==="assists"?"on":"")+'">Passeurs</button></div>';
-  return sw+(rows.length?rows.map((x,i)=>{const p=x.player||x,t=x.team||{};return'<div class="tr"'+(p.slug||p.id?' data-go="player/'+esc(p.slug||p.id)+'"':'')+'><span>'+(i+1)+'</span>'+lg(ssLogo(p))+'<b>'+esc(ssName(p)||ssPick(x,["player_name"]))+'<small class="note" style="display:block">'+esc(ssName(t)||ssPick(x,["team_name"])||"")+'</small></b><span class="v">'+esc(ssPick(x,[MODE==="goals"?"goals":"assists","value","count","total"])??"")+'</span></div>'}).join(""):'<div class="card">Aucune donnée.</div>')},
- async player(id){const d=await SS("player",{slug:id}),p=d.data||d.player||d;
-  const skip=/^(id|name|logo|image|team|photo)$/,kv=Object.entries(p).filter(([k,v])=>!skip.test(k)&&(typeof v==="number"||typeof v==="string")).slice(0,16);
+  return sw+(rows.length?rows.map((x,i)=>{const p=x.player||x,t=x.team||{},nm=ssName(p)||ssPick(x,["player_name"])||"",sl=p.slug||ssSlug(nm);return'<div class="tr"'+(sl?' data-go="player/'+esc(sl)+'"':'')+'><span>'+(i+1)+'</span>'+lg(ssLogo(p)||x.photo||x.player_logo)+'<b>'+esc(nm)+'<small class="note" style="display:block">'+esc(ssName(t)||ssPick(x,["team_name"])||"")+'</small></b><span class="v">'+esc(ssPick(x,[MODE==="goals"?"goals":"assists","value","count","total"])??"")+'</span></div>'}).join(""):'<div class="card">Aucune donnée.</div>')},
+ async player(slug){const d=await SS("player",{slug}),p=d.player||d.data||d;
+  const skip=/^(id|name|logo|image|team|photo|slug|url|sport)$/,kv=Object.entries(p).filter(([k,v])=>!skip.test(k)&&(typeof v==="number"||typeof v==="string")).slice(0,16);
   const st=p.statistics&&typeof p.statistics==="object"&&!Array.isArray(p.statistics)?Object.entries(p.statistics).filter(([,v])=>typeof v!=="object"):[];
-  return'<a class="back" href="#scorers">← Retour</a><div class="mh"><div class="lgl">'+lg(ssLogo(p))+'<span>'+esc(ssName(p))+(p.team?' · '+esc(ssName(p.team)):"")+'</span></div></div><div class="sec"><h2>Statistiques</h2><div class="kv">'+kv.concat(st).map(([k,v])=>'<div>'+esc(k.replace(/_/g," "))+'<b>'+esc(v)+'</b></div>').join("")+'</div></div>'},
- async bracket(){await loadComps();chips();const d=await SS("bracket",{slug:COMP}),rounds=ssArr(d,["rounds","stages"]);
+  return'<a class="back" href="#scorers">← Retour</a><div class="mh"><div class="lgl">'+lg(ssLogo(p)||p.photo)+'<span>'+esc(ssName(p))+(p.team?' · '+esc(ssName(p.team)):"")+'</span></div></div><div class="sec"><h2>Statistiques</h2><div class="kv">'+kv.concat(st).map(([k,v])=>'<div>'+esc(k.replace(/_/g," "))+'<b>'+esc(v)+'</b></div>').join("")+'</div></div>'},
+ async bracket(){await loadComps();chips();const d=await byComp("bracket"),rounds=ssArr(d,["rounds","stages"]);
   if(!rounds.length)return'<div class="card">Pas de tableau pour cette compétition.</div>';
-  return'<div class="rd">'+rounds.map(r=>'<div class="col"><h4>'+esc(ssPick(r,["name","round","title"])||"")+'</h4>'+ssArr(r,["matches","events","ties"]).map(ssMatch).map(m=>'<div class="bm" data-go="match/'+esc(m.id)+'"><div><span>'+esc(m.home)+'</span><b>'+esc(m.hs??"")+'</b></div><div><span>'+esc(m.away)+'</span><b>'+esc(m.as??"")+'</b></div></div>').join("")+'</div>').join("")+'</div>'},
+  return'<div class="rd">'+rounds.map(r=>'<div class="col"><h4>'+esc(ssPick(r,["name","round","title"])||"")+'</h4>'+ssArr(r,["matches","events","ties"]).map(ssMatch).map(m=>'<div class="bm"'+(m.id?' data-go="'+mgo(m)+'"':'')+'><div><span>'+esc(m.home)+'</span><b>'+esc(m.hs??"")+'</b></div><div><span>'+esc(m.away)+'</span><b>'+esc(m.as??"")+'</b></div></div>').join("")+'</div>').join("")+'</div>'},
  async tracker(id){
-  if(!id){const ms=ssArr(await SS("matches",{})).map(ssMatch).filter(m=>m.live);return'<div class="sec"><h2>Choisis un match en direct</h2>'+(ms.length?ms.map(m=>mrow(m).replace('data-go="match/'+m.id,'data-go="tracker/'+m.tid)).join(""):'<p class="note">Aucun match en direct.</p>')+'</div>'}
+  if(!id){const ms=ssArr(await SS("matches",{limit:50})).map(ssMatch).filter(m=>m.live);return'<div class="sec"><h2>Choisis un match en direct</h2>'+(ms.length?ms.map(m=>mrow(m,m.mid?"tracker/"+esc(m.mid):"")).join(""):'<p class="note">Aucun match en direct.</p>')+'</div>'}
   const d=await SS("tracker",{id}),r=d.data||d,m=ssMatch(r.match||r),ev=ssArr(r,["events","incidents","timeline","feed"]);
   TIMER=setInterval(()=>{if(!document.hidden)show(true)},15000);
-  return'<a class="back" href="#tracker">← Retour</a>'+mrow(m).replace(/data-go="[^"]*"/,"")+'<div class="sec"><h2>Fil du match</h2>'+(ev.length?ev.slice().reverse().map(e=>'<div class="evl"><b>'+esc(ssPick(e,["minute","time","min"])||"")+'’</b>'+esc(ssPick(e,["text","description","type","incident_type"])||"")+' '+esc(ssName(ssPick(e,["player","player_name"])))+'</div>').join(""):'<p class="note">Aucun événement pour l’instant. Actualisation toutes les 15 secondes.</p>')+'</div>'}
+  return'<a class="back" href="#tracker">← Retour</a>'+mrow(m,"")+'<div class="sec"><h2>Fil du match</h2>'+(ev.length?ev.slice().reverse().map(e=>e.type||e.player||e.player_in?evLine(e,m):'<div class="evl"><b>'+esc(ssPick(e,["minute","time","min"])||"")+'’</b>'+esc(ssPick(e,["text","description"])||"")+'</div>').join(""):'<p class="note">Aucun événement pour l’instant. Actualisation toutes les 15 secondes.</p>')+'</div>'}
 };
-async function show(silent){clearInterval(TIMER);const[p,id]=(location.hash.slice(1)||"matches").split("/");
+async function show(silent){clearInterval(TIMER);const parts=(location.hash.slice(1)||"matches").split("/"),p=parts[0],args=parts.slice(1);
   const tab={match:"matches",team:"matches",player:"scorers"}[p]||p;
   document.querySelectorAll("#tabs a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+tab));
   if(!silent)$("v").innerHTML='<p class="sub">Chargement…</p>';
-  try{const f=P[p]||P.matches,h=await f(id);$("v").innerHTML=h;chips();if(p==="matches")TIMER=setInterval(()=>{if(!document.hidden)show(true)},30000)}
+  try{const f=P[p]||P.matches,h=await f(...args);$("v").innerHTML=h;chips();if(p==="matches")TIMER=setInterval(()=>{if(!document.hidden)show(true)},60000)}
   catch(e){if(!silent)$("v").innerHTML=err(e)}}
 document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){location.hash=g.dataset.go;return}
   const c=e.target.closest("[data-c]");if(c){COMP=c.dataset.c;show();return}
