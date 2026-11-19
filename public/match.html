@@ -2,6 +2,7 @@
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a><span id="who" hidden></span></header>
 <a class="back" href="dashboard.html" id="back">← Retour aux matchs</a>
 <div id="mh"><p class="sub">Chargement du match…</p></div>
+<div id="sl"></div>
 <div id="pred"></div>
 <div id="st"></div>
 <div id="hs"></div>
@@ -27,6 +28,10 @@ await loadRow();
 if(!pr){$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
 try{const{data}=await sb.from("match_meta").select("*").eq("fixture_id",id).maybeSingle();meta=data}catch(e){}
 document.title=pr.home+" – "+pr.away+" · Pronos-bet";
+// Lien vers le suivi en direct SportScore (si ce match a été rapproché par sports_data.link_predictions)
+(async()=>{try{const{data}=await sb.rpc("sportscore_link",{p_fixture:id}),l=Array.isArray(data)?data[0]:data;
+  if(!l||!l.slug)return;const live=/live|progress|half|1h|2h|ht/i.test((l.status||"")+" "+(l.status_text||""))&&!/finish|ended/i.test((l.status||"")+" "+(l.status_text||""));
+  $("sl").innerHTML='<a class="btn" style="display:block;text-align:center;text-decoration:none;margin:10px 0" href="sport.html#match/'+encodeURIComponent(l.slug)+(l.match_id&&l.match_id!==l.slug?"/"+encodeURIComponent(l.match_id):"")+'">'+(live?"🔴 Suivre le match en direct":"Voir le match sur Football en direct")+'</a>'}catch(e){}})();
 // 10 derniers matchs de chaque équipe, lus dans notre archive (table match_archive)
 const SFX=["united","town","city","county","rovers","athletic","wanderers","albion","argyle","rvs","utd"];
 const keysFor=k=>{const p=String(k||"").split(" "),ss=p.length>1&&SFX.includes(p[p.length-1])?p.slice(0,-1).join(" "):k;return[...new Set([k,ss])].filter(Boolean)};
