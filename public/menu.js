@@ -1,3 +1,5 @@
+// Protection des images : pas de glisser-déposer ni de menu « enregistrer l'image » (dissuasif, pas absolu).
+(function(){const b=e=>{if(e.target&&e.target.tagName==="IMG")e.preventDefault()};document.addEventListener("contextmenu",b);document.addEventListener("dragstart",b)})();
 // Menu à 3 barres (en haut à droite) : informations du compte modifiables, navigation, déconnexion.
 // Nécessite la variable globale `sb` (client Supabase) et un <header class="top"> dans la page.
 (function(){
