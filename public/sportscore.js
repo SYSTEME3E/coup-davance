@@ -3,16 +3,29 @@
 // Endpoints : matches, match, team, standings, topscorers, player, bracket, tracker
 // La clé (CFG.ss) est envoyée en paramètre ?api_key= (évite la requête CORS préliminaire d'un en-tête X-API-Key).
 const SS_BASE="https://sportscore.com/api/widget/";
+// SS.last = dernière requête (chemin sans clé, statut HTTP, début de la réponse) : affiché dans le bloc « Diagnostic » de sport.html
 async function SS(endpoint,params){
-  const q=new URLSearchParams({sport:"football"});
-  Object.entries(params||{}).forEach(([k,v])=>{if(v!=null&&v!=="")q.set(k,v)});
+  const base=new URLSearchParams({sport:"football"});
+  Object.entries(params||{}).forEach(([k,v])=>{if(v!=null&&v!=="")base.set(k,v)});
   const c=window.CFG||{};
-  if(c.ss)q.set("api_key",c.ss);
-  if(c.src)q.set("src",c.src);
-  let res;
-  try{res=await fetch(SS_BASE+endpoint+"/?"+q.toString())}catch(e){throw new Error("Réseau indisponible")}
-  let d=null;try{d=await res.json()}catch(e){}
-  if(!res.ok||!d||d.error)throw new Error((d&&(d.error||d.detail))||("Erreur SportScore ("+res.status+")"));
+  const attempt=async withKey=>{
+    const q=new URLSearchParams(base);
+    if(withKey&&c.ss)q.set("api_key",c.ss);
+    if(c.src)q.set("src",c.src);
+    const path=SS_BASE+endpoint+"/?"+base.toString();
+    let res,txt="";
+    try{res=await fetch(SS_BASE+endpoint+"/?"+q.toString());txt=await res.text()}
+    catch(e){SS.last={path,status:0,keyed:withKey,body:String(e)};throw new Error("Réseau indisponible ou requête bloquée (CORS)")}
+    SS.last={path,status:res.status,keyed:withKey,body:txt.slice(0,1500)};
+    let d=null;try{d=JSON.parse(txt)}catch(e){}
+    return{res,d}};
+  let r=await attempt(true);
+  // La doc SportScore indique qu'aucune clé n'est requise : si la clé est refusée, on réessaie sans clé
+  if(!r.res.ok&&(r.res.status===401||r.res.status===403)&&c.ss)r=await attempt(false);
+  const{res,d}=r;
+  if(!res.ok)throw new Error((d&&(d.error||d.detail))||("Erreur SportScore ("+res.status+")"));
+  if(!d)throw new Error("Réponse SportScore illisible (pas du JSON)");
+  if(d.error)throw new Error(d.error);
   return d}
 const ssPick=(o,ks)=>{for(const k of ks){const v=k.split(".").reduce((a,x)=>a==null?a:a[x],o);if(v!=null&&v!=="")return v}return null};
 // Première liste trouvée dans une réponse (matches, standings, scorers, rounds…)
