@@ -1,6 +1,6 @@
 // Client SportScore : appels directs à l'API REST publique https://sportscore.com/api/widget/<endpoint>/
 // Points de terminaison (tous en GET, CORS ouvert) : matches, match, team, standings, topscorers, player, bracket, tracker
-// La clé (CFG.ss) est envoyée en paramètre ?api_key= (évite la requête CORS préliminaire d'un en-tête X-API-Key).
+// Aucune clé API n'est envoyée depuis le navigateur (elle serait visible par tous les visiteurs).
 const SS_BASE="https://sportscore.com/api/widget/";
 // SS.last = dernière requête (chemin sans clé, statut HTTP, début de la réponse) : bloc « Diagnostic » de sport.html (?debug=1)
 async function ssFetch(endpoint,params){
@@ -9,7 +9,6 @@ async function ssFetch(endpoint,params){
   const c=window.CFG||{};
   const attempt=async withKey=>{
     const q=new URLSearchParams(base);
-    if(withKey&&c.ss)q.set("api_key",c.ss);
     if(c.src)q.set("src",c.src);
     const path=SS_BASE+endpoint+"/?"+base.toString();
     let res,txt="";
@@ -17,10 +16,7 @@ async function ssFetch(endpoint,params){
     catch(e){SS.last={path,status:0,keyed:withKey,body:String(e)};throw new Error("Réseau indisponible ou requête bloquée (CORS)")}
     SS.last={path,status:res.status,keyed:withKey,body:txt.slice(0,1500)};
     return{res,txt}};
-  let r=await attempt(true);
-  // La doc SportScore indique qu'aucune clé n'est requise : si la clé est refusée, on réessaie sans clé
-  if(!r.res.ok&&(r.res.status===401||r.res.status===403)&&c.ss)r=await attempt(false);
-  return r}
+  return await attempt(false)}
 async function SS(endpoint,params){
   const{res,txt}=await ssFetch(endpoint,params);
   let d=null;try{d=JSON.parse(txt)}catch(e){}
