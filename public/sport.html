@@ -17,7 +17,7 @@ const DEBUG=/[?&]debug=1/.test(location.search);
 // Attention : « premier-league » seul n'existe pas pour les classements, il faut « english-premier-league ».
 const POP=[["Premier League","english-premier-league"],["Champions League","uefa-champions-league"],["La Liga","spanish-la-liga"],["Serie A","italian-serie-a"],["Bundesliga","bundesliga"],["Ligue 1","french-ligue-1"],["Europa League","uefa-europa-league"],["Brasileirão","brazilian-serie-a"],["MLS","united-states-major-league-soccer"],["Coupe du monde","fifa-world-cup"]];
 
-const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" loading="lazy" onerror="this.remove()">':"";
+const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" loading="lazy" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
 const err=e=>'<div class="card sx-err"><b>Données indisponibles pour le moment</b><span>'+esc(ssErr(e))+'</span></div>';
 const hm=s=>{const d=new Date(typeof s==="number"&&s<1e12?s*1000:s);return isNaN(d)?"":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})};
 const mgo=x=>"match/"+esc(x.id)+(x.mid?"/"+esc(x.mid):"");
