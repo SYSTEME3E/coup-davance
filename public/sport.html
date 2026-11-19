@@ -19,7 +19,8 @@
 <nav class="tabs" id="tabs"><a href="#matches">En direct</a><a href="#standings">Classements</a><a href="#scorers">Buteurs</a><a href="#bracket">Tableaux</a><a href="#tracker">Suivi live</a></nav>
 <div id="chips" class="chips"></div>
 <div id="v"><p class="sub">Chargement…</p></div>
-<p class="note" style="text-align:center;margin:28px 0 8px">Données : SportScore</p><div style="height:40px"></div></div>
+<details class="note" id="dbg" style="margin-top:22px"><summary>Diagnostic (si rien ne s’affiche)</summary><pre id="dbgp" style="white-space:pre-wrap;word-break:break-all;font-size:12px;max-height:260px;overflow:auto"></pre></details>
+<p class="note" style="text-align:center;margin:28px 0 8px">Données : <a href="https://sportscore.com" target="_blank" rel="noopener">Powered by SportScore</a></p><div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="cards.js"></script><script src="sportscore.js"></script><script src="menu.js"></script><script>
@@ -82,6 +83,7 @@ const P={
   const groups=rows.length&&rows[0]&&ssArr(rows[0],["rows","table","standings"]).length&&!ssPick(rows[0],["points","pts"])?rows:[{rows:rows}];
   const T=g=>{const r=ssArr(g,["rows","table","standings"]);return'<div class="sec">'+(g.name||g.group?'<h2>'+esc(g.name||g.group)+'</h2>':"")+'<div class="tw"><table class="tb"><tr><th>#</th><th class="n">Équipe</th><th>J</th><th>G</th><th>N</th><th>P</th><th>Diff</th><th>Pts</th></tr>'
    +r.map((x,i)=>{const t=x.team||x,nm=ssName(t)||ssPick(x,["team_name","name"])||"",sl=t.slug||ssSlug(nm);return'<tr'+(sl?' data-go="team/'+esc(sl)+'"':'')+'><td>'+esc(ssPick(x,["position","rank"])||i+1)+'</td><td class="n">'+lg(ssLogo(t)||x.logo||x.team_logo)+' '+esc(nm)+'</td><td>'+esc(ssPick(x,["played","matches","mp","games"])??"")+'</td><td>'+esc(ssPick(x,["wins","won","w"])??"")+'</td><td>'+esc(ssPick(x,["draws","drawn","d"])??"")+'</td><td>'+esc(ssPick(x,["losses","lost","l"])??"")+'</td><td>'+esc(ssPick(x,["goal_difference","goal_diff","gd"])??"")+'</td><td><b>'+esc(ssPick(x,["points","pts"])??"")+'</b></td></tr>'}).join("")+'</table></div></div>'};
+  if(!ssArr(groups[0]||{},["rows","table","standings"]).length)return'<div class="card">Aucun classement renvoyé pour « '+esc(COMP)+' » (identifiant de compétition peut-être incorrect).</div>';
   return groups.length&&COMP!=null?groups.map(T).join(""):'<div class="card">Choisis une compétition.</div>'},
  async scorers(){await loadComps();chips();
   const d=await byComp("topscorers",{limit:30,stat:MODE});
@@ -97,7 +99,7 @@ const P={
   return'<div class="brk">'+rounds.map(r=>'<div class="col"><h4>'+esc(ssPick(r,["name","round","title"])||"")+'</h4>'+ssArr(r,["matches","events","ties"]).map(ssMatch).map(m=>'<div class="bm"'+(m.id?' data-go="'+mgo(m)+'"':'')+'><div><span>'+esc(m.home)+'</span><b>'+esc(m.hs??"")+'</b></div><div><span>'+esc(m.away)+'</span><b>'+esc(m.as??"")+'</b></div></div>').join("")+'</div>').join("")+'</div>'},
  async tracker(id){
   if(!id){const ms=ssArr(await SS("matches",{limit:50})).map(ssMatch).filter(m=>m.live);return'<div class="sec"><h2>Choisis un match en direct</h2>'+(ms.length?ms.map(m=>mrow(m,m.mid?"tracker/"+esc(m.mid):"")).join(""):'<p class="note">Aucun match en direct.</p>')+'</div>'}
-  const d=await SS("tracker",{id}),r=d.data||d,m=ssMatch(r.match||r),ev=ssArr(r,["events","incidents","timeline","feed"]);
+  const d=await SS("tracker",{id}).catch(()=>SS("tracker",{match_id:id})),r=d.data||d,m=ssMatch(r.match||r),ev=ssArr(r,["events","incidents","timeline","feed"]);
   TIMER=setInterval(()=>{if(!document.hidden)show(true)},15000);
   return'<a class="back" href="#tracker">← Retour</a>'+mrow(m,"")+'<div class="sec"><h2>Fil du match</h2>'+(ev.length?ev.slice().reverse().map(e=>e.type||e.player||e.player_in?evLine(e,m):'<div class="evl"><b>'+esc(ssPick(e,["minute","time","min"])||"")+'’</b>'+esc(ssPick(e,["text","description"])||"")+'</div>').join(""):'<p class="note">Aucun événement pour l’instant. Actualisation toutes les 15 secondes.</p>')+'</div>'}
 };
@@ -105,8 +107,9 @@ async function show(silent){clearInterval(TIMER);const parts=(location.hash.slic
   const tab={match:"matches",team:"matches",player:"scorers"}[p]||p;
   document.querySelectorAll("#tabs a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+tab));
   if(!silent)$("v").innerHTML='<p class="sub">Chargement…</p>';
-  try{const f=P[p]||P.matches,h=await f(...args);$("v").innerHTML=h;chips();if(p==="matches")TIMER=setInterval(()=>{if(!document.hidden)show(true)},60000)}
-  catch(e){if(!silent)$("v").innerHTML=err(e)}}
+  try{const f=P[p]||P.matches,h=await f(...args);$("v").innerHTML=h;chips();dbg();if(p==="matches")TIMER=setInterval(()=>{if(!document.hidden)show(true)},60000)}
+  catch(e){dbg();if(!silent)$("v").innerHTML=err(e)}}
+function dbg(){const l=SS.last;$("dbgp").textContent=l?"GET "+l.path+(l.keyed?"  (avec clé)":"  (sans clé)")+"\nStatut HTTP : "+l.status+"\n\n"+l.body:"Aucune requête effectuée."}
 document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){location.hash=g.dataset.go;return}
   const c=e.target.closest("[data-c]");if(c){COMP=c.dataset.c;show();return}
   const m=e.target.closest("[data-m]");if(m){MODE=m.dataset.m;show()}});
