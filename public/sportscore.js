@@ -14,9 +14,9 @@ const ssLogo=t=>t&&typeof t==="object"?(t.logo||t.image||t.img||t.crest||""):"";
 // Normalise un match
 function ssMatch(m){const h=ssPick(m,["home_team","homeTeam","home","teams.home"]),a=ssPick(m,["away_team","awayTeam","away","teams.away"]);
   const sc=(k)=>{const v=ssPick(m,[k+"_score",k+"Score","score."+k,"goals."+k,"scores."+k]);return v&&typeof v==="object"?ssPick(v,["current","display","total","ft"]):v};
-  const st=String(ssPick(m,["status","status_name","state","status.short","status.type"])||"").toLowerCase();
+  const st=String(ssPick(m,["status_text","status","status_name","state","status.short","status.type"])||"").toLowerCase();
   const live=/live|inprogress|in_progress|1h|2h|ht|half|extra|pen|en cours/.test(st),done=/finish|ended|^ft$|full|aet|terminé|final/.test(st);
-  return{id:ssPick(m,["id","match_id","fixture_id"]),home:ssName(h),away:ssName(a),hl:ssLogo(h),al:ssLogo(a),hid:ssPick(h||{},["id"]),aid:ssPick(a||{},["id"]),
+  return{id:ssPick(m,["slug","id","match_id","fixture_id"]),tid:ssPick(m,["id","match_id","fixture_id","slug"]),home:ssName(h),away:ssName(a),hl:ssLogo(h),al:ssLogo(a),hid:ssPick(h||{},["slug","id"]),aid:ssPick(a||{},["slug","id"]),
     hs:sc("home"),as:sc("away"),status:st,live,done,minute:ssPick(m,["minute","elapsed","time.minute","status.minute"]),
-    start:ssPick(m,["start_time","startTime","kickoff","date","start_at","datetime"]),comp:ssName(ssPick(m,["competition","league","tournament"])),
-    cid:ssPick(m,["competition.id","league.id","tournament.id","competition_id","league_id"]),raw:m}}
+    start:ssPick(m,["time","start_time","startTime","kickoff","date","start_at","datetime"]),comp:ssName(ssPick(m,["competition","league","tournament"])),
+    cid:ssPick(m,["competition.slug","league.slug","tournament.slug","competition_slug","tournament_slug","competition.id","league.id","tournament.id","competition_id","league_id"]),raw:m}}
