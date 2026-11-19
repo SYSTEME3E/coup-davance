@@ -1,0 +1,54 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex"><link rel="icon" type="image/svg+xml" href="icon.svg"><meta name="theme-color" content="#1D6FD8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Vérification SportScore – Pronos-bet</title><style>
+.vk{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.vk div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;color:var(--muted)}.vk b{display:block;font:800 24px "Bricolage Grotesque",sans-serif;color:var(--navy)}.vk .bad b{color:#B42318}.vk .ok b{color:#0B6B33}
+.vl{padding:9px 0;border-bottom:1px solid rgba(20,32,26,.08);font-size:14px}.vl small{display:block;color:var(--muted);font-size:12px;margin-top:2px}.vl:last-child{border-bottom:0}
+</style></head><body><div class="wrap">
+<header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
+<h1 class="pt">Vérification SportScore</h1><p class="sub" style="text-transform:none">Compare les matchs de SportScore avec ceux de ta base (la liste du dashboard).</p>
+<div id="out"><p class="sub">Chargement…</p></div><div style="height:40px"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+</script><script src="menu.js"></script><script src="sportscore.js"></script><script>
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+// Normalisation des noms d'équipes : sans accents, sans sigles (FC, EC, SC, CR…), en mots significatifs
+const STOP=new Set("fc ec sc cr ac as fr fbpa cf afc club de da do dos del la le les the paulista and".split(" "));
+const toks=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\brb\b/g,"red bull").replace(/[^a-z0-9 ]+/g," ").split(/\s+/).filter(t=>t&&t.length>1&&!STOP.has(t));
+// Deux noms désignent la même équipe si l'un des deux est inclus dans l'autre, ou si au moins la moitié des mots coïncide
+const same=(a,b)=>{const A=toks(a),B=toks(b);if(!A.length||!B.length)return false;const i=A.filter(t=>B.includes(t)).length;
+  return i>0&&(i===A.length||i===B.length||i/new Set(A.concat(B)).size>=0.5)};
+const sameMatch=(x,y,hrs)=>same(x.home,y.home)&&same(x.away,y.away)&&(!x.t||!y.t||Math.abs(x.t-y.t)<=hrs*3600e3);
+const hm=t=>t?new Date(t).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"heure ?";
+const li=(m,extra)=>'<div class="vl"><b>'+esc(m.home)+' – '+esc(m.away)+'</b><small>'+esc(m.comp||"")+' · '+hm(m.t)+(extra?' · '+extra:"")+'</small></div>';
+const sec=(t,a,f,empty)=>'<div class="sec"><h2>'+t+' ('+a.length+')</h2>'+(a.length?a.map(f).join(""):'<p class="note">'+empty+'</p>')+'</div>';
+(async()=>{const out=$("out");
+ try{
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){out.innerHTML='<div class="card">Connecte-toi d’abord, puis rouvre cette page. <a href="auth.html#login">Connexion</a></div>';return}
+  const pr=await sb.from("profiles").select("is_admin").eq("id",session.user.id).maybeSingle();
+  if(!pr.data||!pr.data.is_admin){out.innerHTML='<div class="card">Page réservée à l’administrateur.</div>';return}
+  // 1) Base : même fenêtre que le dashboard (hier → demain)
+  const s=new Date();s.setHours(0,0,0,0);const a=new Date(s);a.setDate(a.getDate()-1);const b=new Date(s);b.setDate(b.getDate()+2);
+  const r=await sb.from("predictions_safe").select("fixture_id,kickoff,league,home,away,live_status").gte("kickoff",a.toISOString()).lt("kickoff",b.toISOString()).order("kickoff");
+  if(r.error)throw r.error;
+  const DB=(r.data||[]).map(x=>({id:x.fixture_id,home:x.home,away:x.away,comp:x.league,t:+new Date(x.kickoff),live:!!x.live_status}));
+  // 2) SportScore : liste « en direct + récents » (50 matchs maximum par appel)
+  const SSM=ssArr(await SS("matches",{limit:50})).map(ssMatch).map(m=>({id:m.mid||m.id,home:m.home,away:m.away,comp:m.comp,t:m.start?+new Date(m.start):0,live:m.live,done:m.done,hs:m.hs,as:m.as,minute:m.minute}));
+  // 3) Comparaison
+  const matched=[],onlyDB=[],onlySS=[];
+  DB.forEach(d=>{const m=SSM.find(x=>sameMatch(d,x,4));m?matched.push([d,m]):onlyDB.push(d)});
+  SSM.forEach(m=>{if(!DB.some(d=>sameMatch(d,m,4)))onlySS.push(m)});
+  // Doublons dans la base (même match venu de deux sources)
+  const dup=[];DB.forEach((d,i)=>{const j=DB.findIndex((e,k)=>k>i&&sameMatch(d,e,2));if(j>=0)dup.push([d,DB[j]])});
+  const liveDB=DB.filter(d=>d.live).length,liveDup=dup.filter(([x,y])=>x.live||y.live).length;
+  // Scores en direct disponibles chez SportScore pour les matchs « en cours » de la base
+  const liveScores=matched.filter(([d,m])=>d.live&&m.hs!=null);
+  out.innerHTML='<div class="vk"><div><b>'+DB.length+'</b>matchs dans la base (hier → demain)</div><div><b>'+SSM.length+'</b>matchs chez SportScore</div>'
+   +'<div class="ok"><b>'+matched.length+'</b>présents des deux côtés</div><div class="'+(onlyDB.length?'bad':'ok')+'"><b>'+onlyDB.length+'</b>dans la base, pas chez SportScore</div>'
+   +'<div class="'+(onlySS.length?'bad':'ok')+'"><b>'+onlySS.length+'</b>chez SportScore, pas dans la base</div><div class="'+(dup.length?'bad':'ok')+'"><b>'+dup.length+'</b>doublons dans la base</div></div>'
+   +'<p class="note">« En cours » dans la base : '+liveDB+' (dont '+liveDup+' en double). Score en direct disponible chez SportScore pour '+liveScores.length+' d’entre eux.</p>'
+   +sec("Doublons dans la base",dup,([x,y])=>li(x,'#'+esc(x.id)+' et #'+esc(y.id)+' ('+esc(y.home)+' – '+esc(y.away)+')'),"Aucun doublon.")
+   +sec("Dans la base, absents de SportScore",onlyDB,d=>li(d,'#'+esc(d.id)),"Rien.")
+   +sec("Chez SportScore, absents de la base",onlySS,m=>li(m,m.live?"en direct":m.done?"terminé":"à venir"),"Rien.")
+   +'<p class="note">SportScore ne renvoie que 50 matchs par appel (en direct et récents) : un match de ta base absent de la liste peut simplement ne pas en faire partie. Les doublons et les matchs « en direct » sont, eux, fiables.</p>';
+ }catch(e){out.innerHTML='<div class="card">Erreur : '+esc(e.message||e)+'</div>'}
+})();
+</script></body></html>
