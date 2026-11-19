@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1D6FD8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><title>Football en direct – Pronos-bet</title><style>
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:10px 0;padding-bottom:4px}
+.tabs a{flex:none;padding:9px 14px;border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--ink);text-decoration:none;font:700 14px "Hanken Grotesk",sans-serif}
+.tabs a.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:8px 0}.chips button{flex:none;padding:7px 12px;border:1px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);font:600 13px "Hanken Grotesk",sans-serif;cursor:pointer}.chips button.on{background:var(--ink);color:var(--bg)}
+.mr{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0;cursor:pointer}
+.mr .t{display:flex;align-items:center;gap:6px;font-weight:700;font-size:15px;min-width:0}.mr .t.r{justify-content:flex-end;text-align:right}.mr img,.tr img{width:22px;height:22px;object-fit:contain}
+.mr .s{text-align:center;font:800 18px "Bricolage Grotesque",sans-serif}.mr .s small{display:block;font:500 12px "Hanken Grotesk",sans-serif;color:var(--muted)}
+.mr .s.lv{color:#d62828}.mr .s.lv small{color:#d62828;font-weight:700}
+.cmp{margin:14px 0 4px;font:800 14px "Hanken Grotesk",sans-serif;color:var(--muted);display:flex;align-items:center;gap:6px}
+.tw{overflow-x:auto}table.tb{width:100%;border-collapse:collapse;font-size:14px}.tb th,.tb td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}.tb td.n,.tb th.n{text-align:left}.tb td.n{font-weight:700}.tb tr[data-go]{cursor:pointer}
+.tr{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}.tr b{flex:1}.tr .v{font:800 18px "Bricolage Grotesque",sans-serif}
+.rd{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px}.rd .col{flex:none;width:210px}.rd h4{margin:0 0 6px;font-size:13px;color:var(--muted)}.rd .bm{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:8px;margin-bottom:8px;font-size:13px}.rd .bm div{display:flex;justify-content:space-between;gap:6px}
+.evl{padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.evl b{display:inline-block;min-width:38px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}.kv div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13px;color:var(--muted)}.kv b{display:block;font:800 18px "Bricolage Grotesque",sans-serif;color:var(--ink)}
+</style></head><body><div class="wrap">
+<header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
+<h1 class="pt">Football en direct</h1>
+<nav class="tabs" id="tabs"><a href="#matches">En direct</a><a href="#standings">Classements</a><a href="#scorers">Buteurs</a><a href="#bracket">Tableaux</a><a href="#tracker">Suivi live</a></nav>
+<div id="chips" class="chips"></div>
+<div id="v"><p class="sub">Chargement…</p></div>
+<p class="note" style="text-align:center;margin:28px 0 8px">Données : SportScore</p><div style="height:40px"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+</script><script src="cards.js"></script><script src="sportscore.js"></script><script src="menu.js"></script><script>
+let COMP=null,TIMER=null,COMPS=[],MODE="goals";
+const lg=u=>u?'<img src="'+esc(u)+'" alt="" loading="lazy" onerror="this.remove()">':"";
+const err=e=>'<div class="card">Données indisponibles pour le moment. Réessaie dans un instant.<br><small class="note">'+esc(e.message||e)+'</small></div>';
+const hm=s=>{const d=new Date(s);return isNaN(d)?"":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})};
+const mrow=x=>{const sc=x.hs!=null&&x.as!=null;
+  return '<div class="mr" data-go="match/'+esc(x.id)+'"><div class="t">'+lg(x.hl)+'<span>'+esc(x.home)+'</span></div><div class="s'+(x.live?' lv':'')+'">'+(sc?esc(x.hs)+' – '+esc(x.as):hm(x.start)||'vs')+'<small>'+(x.live?(x.minute?esc(x.minute)+'’':'EN DIRECT'):x.done?'Terminé':sc?'':'À venir')+'</small></div><div class="t r"><span>'+esc(x.away)+'</span>'+lg(x.al)+'</div></div>'};
+const chips=()=>{const el=$("chips");if(!COMPS.length||!/^(standings|scorers|bracket)$/.test(page())){el.innerHTML="";return}
+  el.innerHTML=COMPS.map(c=>'<button data-c="'+esc(c.id)+'" class="'+(String(COMP)===String(c.id)?"on":"")+'">'+esc(c.name)+'</button>').join("")};
+const page=()=>(location.hash.slice(1)||"matches").split("/")[0];
+async function loadComps(){if(COMPS.length)return;
+  try{const d=await SS("matches",{}),seen={};ssArr(d).map(ssMatch).forEach(m=>{if(m.cid!=null&&!seen[m.cid]){seen[m.cid]=1;COMPS.push({id:m.cid,name:m.comp||("Compétition "+m.cid)})}});
+    if(COMP==null&&COMPS[0])COMP=COMPS[0].id}catch(e){}}
+// ---- pages ----
+const P={
+ async matches(){const ms=ssArr(await SS("matches",{})).map(ssMatch);
+  if(!ms.length)return'<div class="card">Aucun match pour le moment.</div>';
+  const live=ms.filter(m=>m.live),rest=ms.filter(m=>!m.live);let h="";
+  if(live.length)h+='<p class="sub dh rd">En direct ('+live.length+')</p>'+live.map(mrow).join("");
+  const g={};rest.forEach(m=>(g[m.comp||"Autres"]=g[m.comp||"Autres"]||[]).push(m));
+  Object.keys(g).forEach(k=>h+='<div class="cmp">'+esc(k)+'</div>'+g[k].map(mrow).join(""));return h},
+ async match(id){const d=await SS("match",{id}),r=d.data||d.match||d,m=ssMatch(r);
+  let h='<a class="back" href="#matches">← Retour</a>'+mrow(m).replace('data-go="match/'+m.id+'"','');
+  h+='<p style="text-align:center"><a class="btn" href="#tracker/'+esc(id)+'">Suivre en direct</a></p>';
+  const ev=ssArr(r,["incidents","events","timeline"]);
+  if(ev.length)h+='<div class="sec"><h2>Temps forts</h2>'+ev.map(e=>'<div class="evl"><b>'+esc(ssPick(e,["minute","time","min"])||"")+'’</b>'+esc(ssPick(e,["type","incident_type"])||"")+' · '+esc(ssName(ssPick(e,["player","player_name","name"])))+'</div>').join("")+'</div>';
+  const stt=ssPick(r,["statistics","stats"]);
+  if(Array.isArray(stt)&&stt.length)h+='<div class="sec"><h2>Statistiques</h2>'+stt.map(s=>'<div class="evl"><b>'+esc(ssPick(s,["home","home_value"])??"")+'</b>'+esc(ssPick(s,["name","type","label"])||"")+' <b style="float:right">'+esc(ssPick(s,["away","away_value"])??"")+'</b></div>').join("")+'</div>';
+  const links='<div class="chk">'+(m.hid?'<a href="#team/'+esc(m.hid)+'">'+esc(m.home)+' ›</a> · ':'')+(m.aid?'<a href="#team/'+esc(m.aid)+'">'+esc(m.away)+' ›</a>':'')+'</div>';
+  return h+links},
+ async team(id){const ms=ssArr(await SS("team",{id})).map(ssMatch);
+  return'<a class="back" href="#matches">← Retour</a><div class="sec"><h2>Matchs de l’équipe</h2>'+(ms.length?ms.map(mrow).join(""):'<p class="note">Aucun match trouvé.</p>')+'</div>'},
+ async standings(){await loadComps();chips();const d=await SS("standings",{competition:COMP,id:COMP});let rows=ssArr(d);
+  const groups=rows.length&&rows[0]&&ssArr(rows[0],["rows","table","standings"]).length&&!ssPick(rows[0],["points","pts"])?rows:[{rows:rows}];
+  const T=g=>{const r=ssArr(g,["rows","table","standings"]);return'<div class="sec">'+(g.name||g.group?'<h2>'+esc(g.name||g.group)+'</h2>':"")+'<div class="tw"><table class="tb"><tr><th>#</th><th class="n">Équipe</th><th>J</th><th>G</th><th>N</th><th>P</th><th>Diff</th><th>Pts</th></tr>'
+   +r.map((x,i)=>{const t=x.team||x;return'<tr'+(t.id?' data-go="team/'+esc(t.id)+'"':'')+'><td>'+esc(ssPick(x,["position","rank"])||i+1)+'</td><td class="n">'+lg(ssLogo(t))+' '+esc(ssName(t)||ssPick(x,["team_name","name"]))+'</td><td>'+esc(ssPick(x,["played","matches","mp","games"])??"")+'</td><td>'+esc(ssPick(x,["wins","won","w"])??"")+'</td><td>'+esc(ssPick(x,["draws","drawn","d"])??"")+'</td><td>'+esc(ssPick(x,["losses","lost","l"])??"")+'</td><td>'+esc(ssPick(x,["goal_difference","goal_diff","gd"])??"")+'</td><td><b>'+esc(ssPick(x,["points","pts"])??"")+'</b></td></tr>'}).join("")+'</table></div></div>'};
+  return groups.length&&COMP!=null?groups.map(T).join(""):'<div class="card">Choisis une compétition.</div>'},
+ async scorers(){await loadComps();chips();
+  const d=await SS("topscorers",{competition:COMP,id:COMP,type:MODE});
+  let rows=Array.isArray(d)||!d[MODE==="goals"?"scorers":"assists"]?ssArr(d):d[MODE==="goals"?"scorers":"assists"];
+  const sw='<div class="chips"><button data-m="goals" class="'+(MODE==="goals"?"on":"")+'">Buteurs</button><button data-m="assists" class="'+(MODE==="assists"?"on":"")+'">Passeurs</button></div>';
+  return sw+(rows.length?rows.map((x,i)=>{const p=x.player||x,t=x.team||{};return'<div class="tr"'+(p.id?' data-go="player/'+esc(p.id)+'"':'')+'><span>'+(i+1)+'</span>'+lg(ssLogo(p))+'<b>'+esc(ssName(p)||ssPick(x,["player_name"]))+'<small class="note" style="display:block">'+esc(ssName(t)||ssPick(x,["team_name"])||"")+'</small></b><span class="v">'+esc(ssPick(x,[MODE==="goals"?"goals":"assists","value","count","total"])??"")+'</span></div>'}).join(""):'<div class="card">Aucune donnée.</div>')},
+ async player(id){const d=await SS("player",{id}),p=d.data||d.player||d;
+  const skip=/^(id|name|logo|image|team|photo)$/,kv=Object.entries(p).filter(([k,v])=>!skip.test(k)&&(typeof v==="number"||typeof v==="string")).slice(0,16);
+  const st=p.statistics&&typeof p.statistics==="object"&&!Array.isArray(p.statistics)?Object.entries(p.statistics).filter(([,v])=>typeof v!=="object"):[];
+  return'<a class="back" href="#scorers">← Retour</a><div class="mh"><div class="lgl">'+lg(ssLogo(p))+'<span>'+esc(ssName(p))+(p.team?' · '+esc(ssName(p.team)):"")+'</span></div></div><div class="sec"><h2>Statistiques</h2><div class="kv">'+kv.concat(st).map(([k,v])=>'<div>'+esc(k.replace(/_/g," "))+'<b>'+esc(v)+'</b></div>').join("")+'</div></div>'},
+ async bracket(){await loadComps();chips();const d=await SS("bracket",{competition:COMP,id:COMP}),rounds=ssArr(d,["rounds","stages"]);
+  if(!rounds.length)return'<div class="card">Pas de tableau pour cette compétition.</div>';
+  return'<div class="rd">'+rounds.map(r=>'<div class="col"><h4>'+esc(ssPick(r,["name","round","title"])||"")+'</h4>'+ssArr(r,["matches","events","ties"]).map(ssMatch).map(m=>'<div class="bm" data-go="match/'+esc(m.id)+'"><div><span>'+esc(m.home)+'</span><b>'+esc(m.hs??"")+'</b></div><div><span>'+esc(m.away)+'</span><b>'+esc(m.as??"")+'</b></div></div>').join("")+'</div>').join("")+'</div>'},
+ async tracker(id){
+  if(!id){const ms=ssArr(await SS("matches",{})).map(ssMatch).filter(m=>m.live);return'<div class="sec"><h2>Choisis un match en direct</h2>'+(ms.length?ms.map(m=>mrow(m).replace('data-go="match/','data-go="tracker/')).join(""):'<p class="note">Aucun match en direct.</p>')+'</div>'}
+  const d=await SS("tracker",{id}),r=d.data||d,m=ssMatch(r.match||r),ev=ssArr(r,["events","incidents","timeline","feed"]);
+  TIMER=setInterval(()=>{if(!document.hidden)show(true)},15000);
+  return'<a class="back" href="#tracker">← Retour</a>'+mrow(m).replace(/data-go="[^"]*"/,"")+'<div class="sec"><h2>Fil du match</h2>'+(ev.length?ev.slice().reverse().map(e=>'<div class="evl"><b>'+esc(ssPick(e,["minute","time","min"])||"")+'’</b>'+esc(ssPick(e,["text","description","type","incident_type"])||"")+' '+esc(ssName(ssPick(e,["player","player_name"])))+'</div>').join(""):'<p class="note">Aucun événement pour l’instant. Actualisation toutes les 15 secondes.</p>')+'</div>'}
+};
+async function show(silent){clearInterval(TIMER);const[p,id]=(location.hash.slice(1)||"matches").split("/");
+  const tab={match:"matches",team:"matches",player:"scorers"}[p]||p;
+  document.querySelectorAll("#tabs a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+tab));
+  if(!silent)$("v").innerHTML='<p class="sub">Chargement…</p>';
+  try{const f=P[p]||P.matches,h=await f(id);$("v").innerHTML=h;chips();if(p==="matches")TIMER=setInterval(()=>{if(!document.hidden)show(true)},30000)}
+  catch(e){if(!silent)$("v").innerHTML=err(e)}}
+document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){location.hash=g.dataset.go;return}
+  const c=e.target.closest("[data-c]");if(c){COMP=c.dataset.c;show();return}
+  const m=e.target.closest("[data-m]");if(m){MODE=m.dataset.m;show()}});
+addEventListener("hashchange",()=>show());
+(async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";show()})();
+</script><script src="pwa.js" defer></script></body></html>
