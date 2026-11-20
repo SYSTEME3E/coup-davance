@@ -418,8 +418,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--brand);outline:0;box-
 .sx-brk .bm b{font-family:"Bricolage Grotesque",sans-serif;font-size:16px}
 .sx-brk .bm .w{font-weight:800;color:#0B6B33}
 /* Suivi live */
-.sx-trk{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--navy);margin:6px 0}
-.sx-trk iframe{display:block;width:100%;height:min(78vh,680px);min-height:420px;border:0}
+/* Compact par défaut (terrain + score, comme 1xBet) : on rogne le lecteur, dont la hauteur naturelle est ~2,8 fois celle de la fenêtre.
+   Si le cadrage n'est pas bon, ajuster --trk-top (début de la zone visible) et --trk-ratio (largeur/hauteur de la fenêtre). */
+.sx-trk{--trk-top:-130%;--trk-ratio:654/400;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--navy);margin:10px 0}
+.sx-trk .v{position:relative;width:100%;aspect-ratio:var(--trk-ratio);overflow:hidden}
+.sx-trk .v iframe{position:absolute;left:0;top:var(--trk-top);display:block;width:100%;height:280%;min-height:0;border:0}
+.sx-trk.full .v{aspect-ratio:auto;height:min(78vh,680px)}
+.sx-trk.full .v iframe{top:0;height:100%}
+.sx-trk-b{display:block;width:100%;padding:10px;border:0;border-top:1px solid rgba(255,255,255,.15);background:var(--navy);color:#fff;font:700 14px "Hanken Grotesk",sans-serif;cursor:pointer}
 /* Divers */
 .sx-btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:12px 26px}
 .sx-err{display:grid;gap:4px}
