@@ -9,13 +9,11 @@
 <div class="hd"><h2 id="ckT">Abonnement</h2><button type="button" class="x" id="ckX" aria-label="Fermer">✕</button></div>
 <div class="sum"><span id="ckS">30 jours</span><b id="ckA"></b></div>
 <p class="note" id="ckU" style="margin:4px 0 0"></p>
-<fieldset><legend>Moyen de paiement</legend><div class="ops" id="ckO"></div></fieldset>
 <label for="ckN">Nom complet</label><div class="ab-f"><input id="ckN" type="text" autocomplete="name" maxlength="60"></div>
-<label for="ckP">Numéro de téléphone</label><div class="ph ab-f"><span id="ckD"></span><input id="ckP" type="text" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="Numéro sans l’indicatif"></div>
 <div class="fm" id="ckM" role="alert"></div>
 <button class="btn go" id="ckG" type="submit">Payer</button>
 <button class="btn ghost cx" id="ckC" type="button">Annuler</button>
-<p class="sec2">Tu seras redirigé vers la page sécurisée Money Fusion pour valider le paiement sur ton téléphone.</p>
+<p class="sec2">Tu seras redirigé vers la page sécurisée GeniusPay pour choisir ton moyen de paiement (Mobile Money ou carte) et valider.</p>
 </form></dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
@@ -91,7 +89,7 @@ function pickBox(){
 
 function extra(){
   const rows=PR.map(x=>'<tr><td>'+esc(x.flag)+" "+esc(x.country_name)+'</td><td>'+esc(x.currency)+'</td><td>'+money(x.basic,x.currency)+'</td><td>'+money(x.gold,x.currency)+'</td><td>'+(x.operators.length?x.operators.map(o=>esc((OPS[o]||[o])[0])).join(", "):"Bientôt disponible")+'</td></tr>').join("");
-  return '<section class="ab-sec"><h2>Comment ça marche</h2><ol class="steps"><li>Tu choisis ton pays.</li><li>Le prix s’affiche dans ta monnaie.</li><li>Tu sélectionnes ton opérateur.</li><li>Tu paies avec Money Fusion.</li><li>Ton plan s’active tout seul.</li></ol>'
+  return '<section class="ab-sec"><h2>Comment ça marche</h2><ol class="steps"><li>Tu choisis ton pays.</li><li>Le prix s’affiche dans ta monnaie.</li><li>Tu choisis ton moyen de paiement (Mobile Money ou carte).</li><li>Tu paies sur la page sécurisée GeniusPay.</li><li>Ton plan s’active tout seul.</li></ol>'
    +'<p class="note">L’abonnement dure 30 jours et ne se renouvelle pas automatiquement : tu choisis quand le prolonger.</p></section>'
    +'<section class="ab-sec"><h2>Solide ou incertain ?</h2><div class="kind"><div><b>Pronostic solide</b>Une issue du match dépasse 55 % de probabilité : le favori est net.</div><div><b>Match incertain</b>Aucune issue n’atteint 55 % : le résultat est plus difficile à prévoir.</div></div>'
    +'<p class="note">Les quotas se renouvellent chaque jour. Un pronostic déjà débloqué reste visible, et les matchs commencés ne comptent pas dans ton quota.</p></section>'
@@ -122,10 +120,8 @@ function openCk(plan){
   $("ckT").textContent="Abonnement "+PN[plan];
   $("ckA").textContent=money(amt,c.currency);
   $("ckS").textContent="30 jours · "+c.country_name;
-  $("ckU").textContent="Prix de base : "+usd(USD[plan])+" par mois, converti en "+c.currency+".";
-  $("ckO").innerHTML=c.operators.map(opTile).join("");
-  $("ckD").textContent="+"+c.dial;
-  $("ckN").value=NAME;$("ckP").value="";$("ckM").textContent="";
+  $("ckU").textContent="Tu choisis ton moyen de paiement sur la page suivante.";
+  $("ckN").value=NAME;$("ckM").textContent="";
   $("ckG").disabled=false;$("ckG").textContent="Payer "+money(amt,c.currency);
   busy=false;
   if(typeof ck.showModal==="function")ck.showModal();else ck.setAttribute("open","")}
@@ -136,17 +132,15 @@ ck.addEventListener("cancel",e=>{if(busy)e.preventDefault()});
 $("ckF").onsubmit=async e=>{
   e.preventDefault();if(busy||!CUR)return;
   const say=t=>{$("ckM").textContent=t||""};say("");
-  const op=(document.querySelector('input[name="op"]:checked')||{}).value,name=$("ckN").value.trim(),phone=$("ckP").value.replace(/\D/g,"");
-  if(!op)return say("Choisis ton moyen de paiement.");
+  const name=$("ckN").value.trim();
   if(name.length<2)return say("Saisis ton nom complet.");
-  if(phone.length<8)return say("Numéro de téléphone invalide.");
   busy=true;$("ckG").disabled=true;$("ckG").textContent="Redirection en cours…";
-  const r=await call({action:"create",plan:CUR.plan,country:CUR.c.country_code,operator:op,phone,name});
+  const r=await call({action:"create",plan:CUR.plan,country:CUR.c.country_code,name});
   if(r.ok&&typeof r.url==="string"&&/^https:\/\//.test(r.url)){location.href=r.url;return}
   busy=false;$("ckG").disabled=false;$("ckG").textContent="Payer "+money(CUR.amt,CUR.c.currency);
   say(r.message||"Impossible de démarrer le paiement. Réessaie dans un instant.")};
 
-// ---------- Retour de Money Fusion / vérification ----------
+// ---------- Retour de GeniusPay / vérification ----------
 function showSt(kind,title,msg){
   const s=$("st");s.hidden=false;s.className="ab-st"+(kind==="ok"||kind==="ko"?" "+kind:"");
   s.innerHTML=(kind==="wait"?'<div class="spin" aria-hidden="true"></div>':"")+'<div><b>'+esc(title)+'</b><span>'+esc(msg)+'</span></div>'}
