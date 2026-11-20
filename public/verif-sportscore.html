@@ -24,19 +24,21 @@ const tm=t=>t?new Date(t).toLocaleString("fr-FR",{day:"numeric",month:"short",ho
 const runTests=async()=>{const box=$("tpo");box.innerHTML='<p class="note">Test en cours…</p>';
  const today=new Date().toISOString().slice(0,10);
  const tom=new Date(Date.now()+864e5).toISOString().slice(0,10),F="../v1/fixtures";
- const L=200,aft=today+"T15:00:00Z";
- const V=[["fixtures status=live",F,{limit:L,date:today,status:"live"}],
-    ["fixtures live=1",F,{limit:L,date:today,live:1}],
-    ["fixtures competition=brazilian-serie-a",F,{limit:L,date:today,competition:"brazilian-serie-a"}],
-    ["fixtures slug=brazilian-serie-a",F,{limit:L,date:today,slug:"brazilian-serie-a"}],
-    ["fixtures league=brazilian-serie-a",F,{limit:L,date:today,league:"brazilian-serie-a"}],
-    ["fixtures from="+aft,F,{limit:L,date:today,from:aft}],
-    ["fixtures after="+aft,F,{limit:L,date:today,after:aft}],
-    ["fixtures start="+aft,F,{limit:L,date:today,start:aft}]];
+ const L=200;
+ const V=[["status=finished",F,{limit:L,date:today,status:"finished"}],
+    ["status=upcoming",F,{limit:L,date:today,status:"upcoming"}],
+    ["status=inprogress",F,{limit:L,date:today,status:"inprogress"}],
+    ["status=1st half",F,{limit:L,date:today,status:"1st half"}],
+    ["status=in_play",F,{limit:L,date:today,status:"in_play"}],
+    ["status=1",F,{limit:L,date:today,status:1}],
+    ["competition=premier-league (demain)",F,{limit:L,date:tom,competition:"premier-league"}],
+    ["competition=champions-league (demain)",F,{limit:L,date:tom,competition:"champions-league"}]];
  let h="";
  for(const[n,ep,p]of V){try{const d=await SS(ep,p),a=ssArr(d).map(ssMatch),ts=a.map(m=>m.start?+new Date(m.start):0).filter(Boolean).sort((x,y)=>x-y);
    h+='<div class="vl"><b>'+esc(n)+'</b> : '+a.length+' matchs'+(d&&d.count!=null?' (count API : '+esc(d.count)+')':'')+', '+a.filter(m=>m.live).length+' en direct, '+a.filter(m=>m.done).length+' terminés<small>Du '+tm(ts[0])+' au '+tm(ts[ts.length-1])+'</small><small>Statuts : '+tstat(a)+'</small><small>Premier : '+(a[0]?esc(a[0].home+" – "+a[0].away):"—")+'</small></div>'}
   catch(e){h+='<div class="vl"><b>'+esc(n)+'</b> : erreur<small>'+esc(e.message||e)+'</small></div>'}}
+ try{const all=ssArr(await SS(F,{limit:L,date:today})),lv=all.find(m=>/live|progress|half/i.test(String(m.status||"")));
+  h+='<div class="vl"><b>Exemple brut (match en direct)</b><small style="word-break:break-all">'+esc(JSON.stringify(lv||all[0]||{}).slice(0,1100))+'</small></div>'}catch(e){}
  box.innerHTML=h+'<p class="note">Cherche une ligne qui montre des matchs en direct, ou une liste qui change (autres dates, autres matchs).</p>'};
 (async()=>{const out=$("out");
  try{
