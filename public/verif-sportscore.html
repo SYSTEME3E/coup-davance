@@ -22,17 +22,17 @@ const sec=(t,a,f,empty)=>'<div class="sec"><h2>'+t+' ('+a.length+')</h2>'+(a.len
 const tstat=a=>{const c={};a.forEach(m=>{const r=m.raw||{},k=(r.status||"?")+" / "+(r.status_text||"?");c[k]=(c[k]||0)+1});return Object.entries(c).sort((x,y)=>y[1]-x[1]).map(([k,v])=>esc(k)+" ×"+v).join(", ")||"—"};
 const tm=t=>t?new Date(t).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"?";
 const runTests=async()=>{const box=$("tpo");box.innerHTML='<p class="note">Test en cours…</p>';
- const today=new Date().toISOString().slice(0,10),
- V=[["appel normal","matches",{limit:50}],
-    ["page=2","matches",{limit:50,page:2}],["offset=50","matches",{limit:50,offset:50}],
-    ["competition=brazilian-serie-a","matches",{limit:50,competition:"brazilian-serie-a"}],
-    ["slug=brazilian-serie-a","matches",{limit:50,slug:"brazilian-serie-a"}],
-    ["v1/fixtures (date="+today+")","../v1/fixtures",{limit:50,date:today}],
-    ["v1/fixtures sans limite","../v1/fixtures",{date:today}],
-    ["v1/matches","../v1/matches",{limit:50}]];
+ const today=new Date().toISOString().slice(0,10);
+ const tom=new Date(Date.now()+864e5).toISOString().slice(0,10),F="../v1/fixtures";
+ const V=[["fixtures limit=200",F,{limit:200,date:today}],
+    ["fixtures limit=700",F,{limit:700,date:today}],
+    ["fixtures limit=1000",F,{limit:1000,date:today}],
+    ["fixtures offset=100",F,{offset:100,date:today}],
+    ["fixtures page=2",F,{page:2,date:today}],
+    ["fixtures date="+tom+" (demain)",F,{date:tom}]];
  let h="";
  for(const[n,ep,p]of V){try{const d=await SS(ep,p),a=ssArr(d).map(ssMatch),ts=a.map(m=>m.start?+new Date(m.start):0).filter(Boolean).sort((x,y)=>x-y);
-   h+='<div class="vl"><b>'+esc(n)+'</b> : '+a.length+' matchs, '+a.filter(m=>m.live).length+' en direct, '+a.filter(m=>m.done).length+' terminés<small>Du '+tm(ts[0])+' au '+tm(ts[ts.length-1])+'</small><small>Statuts : '+tstat(a)+'</small><small>Premier : '+(a[0]?esc(a[0].home+" – "+a[0].away):"—")+'</small></div>'}
+   h+='<div class="vl"><b>'+esc(n)+'</b> : '+a.length+' matchs'+(d&&d.count!=null?' (count API : '+esc(d.count)+')':'')+', '+a.filter(m=>m.live).length+' en direct, '+a.filter(m=>m.done).length+' terminés<small>Du '+tm(ts[0])+' au '+tm(ts[ts.length-1])+'</small><small>Statuts : '+tstat(a)+'</small><small>Premier : '+(a[0]?esc(a[0].home+" – "+a[0].away):"—")+'</small></div>'}
   catch(e){h+='<div class="vl"><b>'+esc(n)+'</b> : erreur<small>'+esc(e.message||e)+'</small></div>'}}
  box.innerHTML=h+'<p class="note">Cherche une ligne qui montre des matchs en direct, ou une liste qui change (autres dates, autres matchs).</p>'};
 (async()=>{const out=$("out");
