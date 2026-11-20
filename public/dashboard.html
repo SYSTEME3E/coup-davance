@@ -21,7 +21,7 @@
 <p class="note" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="cards.js"></script><script src="menu.js"></script><script>
+</script><script src="cards.js"></script><script src="menu.js"></script><script src="sportscore.js"></script><script>
 $("date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
 let homeHTML="",tok=0,cache=null;
@@ -38,12 +38,25 @@ const build=()=>{const{all,error,s,tm}=cache;
  homeHTML=error?'<div class="card">Impossible de charger les matchs. Réessaie dans un instant.</div>':all.length?(liveNow.length?'<p class="sub dh rd">En cours ('+liveNow.length+')</p>'+take(liveNow).map(card).join(""):"")+part("Aujourd’hui",s,liveNow.length>0):'<div class="card"><b>Pas de match avec pronostic pour aujourd’hui pour le moment.</b><p class="sub" style="margin:8px 0 0">Ils sont calculés toutes les 5 minutes. Il peut aussi n’y avoir aucun match dans les compétitions couvertes.</p></div>';
  if(all.length>LIM)homeHTML+='<button id="moreHome" class="more">Afficher plus de matchs ('+(all.length-LIM)+')</button>';
  if(!searching())$("list").innerHTML=homeHTML};
+// Direct : SportScore (status=live) fournit le statut et le score ; les pronostics ne changent pas.
+// Doublons (même match venu de deux sources) : on n'en affiche qu'un, le plus ancien — la base n'est pas modifiée.
+const withSS=async rows=>{
+ const asX=m=>({home:m.home,away:m.away,t:+new Date(m.kickoff)}),uniq=[];
+ rows.slice().sort((a,b)=>a.fixture_id-b.fixture_id).forEach(m=>{if(!uniq.some(u=>ssSameMatch(asX(m),asX(u),2)))uniq.push(m)});
+ const keep=rows.filter(m=>uniq.includes(m));
+ let live=[];try{live=await ssLive()}catch(e){}
+ keep.forEach(m=>{const l=live.find(v=>ssSameMatch(asX(m),{home:v.home,away:v.away,t:v.start?+new Date(v.start):0},3));
+  if(!l)return;
+  m.live_status=/half[- ]?time|\bht\b/.test(l.status)?"HT":(m.live_status&&m.live_status!=="HT"?m.live_status:"LIVE");
+  if(l.hs!=null&&l.as!=null){m.live_home=l.hs;m.live_away=l.as}});
+ return keep};
 const loadHome=async first=>{
  const s=new Date();s.setHours(0,0,0,0);
  const yd=new Date(s);yd.setDate(yd.getDate()-1);const tm=new Date(s);tm.setDate(tm.getDate()+1);const e=new Date(s);e.setDate(e.getDate()+2);
  const{data,error}=await sb.from("predictions_safe").select(COLS).gte("kickoff",yd.toISOString()).lt("kickoff",tm.toISOString()).is("settled_at",null).order("kickoff");
  if(error&&!first)return;
- const all=(data||[]).filter(m=>m.live_status||(new Date(m.kickoff).toDateString()===s.toDateString()&&new Date(m.kickoff).getTime()>Date.now()-3*36e5));
+ let all=(data||[]).filter(m=>m.live_status||(new Date(m.kickoff).toDateString()===s.toDateString()&&new Date(m.kickoff).getTime()>Date.now()-3*36e5));
+ all=await withSS(all);
  const sig=s.toDateString()+JSON.stringify(all.map(m=>[m.fixture_id,m.live_status,m.live_home,m.live_away,m.live_minute]));
  if(!first&&!error&&sig===lastSig)return; // rien n'a changé : on ne redessine pas la liste
  lastSig=sig;cache={all,error,s,tm};build();
