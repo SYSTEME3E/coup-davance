@@ -1,0 +1,138 @@
+/* Page match « façon SportScore » — toutes les classes sont préfixées ms- */
+.ms{--ink:#1B1650;--mut:#6B6890;--bg:#E9E9FC;--bar:#F1F2F7;--navy:#1F1A52;--blue:#1D6FE0;--red:#DC3545;--grn:#1E8E5A;--pill:#5B4BDB;
+  background:var(--bg);margin:6px -14px 0;padding:12px 14px 20px;color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif}
+.ms a{color:inherit}
+.ms .ms-back{display:inline-block;margin:0 0 10px;font-weight:700;font-size:14px;color:var(--pill);text-decoration:none}
+.ms-card{background:#fff;border-radius:14px;overflow:hidden;margin:0 0 14px;box-shadow:0 1px 2px rgba(27,22,80,.06)}
+.ms-card>h2{margin:0;padding:14px 16px;background:var(--bar);border-bottom:1px solid #E4E5EE;font:800 19px/1.2 "Bricolage Grotesque","Hanken Grotesk",sans-serif;color:var(--ink)}
+.ms-body{padding:14px 16px}
+
+/* En-tête : compétition + score */
+.ms-hero{background:#fff;border-radius:14px;overflow:hidden;margin:0 0 12px;box-shadow:0 1px 2px rgba(27,22,80,.06)}
+.ms-comp{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--bar);font:800 16px/1.25 "Bricolage Grotesque","Hanken Grotesk",sans-serif}
+.ms-comp img{width:22px;height:22px;object-fit:contain;flex:none}
+.ms-comp small{display:block;font:700 14px "Hanken Grotesk",sans-serif;color:var(--mut)}
+.ms-sb{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:20px 12px;background:var(--navy);color:#fff;text-align:center}
+.ms-sb .t{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.ms-sb .t img{width:52px;height:52px;object-fit:contain}
+.ms-sb .t b{font:800 15px/1.2 "Bricolage Grotesque",sans-serif;overflow-wrap:anywhere}
+.ms-sb .sc{font:800 40px/1 "Bricolage Grotesque",sans-serif;white-space:nowrap;letter-spacing:.02em}
+.ms-sb .sc em{font-style:normal;opacity:.5;padding:0 6px}
+.ms-sb .sc small{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font:700 15px "Hanken Grotesk",sans-serif;letter-spacing:0;opacity:.95}
+.ms-sb .sc small i{width:10px;height:10px;border-radius:50%;background:#FF4D5E;animation:ms-pl 1.2s infinite}
+@keyframes ms-pl{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.ms-sb .sc small i{animation:none}}
+.ms-pitch-live{background:#0E0B33}
+.ms-pitch-live .sx-trk{margin:0;border-radius:0}
+
+/* Onglets */
+.ms-tabs{display:flex;gap:2px;overflow-x:auto;background:#fff;border-radius:14px;margin:0 0 14px;padding:0 6px;scrollbar-width:none;box-shadow:0 1px 2px rgba(27,22,80,.06)}
+.ms-tabs::-webkit-scrollbar{display:none}
+.ms-tabs button{flex:none;background:none;border:0;border-bottom:3px solid transparent;padding:15px 10px 12px;font:700 16px "Hanken Grotesk",sans-serif;color:var(--mut);cursor:pointer;white-space:nowrap}
+.ms-tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+.ms-tabs button:focus-visible{outline:3px solid var(--pill);outline-offset:-3px;border-radius:8px}
+.ms-pn{display:none}.ms-pn.on{display:block}
+
+/* Possession + barres */
+.ms-pos{display:grid;grid-template-columns:auto 1fr auto;align-items:start;gap:10px}
+.ms-cr{display:flex;align-items:center;gap:6px;font:800 20px "Bricolage Grotesque",sans-serif;padding-top:6px}
+.ms-cr svg{width:24px;height:24px;fill:#6B7280}
+.ms-cr.r{flex-direction:row-reverse}
+.ms-pv{text-align:center}
+.ms-pv .tt{display:flex;justify-content:center;gap:10px;font:800 17px "Bricolage Grotesque",sans-serif;letter-spacing:.04em}
+.ms-pv .tt b:first-child{color:var(--blue)}.ms-pv .tt b:last-child{color:var(--red)}
+.ms-pv .tt span{color:var(--mut);font-weight:700}
+.ms-pb{display:flex;height:12px;border-radius:99px;overflow:hidden;margin-top:8px}
+.ms-pb i{display:block;height:100%}
+.ms-pb .l{background:linear-gradient(90deg,#1D6FE0,#5FA2F5)}.ms-pb .r{background:linear-gradient(90deg,#F59A9A,#C62F3F)}
+.ms-rs{margin-top:16px}
+.ms-r{display:grid;grid-template-columns:30px 1fr auto 1fr 30px;align-items:center;gap:6px;margin:0 0 14px;font-variant-numeric:tabular-nums}
+.ms-r b{font:800 19px "Bricolage Grotesque",sans-serif}.ms-r b:last-child{text-align:right}
+.ms-r span{font:700 14px "Hanken Grotesk",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#3A3768;text-align:center;max-width:150px}
+.ms-t{height:9px;border-radius:99px;background:#EDEEF4;position:relative;overflow:hidden}
+.ms-t i{position:absolute;top:0;bottom:0;border-radius:99px}
+.ms-t.l i{right:0;background:linear-gradient(270deg,#1D6FE0,#5FA2F5)}
+.ms-t.r i{left:0;background:linear-gradient(90deg,#F59A9A,#C62F3F)}
+
+/* Onglet Stats : barre partagée */
+.ms-pills{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
+.ms-pills span{padding:10px 18px;border-radius:99px;background:#EEF0F6;color:var(--mut);font:700 16px "Hanken Grotesk",sans-serif}
+.ms-pills span.on{background:var(--pill);color:#fff}
+.ms-tm{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 14px;font:700 16px "Hanken Grotesk",sans-serif}
+.ms-tm div{display:flex;align-items:center;gap:8px;min-width:0}.ms-tm div:last-child{flex-direction:row-reverse;text-align:right}
+.ms-tm img{width:26px;height:26px;object-fit:contain;flex:none}
+.ms-sr{margin:0 0 18px;text-align:center}
+.ms-sr>div{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;margin-top:6px}
+.ms-sr h4{margin:0;font:700 16px "Hanken Grotesk",sans-serif}
+.ms-sr b{font:700 17px "Hanken Grotesk",sans-serif}.ms-sr b:first-child{text-align:left}.ms-sr b:last-child{text-align:right}
+.ms-sp{display:flex;height:9px;border-radius:99px;overflow:hidden;background:#E3E5EE}
+.ms-sp .l{background:#1D6FE0}.ms-sp .r{background:var(--grn)}
+
+/* Chronologie */
+.ms-tl{position:relative;padding:6px 0}
+.ms-tl::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:#DCE3F6}
+.ms-ev{position:relative;display:grid;grid-template-columns:1fr 62px 1fr;align-items:center;margin:0 0 14px}
+.ms-ev .m{justify-self:center;z-index:1;min-width:52px;height:52px;border-radius:99px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font:800 17px "Bricolage Grotesque",sans-serif;box-shadow:0 0 0 5px #fff}
+.ms-ev .b{background:#fff;border:1px solid #E1E3EE;border-radius:14px;padding:10px 12px;font:700 15px/1.3 "Hanken Grotesk",sans-serif;box-shadow:0 1px 2px rgba(27,22,80,.05);min-width:0}
+.ms-ev .b small{display:block;font:500 13px "Hanken Grotesk",sans-serif;color:var(--mut);margin-top:2px}
+.ms-ev .h{text-align:right;margin-right:6px}.ms-ev .a{margin-left:6px}
+.ms-ev .h:empty,.ms-ev .a:empty{border:0;background:none;box-shadow:none;padding:0}
+.ms-lg{border-top:1px solid #E6E8F1;margin-top:6px;padding-top:14px}
+.ms-lg h3{margin:0 0 10px;font:800 17px "Bricolage Grotesque",sans-serif}
+.ms-lg div{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:15px;color:var(--mut)}
+.ms-empty{margin:0;padding:6px 0;color:var(--mut);font-size:15px;text-align:center}
+
+/* Compositions */
+.ms-fm{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid #E6E8F1}
+.ms-fm div{min-width:0}.ms-fm b{display:block;font:800 17px "Bricolage Grotesque",sans-serif}.ms-fm small{color:var(--mut);font-size:14px}
+.ms-fm div:last-child{text-align:right}
+.ms-ok{flex:none;background:#E1F5EA;color:#14804A;font:800 13px "Hanken Grotesk",sans-serif;letter-spacing:.06em;padding:6px 12px;border-radius:99px}
+.ms-ok.p{background:#FFF1D6;color:#9A6200}
+.ms-field{position:relative;margin:14px;aspect-ratio:1.18;border-radius:12px;background:repeating-linear-gradient(90deg,#2F9B4A 0 12.5%,#3AA855 12.5% 25%);overflow:hidden}
+.ms-field::before{content:"";position:absolute;inset:3%;border:2px solid rgba(255,255,255,.55)}
+.ms-field::after{content:"";position:absolute;left:50%;top:3%;bottom:3%;width:2px;margin-left:-1px;background:rgba(255,255,255,.55)}
+.ms-cc{position:absolute;left:50%;top:50%;width:22%;aspect-ratio:1;transform:translate(-50%,-50%);border:2px solid rgba(255,255,255,.55);border-radius:50%}
+.ms-bx{position:absolute;top:26%;bottom:26%;width:14%;border:2px solid rgba(255,255,255,.55)}.ms-bx.l{left:3%;border-left:0}.ms-bx.r{right:3%;border-right:0}
+.ms-pl{position:absolute;z-index:1;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;width:15%;text-align:center}
+.ms-pl i{font:800 13px/1 "Bricolage Grotesque",sans-serif;font-style:normal;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.ms-pl.h i{background:var(--navy)}.ms-pl.a i{background:#D81E3C}
+.ms-pl span{margin-top:3px;font:700 10.5px/1.1 "Hanken Grotesk",sans-serif;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-xi{padding:4px 16px 12px}
+.ms-xi h3{margin:12px 0 4px;font:700 15px "Hanken Grotesk",sans-serif;letter-spacing:.08em;color:var(--mut);text-transform:uppercase}
+.ms-xr{display:grid;grid-template-columns:34px 34px 1fr;align-items:center;gap:8px;padding:11px 0;border-bottom:1px solid #EEF0F6;font:600 17px "Hanken Grotesk",sans-serif}
+.ms-xr:last-child{border-bottom:0}
+.ms-xr em{font-style:normal;font-weight:700;color:var(--mut)}
+.ms-xr u{text-decoration:none;font:800 13px "Hanken Grotesk",sans-serif;text-align:center;border-radius:6px;padding:4px 0}
+.ms-xr u.G{background:#FFF1D6;color:#9A6200}.ms-xr u.D{background:#E1F5EA;color:#14804A}.ms-xr u.M{background:#E4EDFD;color:#1D56B8}.ms-xr u.F{background:#FDE6E8;color:#B3202F}
+.ms-xr small{color:var(--mut);font-size:13px;margin-left:6px}
+
+/* H2H */
+.ms-hh{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;text-align:center}
+.ms-hh img{width:56px;height:56px;object-fit:contain}
+.ms-hh .n{font:800 38px/1.1 "Bricolage Grotesque",sans-serif}.ms-hh .n.l{color:var(--blue)}.ms-hh .n.r{color:var(--red)}
+.ms-hh small{display:block;color:var(--mut);font:700 14px/1.3 "Hanken Grotesk",sans-serif;letter-spacing:.05em;text-transform:uppercase}
+.ms-hh .c b{display:block;font:800 26px "Bricolage Grotesque",sans-serif}
+.ms-hb{display:flex;height:10px;border-radius:99px;overflow:hidden;margin:18px 0 8px}.ms-hb .l{background:var(--blue)}.ms-hb .d{background:#B5B9C6}.ms-hb .r{background:var(--red)}
+.ms-hp{display:flex;justify-content:space-between;font:700 16px "Hanken Grotesk",sans-serif;color:var(--mut)}
+.ms-hl{margin-top:12px}
+.ms-hr{display:grid;grid-template-columns:96px 28px 78px 28px 34px;gap:8px;align-items:center;justify-content:space-between;padding:13px 0;border-top:1px solid #EEF0F6;color:var(--mut);font:500 16px "Hanken Grotesk",sans-serif}
+.ms-hr img{width:26px;height:26px;object-fit:contain}
+.ms-hr .s{background:#F1F2F7;border-radius:8px;padding:8px 0;text-align:center;color:var(--ink);font:800 18px "Bricolage Grotesque",sans-serif}
+.ms-hr .w{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font:800 14px "Hanken Grotesk",sans-serif}
+.ms-hr .w.V{background:#1A8A4A}.ms-hr .w.D{background:#DC3545}.ms-hr .w.N{background:#7C8190}
+
+/* Commentaires */
+.ms-cm{display:grid;grid-template-columns:44px 26px 1fr auto;align-items:center;gap:10px;padding:14px 0;border-top:1px solid #EEF0F6;font:600 17px "Hanken Grotesk",sans-serif}
+.ms-cm:first-child{border-top:0}
+.ms-cm b{font:800 18px "Bricolage Grotesque",sans-serif}
+.ms-cm small{display:block;font:500 13px "Hanken Grotesk",sans-serif;color:var(--mut)}
+.ms-cm em{font-style:normal;background:#E8EAFB;color:var(--ink);font:700 14px "Hanken Grotesk",sans-serif;padding:7px 12px;border-radius:99px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.ms-btn{display:block;width:100%;text-align:center;background:var(--pill);color:#fff;border:0;border-radius:12px;padding:14px;font:800 16px "Hanken Grotesk",sans-serif;cursor:pointer}
+.ms-links{text-align:center;margin:6px 0 0;font-size:15px}
+.ms-links a{color:var(--pill);font-weight:700;text-decoration:none}
+.ms-cr.r svg{transform:scaleX(-1)}
+.ms-fm small{white-space:nowrap}.ms-pl{width:13%}
+.ms-hr{grid-template-columns:96px 28px 1fr 28px 34px;justify-content:stretch}
+.ms-hr .lw{display:flex;justify-content:center}
+.ms-hr .s{white-space:nowrap;justify-self:center;min-width:74px}
