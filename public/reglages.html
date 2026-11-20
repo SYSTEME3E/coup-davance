@@ -1,0 +1,81 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="theme.css"><title>Réglages – Pronos-bet</title><style>
+.rg{margin:14px 0}
+.rg h2{font-size:19px;margin:0 0 4px}
+.rg .hint{color:var(--muted);font-size:14px;margin:0 0 6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row2>div{min-width:0}
+@media (max-width:380px){.row2{grid-template-columns:1fr}}
+.pwrap{position:relative}
+.pwrap input{padding-right:84px}
+.pwrap button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#A79BFF;font:700 14px "Hanken Grotesk",sans-serif;padding:8px 10px;cursor:pointer}
+#rgm{min-height:1.4em;margin:12px 0 0;font-size:15px;color:var(--muted)}
+#rgm.ok{color:#6CCB45}#rgm.ko{color:#FF8A96}
+.rg input[type=text],.rg input[type=email],.rg input[type=password]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3A2F9A;background:#130F33;color:#fff;font:inherit}
+.rg .btn{margin-top:16px}
+</style></head><body class="pd"><div class="wrap">
+<header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
+<h1 class="pt">Réglages</h1><p class="sub" style="text-transform:none">Gère les informations de ton compte.</p>
+<form id="rf" class="card rg" novalidate>
+  <h2>Mes informations</h2>
+  <p class="hint">Ces informations te concernent uniquement.</p>
+  <div class="row2">
+    <div><label for="rfp">Prénom</label><input id="rfp" type="text" autocomplete="given-name" maxlength="50"></div>
+    <div><label for="rfn">Nom</label><input id="rfn" type="text" autocomplete="family-name" maxlength="50"></div>
+  </div>
+  <label for="rfe">Adresse e-mail</label><input id="rfe" type="email" autocomplete="email">
+  <label for="rfw">Nouveau mot de passe</label>
+  <div class="pwrap"><input id="rfw" type="password" autocomplete="new-password" placeholder="Laisse vide si inchangé"><button type="button" data-eye="rfw">Afficher</button></div>
+  <label for="rfc">Confirmer le mot de passe</label>
+  <div class="pwrap"><input id="rfc" type="password" autocomplete="new-password"><button type="button" data-eye="rfc">Afficher</button></div>
+  <div id="rgm" role="status"></div>
+  <button class="btn" type="submit" id="rfs">Enregistrer</button>
+</form>
+<button type="button" class="out2" id="rOut">Quitter</button>
+<p class="note" style="text-align:center;margin:28px 0 8px"><a href="legal.html">Informations légales</a></p></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+</script><script src="menu.js"></script><script>
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session)return location.href="auth.html#login";
+  let curEmail=session.user.email||"",curName="",ready=false;
+  $("rfe").value=curEmail;
+  // « Prénom Nom » est enregistré dans la colonne profiles.full_name (premier mot = prénom, le reste = nom)
+  const split=n=>{n=(n||"").trim();const i=n.indexOf(" ");return i<0?[n,""]:[n.slice(0,i),n.slice(i+1).trim()]};
+  const{data}=await sb.from("profiles").select("full_name").eq("id",session.user.id).maybeSingle();
+  if(data){curName=(data.full_name||"").trim();const[p,n]=split(curName);$("rfp").value=p;$("rfn").value=n}
+  ready=true;
+
+  const say=(t,ok)=>{const m=$("rgm");m.textContent=t||"";m.className=t?(ok?"ok":"ko"):""};
+  document.querySelectorAll("[data-eye]").forEach(b=>b.onclick=()=>{const i=$(b.dataset.eye),show=i.type==="password";i.type=show?"text":"password";b.textContent=show?"Masquer":"Afficher"});
+  $("rOut").onclick=async()=>{await sb.auth.signOut();location.href="index.html"};
+
+  const frErr=m=>/different from the old|same password/i.test(m)?"Le nouveau mot de passe doit être différent de l’ancien."
+    :/reauthenticat|recent login|re-authenticat/i.test(m)?"Pour des raisons de sécurité, déconnecte-toi puis reconnecte-toi avant de réessayer."
+    :/weak|pwned|easy to guess|should contain/i.test(m)?"Mot de passe trop faible ou trop courant. Choisis-en un autre."
+    :/already|registered|exists/i.test(m)?"Cette adresse e-mail est déjà utilisée."
+    :/rate|seconds|limit/i.test(m)?"Trop de demandes pour le moment. Patiente quelques minutes puis réessaie."
+    :"Action impossible : "+m;
+
+  $("rf").onsubmit=async e=>{
+    e.preventDefault();say("");
+    if(!ready)return say("Chargement du compte… réessaie dans un instant.");
+    const first=$("rfp").value.trim(),last=$("rfn").value.trim(),name=(first+" "+last).trim(),
+      mail=$("rfe").value.trim(),pw=$("rfw").value,pc=$("rfc").value;
+    if(!/^\S+@\S+\.\S+$/.test(mail))return say("Adresse e-mail invalide.");
+    if(pw&&pw.length<8)return say("Le mot de passe doit contenir au moins 8 caractères.");
+    if(pw!==pc)return say("Les deux mots de passe ne sont pas identiques.");
+    const nameChanged=name!==curName,mailChanged=mail!==curEmail;
+    if(!nameChanged&&!mailChanged&&!pw)return say("Rien à enregistrer : tu n’as modifié aucune information.");
+    const s=$("rfs");s.disabled=true;
+    const notes=[];let fail="";
+    if(nameChanged){const{error}=await sb.rpc("set_my_name",{n:name});if(error)fail="Nom non enregistré : "+error.message;else{curName=name;notes.push("Nom enregistré.")}}
+    if(!fail&&mailChanged){const{error}=await sb.auth.updateUser({email:mail},{emailRedirectTo:location.origin+"/dashboard.html"});
+      if(error)fail=frErr(error.message);else notes.push("Un e-mail de confirmation a été envoyé : ton adresse changera après avoir cliqué sur le lien.")}
+    if(!fail&&pw){const{error}=await sb.auth.updateUser({password:pw});
+      if(error)fail=frErr(error.message);else{notes.push("Mot de passe modifié.");$("rfw").value="";$("rfc").value=""}}
+    s.disabled=false;
+    if(fail)say((notes.length?notes.join(" ")+" ":"")+fail);else say(notes.join(" "),true);
+  };
+})();
+</script><script src="pwa.js" defer></script></body></html>

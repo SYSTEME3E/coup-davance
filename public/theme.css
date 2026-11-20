@@ -1,0 +1,131 @@
+/* =====================================================================
+   THÈME VIOLET GLOBAL — chargé EN DERNIER sur toutes les pages
+   • fond violet partout (plus de fond blanc)
+   • cartes des matchs : marges latérales réduites (--gut)
+   • page Historique : cartes claires (classe .hc), comme sur la capture
+   ===================================================================== */
+:root{
+  --bg:#130F33;--surface:#1B1450;--ink:#FFFFFF;--muted:#A9A4D6;--line:#322A7E;
+  --accent:#6F5BFF;--on-accent:#FFFFFF;--brand:#8F80FF;--brand-dk:#5A47E0;
+  --navy:#1B1450;--blue-bg:#241C66;--gut:8px;color-scheme:dark}
+html,body{background:#130F33;color:#fff;min-height:100%}
+a{color:#8F80FF}
+input::placeholder,textarea::placeholder{color:#8E89C4}
+input,select,textarea{color-scheme:dark}
+
+/* ---- Marges latérales réduites (les cartes prennent presque toute la largeur) ---- */
+.wrap{padding-left:var(--gut);padding-right:var(--gut)}
+.top{padding-left:4px;padding-right:4px}
+.pc{padding:14px 12px;border-radius:18px}
+.card,.sec,.mh{padding-left:12px;padding-right:12px}
+.sx-tabs,.sx-chips,.sx-days,.sx-brk{margin-left:calc(-1*var(--gut));margin-right:calc(-1*var(--gut));padding-left:var(--gut);padding-right:var(--gut)}
+.sx-brk{scroll-padding:0 var(--gut)}
+.sx-tw{margin-left:0;margin-right:0}
+.ss .ms{margin-left:calc(-1*var(--gut));margin-right:calc(-1*var(--gut));padding-left:var(--gut);padding-right:var(--gut);background:transparent}
+
+/* ---- Boutons et champs : violet ---- */
+.btn{background:var(--accent);color:#fff}
+.btn:hover{background:var(--brand-dk)}
+.btn.ghost,.more,.out,.out2,.lk2{background:#1C1555;border:1.5px solid #3A2F9A;color:#fff}
+.btn.ghost:hover,.more:hover,.out:hover,.out2:hover,.lk2:hover{background:#241C66}
+.flt button{background:#1C1555;border:1.5px solid #3A2F9A;color:#fff}
+.flt button.on{background:#fff;border-color:#fff;color:#1B1650}
+.burger{border-color:#3A2F9A}.burger i{background:#fff}
+.drw .dx{border-color:#3A2F9A;color:#fff}
+.alln{color:#8F80FF}
+.btn.danger{background:#B42318;color:#fff}
+.btn:disabled:hover{background:var(--accent)}
+.logo img{box-shadow:none}
+.top{border-bottom-color:#2B2470}
+
+/* ---- Cartes / panneaux : violet foncé ---- */
+.card,.sec,.mh,.box,.kp{background:#1C1555;border:1px solid #3A2F9A;color:#fff}
+.inst{background:#1C1555;border-color:#3A2F9A}
+.drw{background:#130F33;box-shadow:-8px 0 30px rgba(0,0,0,.5)}
+.res{background:#1C1555;border-color:#3A2F9A}
+.res.ok{background:rgba(46,158,91,.2);border-color:#2E9E5B}
+.res.ko{background:rgba(217,59,59,.2);border-color:#D93B3B}
+.res.live{background:rgba(217,59,59,.2);border-color:#D93B3B}
+.res.live .sc,.mh .scr.live,.dh.rd,#msg,.ck .fm{color:#FF8A96}
+.sb div,.pb{background:rgba(255,255,255,.14)}
+.pb i{background:#8F80FF}
+.pfm.ok,.kp b.gn,body .pos{color:#6CCB45}
+.pfm.ko,.kp b.rd,body .neg{color:#FF8A96}
+.bd.mu,.bd.in{background:#2A2078;color:#C9C5F0}
+.ref b,.sx-tb td.pts,.sx-pl .v,.sx-kv b{color:var(--ink)}
+.lockbox .lkov b{color:#fff}.lockbox .lkov span{color:#B9B4E6}
+.lockbox .lkn{background:#2A2078;color:#FFB3BB}
+details.dt summary{color:#A79BFF}
+.lr small,.evr small{color:var(--muted)}
+
+/* ---- Abonnement / paiement ---- */
+.plan{background:#1C1555;border-color:#3A2F9A}
+.plan.basic{border:2px solid var(--accent)}
+.plan.gold{background:#2A2078;border-color:#2A2078}
+.plan .btn[disabled]{background:rgba(255,255,255,.12);color:#C9C5F0}
+.ab select,.ab-f input[type=text],.ck input[type=text],.ck input[type=tel]{background:#1C1555;border:1px solid #3A2F9A;color:#fff}
+.ab-st.ok{background:rgba(46,158,91,.18);border-color:#2E9E5B}
+.ab-st.ko{background:rgba(217,59,59,.18);border-color:#D93B3B}
+.opb{background:#1C1555;border-color:#3A2F9A;color:#fff}
+.op input:checked+.opb{background:#241C66}
+dialog.ck{background:#1C1555;color:#fff}
+dialog.ck::backdrop{background:rgba(8,6,30,.7)}
+.ck .x{background:#1C1555;border-color:#3A2F9A;color:#fff}
+.ck .ph span{background:#241C66;border-color:#3A2F9A}
+
+/* =====================================================================
+   FOOTBALL EN DIRECT + PAGE MATCH (body.ss) : fond violet, cartes claires
+   ===================================================================== */
+body.ss{background:#130F33;--ink:#FFFFFF;--mut:#A9A4D6}
+.ss .ms{--ink:#FFFFFF}
+.ss .sx-h:not(.rd){color:#fff}
+.ss .sx-h.rd{color:#fff}
+.ss .ms .ms-back{color:#C9C5F0}
+.ss .sx-ph h2{color:#fff}
+.ss .sx-ph .round{background:#241C66}
+.ss .sx-tabs a,.ss .sx-chips button{--mut:#6B6890}
+.ss .sx-tabs a.on{background:#6F5BFF;border-color:#6F5BFF}
+/* Conteneurs clairs : on leur rend leurs couleurs d'origine */
+.ss .card,.ss .sec,.ss .sx-m,.ss .sx-kv div,.ss .sx-brk .bm,.ss .sx-days button,.ss .sx-more,
+.ss .srch input,.ss .ms-card,.ss .ms-hero,.ss .ms-tabs,.ss .ms,.ss .sx-list{
+  --ink:#1B1650;--mut:#6B6890;--muted:#6B6890;--line:#E4E5EE;--surface:#F1F2F7;--bg:#FFFFFF;color:#1B1650}
+.ss .ms{--bg:#FFFFFF}
+.ss .ms .ms-back,.ss .ms .note{color:#C9C5F0}
+.ss .sx-days button.on{background:#6F5BFF;color:#fff}
+.ss .sx-days button.on b{color:#fff}
+
+/* =====================================================================
+   PAGE HISTORIQUE : carte claire (style de la capture), sur fond violet
+   ===================================================================== */
+.hc{--ink:#14201A;--muted:#5A6B61;--line:#E3E7E0;--bg:#FFFFFF;--surface:#F6F7F4;--accent:#1D6FD8;--brand:#1D6FD8;
+  background:#EAF1FD;border:1px solid #BCD0F0;border-radius:18px;padding:16px 14px;margin:0 0 12px;color:#14201A;
+  cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25);content-visibility:auto;contain-intrinsic-size:auto 440px;min-width:0}
+.hc .tm{font:800 25px/1.2 "Bricolage Grotesque",sans-serif;color:#14201A}
+.hc .tm span{font:400 19px "Hanken Grotesk",sans-serif;color:#5A6B61}
+.hc .sub{margin:8px 0 6px;font-size:17px;line-height:1.5;color:#5A6B61;text-transform:none}
+.hc .hc-tag{margin:6px 0 8px;font-size:17px}
+.hc .cf{font-size:1em}.hc .cf.hi{color:#1a9a4a}.hc .cf.lo{color:#E67700}
+.hc .bar{height:58px;border-radius:14px;gap:2px;margin:6px 0}
+.hc .bar span{font-size:19px;min-width:6px}
+.hc .bar .h{background:#1D6FD8;color:#fff}.hc .bar .d{background:#C9D1CB;color:#14201A}.hc .bar .a{background:#D93B3B;color:#fff}
+.hc .lg{font-size:17px;margin:2px 0 16px;color:#5A6B61}
+.hc .stats{font-size:17px;color:#5A6B61;gap:10px}
+.hc .stats div{border-top:1px solid #D5DDE8;padding-top:10px}
+.hc .stats b{font-size:25px;margin-top:2px;color:#14201A}
+.hc .frm{display:grid;gap:10px;margin-top:14px;font-size:17px;color:#5A6B61}
+.hc .frm i{width:29px;height:29px;line-height:29px;font-size:15px;border-radius:6px;margin-left:6px}
+.hc .res{margin-top:16px;padding:16px;border-width:1.5px;background:#fff;border-color:#E3E7E0}
+.hc .res.ok{background:#EAF5EA;border-color:#2E7D32}
+.hc .res.ko{background:#FDECEA;border-color:#B42318}
+.hc .res.live{background:#FDECEA;border-color:#D93B3B}
+.hc .res .sc{font-size:36px;white-space:nowrap;color:#14201A}.hc .res.live .sc{color:#B42318}
+.hc .res .sc small,.hc .res .vd small{font-size:17px;color:#5A6B61}
+.hc .res .vd b{font-size:21px;color:#14201A}
+.hc .stk{margin-top:14px}.hc .stk span{font-size:17px;padding:9px 16px}
+.hc .chk{font-size:17px;line-height:1.55;color:#5A6B61;margin-top:12px}
+.hc .chk.go{color:#1D6FD8;font-weight:700;margin-top:16px}
+.hc .lockbox .lkov b{color:#14201A}.hc .lockbox .lkov span{color:#5A6B61}
+.hc .lockbox .btn{background:#1D6FD8;color:#fff}
+.hc .lockbox .lkn{background:#fff;color:#B42318}
+.hc:hover,.hc:focus-visible{border-color:#1D6FD8}
+@media (max-width:380px){.hc .tm{font-size:22px}.hc .res .sc{font-size:32px}.hc .stats b{font-size:22px}}
