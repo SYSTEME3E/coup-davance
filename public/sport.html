@@ -19,7 +19,7 @@ const POP=[["Premier League","english-premier-league"],["Champions League","uefa
 
 // Suivi live compact (comme 1xBet) : on n'affiche que le terrain et le score ; « Agrandir » montre le lecteur en entier.
 const trkBox=id=>'<div class="sx-trk"><div class="v"><iframe src="'+esc("https://sportscore.com/api/widget/tracker/?sport=football&id="+encodeURIComponent(id)+"&src="+encodeURIComponent((window.CFG||{}).src||""))+'" title="Suivi du match en direct" loading="lazy" allow="fullscreen" sandbox="allow-same-origin allow-scripts allow-popups"></iframe></div><button type="button" class="sx-trk-b" data-trk>Agrandir</button></div>';
-const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" loading="lazy" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
+const lg=(u,c)=>u&&!window.LITE?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" loading="lazy" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
 const err=e=>'<div class="card sx-err"><b>Données indisponibles pour le moment</b><span>'+esc(ssErr(e))+'</span></div>';
 const hm=s=>{const d=new Date(typeof s==="number"&&s<1e12?s*1000:s);return isNaN(d)?"":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})};
 const mgo=x=>"match/"+esc(x.id)+(x.mid?"/"+esc(x.mid):"");
