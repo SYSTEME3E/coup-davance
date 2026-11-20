@@ -9,6 +9,15 @@
 .pt-code button,.pt-go{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:10px 14px;font:700 15px "Hanken Grotesk",sans-serif;cursor:pointer;text-decoration:none;text-align:center}
 .pt-go{display:block;background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 .pt-group{margin-top:14px}
+.oth-h{margin:22px 0 4px;font:800 19px/1.2 "Bricolage Grotesque",sans-serif}
+.oth-s{margin:0 0 8px;color:var(--muted);font-size:14px}
+.oth-c{display:flex;align-items:center;gap:8px;margin:14px 0 4px;font:700 14px "Hanken Grotesk",sans-serif;color:var(--muted)}
+.oth-m{display:flex;align-items:center;gap:12px;padding:11px 12px;margin:6px 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;color:var(--ink);text-decoration:none}
+.oth-m .st{flex:0 0 52px;font:700 13px "Hanken Grotesk",sans-serif;color:var(--muted);text-align:center}
+.oth-m .tm{flex:1;min-width:0}.oth-m .tm div{display:flex;align-items:center;gap:8px;padding:2px 0}
+.oth-m .tm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.oth-m .sc{display:flex;flex-direction:column;gap:2px;font:800 15px "Hanken Grotesk",sans-serif;text-align:right}
+.oth-m.lv .st{color:#e5322d}.oth-lv i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e5322d;margin-right:4px}
 </style>
 </head><body class="pd"><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
@@ -30,15 +39,35 @@ let homeHTML="",tok=0,cache=null;
 const clean=()=>$("q").value.replace(/[%_,()*\\]/g," ").trim();
 const searching=()=>clean().length>=2||!!$("qd").value;
 // Liste du jour : matchs en cours en premier (rouge), puis les matchs d’aujourd’hui uniquement. Actualisée toutes les 60 s.
-let LIM=30,lastSig="",FILT="all";const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute,kind,unlocked";
-document.addEventListener("click",e=>{if(e.target&&e.target.id==="moreHome"){LIM+=30;build()}});
+let LIM=30,LIMO=40,lastSig="",FILT="all";const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute,kind,unlocked";
+document.addEventListener("click",e=>{if(e.target&&e.target.id==="moreHome"){LIM+=30;build()}if(e.target&&e.target.id==="moreOth"){LIMO+=40;build()}});
 const PF=m=>FILT==="all"||(FILT==="live"?!!m.live_status:FILT==="next"?(!m.live_status&&!m.settled_at&&new Date(m.kickoff)>Date.now()):(isOpen(m)&&Math.max(m.data.result.home,m.data.result.draw,m.data.result.away)>=80));
-const build=()=>{const{all:all0,error,s,tm}=cache;const all=all0.filter(PF);$("pcn").textContent=error?"":all.length+(all.length>1?" affichés":" affiché");
+// ---- Autres matchs du jour (sans pronostic) : tous les championnats fournis par SportScore, comme la page « Football en direct » ----
+const PRIO=/^(english premier league|spanish la liga|italian serie a|french ligue 1|bundesliga|uefa champions league|uefa europa league|uefa conference league)$/i;
+const EURO=/premier league|la liga|serie a|serie b|ligue 1|ligue 2|bundesliga|championship|eredivisie|primeira liga|super lig|super league|premiership|pro league|segunda|league one|league two|champions league|europa|conference|cup|coupe|copa|pokal|coppa|ekstraklasa|allsvenskan|eliteserien|superliga|superettan|veikkausliiga|hnl|nb i|liga i|fortuna|a-league|euro/i;
+const hm=d=>new Date(d).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+const othRow=x=>{const sc=x.hs!=null&&x.as!=null,
+  t=x.live?'<span class="oth-lv"><i></i>'+(x.minute?esc(x.minute)+"’":"LIVE")+'</span>':esc(hm(x.start)),
+  inner='<div class="st">'+t+'</div><div class="tm"><div>'+lgo(x.hl,"sm")+'<span>'+esc(x.home)+'</span></div><div>'+lgo(x.al,"sm")+'<span>'+esc(x.away)+'</span></div></div><div class="sc">'+(sc?'<b>'+esc(x.hs)+'</b><b>'+esc(x.as)+'</b>':'<b>–</b><b>–</b>')+'</div>';
+  return x.id?'<a class="oth-m'+(x.live?" lv":"")+'" href="sport.html#match/'+encodeURIComponent(x.id)+(x.mid?"/"+encodeURIComponent(x.mid):"")+'">'+inner+'</a>':'<div class="oth-m'+(x.live?" lv":"")+'">'+inner+'</div>'};
+const othHTML=list=>{
+ const a=list.filter(x=>FILT==="all"||(FILT==="live"?x.live:FILT==="next"?!x.live&&!x.done:false));
+ if(!a.length)return"";
+ const tier=k=>PRIO.test(k)?0:EURO.test(k)?1:2,g={},logo={};
+ a.forEach(x=>{const k=x.comp||"Autres";(g[k]=g[k]||[]).push(x);if(x.cl)logo[k]=x.cl});
+ const keys=Object.keys(g).sort((p,q)=>tier(p)-tier(q)||g[q].length-g[p].length);
+ let left=LIMO,h='<h2 class="oth-h">Autres matchs du jour</h2><p class="oth-s">'+a.length+(a.length>1?" matchs":" match")+' dans les championnats du monde · sans pronostic pour l’instant</p>';
+ keys.forEach(k=>{if(left<=0)return;const rows=g[k].slice(0,left);left-=rows.length;
+  h+='<div class="oth-c">'+lgo(logo[k],"sm")+'<span>'+esc(k)+'</span></div>'+rows.map(othRow).join("")});
+ if(a.length>LIMO)h+='<button id="moreOth" class="more">Afficher plus de matchs ('+(a.length-LIMO)+')</button>';
+ return h};
+const build=()=>{const{all:all0,error,s,tm,others}=cache;const all=all0.filter(PF);$("pcn").textContent=error?"":all.length+(all.length>1?" affichés":" affiché");
  const liveNow=all.filter(m=>m.live_status),rest=all.filter(m=>!m.live_status);
  let budget=LIM;const take=a=>{const x=a.slice(0,Math.max(0,budget));budget-=x.length;return x};
  const day=d=>rest.filter(m=>new Date(m.kickoff).toDateString()===d.toDateString());
  const part=(t,d,hideEmpty)=>{const a=day(d);if(!a.length&&hideEmpty)return"";return '<p class="sub dh">'+t+' ('+a.length+')</p>'+(a.length?take(a).map(card).join(""):'<div class="card"><p class="sub" style="margin:0">Plus aucun match à venir pour le moment.</p></div>')};
  homeHTML=error?'<div class="card">Impossible de charger les matchs. Réessaie dans un instant.</div>':all0.length&&!all.length?'<div class="card">Aucun match dans cette catégorie pour le moment.</div>':all.length?(liveNow.length?'<p class="sub dh rd">En cours ('+liveNow.length+')</p>'+take(liveNow).map(card).join(""):"")+part("Aujourd’hui",s,liveNow.length>0):'<div class="card"><b>Pas de match avec pronostic pour aujourd’hui pour le moment.</b><p class="sub" style="margin:8px 0 0">Ils sont calculés toutes les 5 minutes. Il peut aussi n’y avoir aucun match dans les compétitions couvertes.</p></div>';
+ if(!error)homeHTML+=othHTML(others||[]);
  if(all.length>LIM)homeHTML+='<button id="moreHome" class="more">Afficher plus de matchs ('+(all.length-LIM)+')</button>';
  if(!searching())$("list").innerHTML=homeHTML};
 // Direct : SportScore (status=live) fournit le statut et le score ; les pronostics ne changent pas.
@@ -60,9 +89,14 @@ const loadHome=async first=>{
  if(error&&!first)return;
  let all=(data||[]).filter(m=>m.live_status||(new Date(m.kickoff).toDateString()===s.toDateString()&&new Date(m.kickoff).getTime()>Date.now()-3*36e5));
  all=await withSS(all);
- const sig=s.toDateString()+JSON.stringify(all.map(m=>[m.fixture_id,m.live_status,m.live_home,m.live_away,m.live_minute]));
+ // Matchs du jour de tous les championnats (SportScore) qui n'ont pas (encore) de pronostic en base
+ let others=[];
+ try{const t=await ssToday(),rows=data||[];
+  others=t.filter(x=>!x.done&&x.start&&new Date(x.start).toDateString()===s.toDateString()
+   &&!rows.some(m=>ssSameMatch({home:m.home,away:m.away,t:+new Date(m.kickoff)},{home:x.home,away:x.away,t:+new Date(x.start)},3)))}catch(e){}
+ const sig=s.toDateString()+JSON.stringify(all.map(m=>[m.fixture_id,m.live_status,m.live_home,m.live_away,m.live_minute]))+JSON.stringify(others.map(x=>[x.id,x.live,x.hs,x.as]));
  if(!first&&!error&&sig===lastSig)return; // rien n'a changé : on ne redessine pas la liste
- lastSig=sig;cache={all,error,s,tm};build();
+ lastSig=sig;cache={all,error,s,tm,others};build();
  ensureLogos(all.slice(0,60),build)};
 $("pf").onclick=e=>{const b=e.target.closest("[data-pf]");if(!b)return;if(b.dataset.pf==="done"){location.href="historique.html";return}
  FILT=b.dataset.pf;LIM=30;$("pf").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));if(cache)build()};
