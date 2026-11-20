@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="theme.css"><title>Matchs du jour – Pronos-bet</title><style>
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="ticker.css"><title>Matchs du jour – Pronos-bet</title><style>
 .bonus{margin:14px 0}.bonus .btn{background:var(--navy);}
 #bonusList{margin-top:10px}
 .pt-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
@@ -19,7 +19,7 @@
 .oth-m .sc{display:flex;flex-direction:column;gap:2px;font:800 15px "Hanken Grotesk",sans-serif;text-align:right}
 .oth-m.lv .st{color:#e5322d}.oth-lv i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e5322d;margin-right:4px}
 </style>
-</head><body class="pd"><div class="wrap">
+</head><body class="pd"><div id="tick" class="tick" hidden></div><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
 <h1 class="pt">Matchs du jour</h1><p class="sub" id="date"></p>
 <div id="install" class="inst" hidden><img src="icon.svg" alt="" width="44" height="44"><div><b>Pronos-bet sur ton téléphone</b><span>Installe l’app pour y accéder en un geste.</span></div><button type="button" id="installBtn" class="btn">Installer l’app</button><p id="installHelp" class="note" hidden></p></div>
@@ -32,7 +32,7 @@
 <p class="note" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="cards.js"></script><script src="menu.js"></script><script src="sportscore.js"></script><script>
+</script><script src="cards.js"></script><script src="menu.js"></script><script src="sportscore.js"></script><script src="ticker.js" defer></script><script>
 $("date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
 let homeHTML="",tok=0,cache=null;
@@ -67,7 +67,7 @@ const build=()=>{const{all:all0,error,s,tm,others}=cache;const all=all0.filter(P
  const day=d=>rest.filter(m=>new Date(m.kickoff).toDateString()===d.toDateString());
  const part=(t,d,hideEmpty)=>{const a=day(d);if(!a.length&&hideEmpty)return"";return '<p class="sub dh">'+t+' ('+a.length+')</p>'+(a.length?take(a).map(card).join(""):'<div class="card"><p class="sub" style="margin:0">Plus aucun match à venir pour le moment.</p></div>')};
  homeHTML=error?'<div class="card">Impossible de charger les matchs. Réessaie dans un instant.</div>':all0.length&&!all.length?'<div class="card">Aucun match dans cette catégorie pour le moment.</div>':all.length?(liveNow.length?'<p class="sub dh rd">En cours ('+liveNow.length+')</p>'+take(liveNow).map(card).join(""):"")+part("Aujourd’hui",s,liveNow.length>0):'<div class="card"><b>Pas de match avec pronostic pour aujourd’hui pour le moment.</b><p class="sub" style="margin:8px 0 0">Ils sont calculés toutes les 5 minutes. Il peut aussi n’y avoir aucun match dans les compétitions couvertes.</p></div>';
- if(!error)homeHTML+=othHTML(others||[]);
+ if(!error){const o=othHTML(others||[]);homeHTML+=o||(FILT==="all"&&typeof _ssDay!=="undefined"&&_ssDay.err?'<p class="note" style="text-align:center">Les autres championnats sont momentanément indisponibles. Ils reviennent à la prochaine actualisation.</p>':"")}
  if(all.length>LIM)homeHTML+='<button id="moreHome" class="more">Afficher plus de matchs ('+(all.length-LIM)+')</button>';
  if(!searching())$("list").innerHTML=homeHTML};
 // Direct : SportScore (status=live) fournit le statut et le score ; les pronostics ne changent pas.
