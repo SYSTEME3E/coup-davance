@@ -18,6 +18,7 @@
   dr.innerHTML=''
     +'<div class="dtop"><b>Menu</b><button type="button" class="dx" aria-label="Fermer le menu">✕</button></div>'
     +'<nav class="mn"><a href="dashboard.html">Matchs du jour</a><a href="sport.html">Football en direct</a><a href="historique.html">Historique</a><a href="abonnement.html">Abonnement</a><a href="balance.html">Parrainage et gains</a><a href="reglages.html">Réglages</a><a href="admin.html" id="mAdmin" hidden>Espace administrateur</a><a href="admin-retraits.html" id="mAdminW" hidden>Retraits à suivre (admin)</a></nav>'
+    +'<button type="button" class="out2" id="mLite" style="margin-bottom:10px">'+(window.LITE?'Mode Lite activé · sans images (touche pour désactiver)':'Activer le mode Lite (sans images, plus léger)')+'</button>'
     +'<button type="button" class="out2" id="mOut">Quitter</button>';
   document.body.appendChild(ov);document.body.appendChild(dr);
 
@@ -26,6 +27,7 @@
   btn.onclick=open;ov.onclick=close;dr.querySelector(".dx").onclick=close;
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dr.classList.contains("on"))close()});
 
+  g("mLite").onclick=()=>{try{localStorage.setItem("pb_lite",window.LITE?"0":"1")}catch(e){}location.reload()};
   g("mOut").onclick=async()=>{await sb.auth.signOut();location.href="index.html"};
 
   // Chargement du compte : blocage et liens administrateur
