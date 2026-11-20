@@ -140,7 +140,9 @@ const P={
  async tracker(id){
   if(!id){const ms=await ssLive();
    return'<div class="sec"><h2>Choisis un match en direct</h2>'+(ms.length?ms.map(m=>mrow(m,m.mid?"tracker/"+esc(m.mid):"")).join(""):'<p class="note">Aucun match en direct pour le moment.</p>')+'</div>'}
-  const src=await ssTracker(id);
+  // On intègre la page-enveloppe de SportScore (conçue pour être incorporée : X-Frame-Options ALLOWALL), pas l'adresse interne du lecteur :
+  // le lecteur (TheSports) n'accepte que les domaines autorisés par SportScore ; vu depuis sportscore.com, il fonctionne.
+  const src="https://sportscore.com/api/widget/tracker/?sport=football&id="+encodeURIComponent(id)+"&src="+encodeURIComponent((window.CFG||{}).src||"");
   return'<a class="back" href="#tracker">← Retour</a><div class="sx-trk"><iframe src="'+esc(src)+'" title="Suivi du match en direct" loading="lazy" allow="fullscreen" sandbox="allow-same-origin allow-scripts allow-popups"></iframe></div><p class="note" style="text-align:center">Suivi live fourni par SportScore.</p>'}
 };
 
