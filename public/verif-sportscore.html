@@ -52,8 +52,8 @@ const runTests=async()=>{const box=$("tpo");box.innerHTML='<p class="note">Test 
   if(r.error)throw r.error;
   const DB=(r.data||[]).map(x=>({id:x.fixture_id,home:x.home,away:x.away,comp:x.league,t:+new Date(x.kickoff),live:!!x.live_status}));
   // 2) SportScore : liste « en direct + récents » (50 matchs maximum par appel)
-  const D0=await SS("matches",{limit:50});
-  const SSM=ssArr(D0).map(ssMatch).map(m=>({raw:m.raw,id:m.mid||m.id,home:m.home,away:m.away,comp:m.comp,t:m.start?+new Date(m.start):0,live:m.live,done:m.done,hs:m.hs,as:m.as,minute:m.minute}));
+  const D0=await SS("v1/fixtures",{limit:200,date:new Date().toISOString().slice(0,10)});
+  const SSM=(await ssToday()).map(m=>({raw:m.raw,id:m.mid||m.id,home:m.home,away:m.away,comp:m.comp,t:m.start?+new Date(m.start):0,live:m.live,done:m.done,hs:m.hs,as:m.as,minute:m.minute}));
   // 3) Comparaison
   const matched=[],onlyDB=[],onlySS=[];
   DB.forEach(d=>{const m=SSM.find(x=>sameMatch(d,x,4));m?matched.push([d,m]):onlyDB.push(d)});
@@ -71,7 +71,7 @@ const runTests=async()=>{const box=$("tpo");box.innerHTML='<p class="note">Test 
    +sec("Dans la base, absents de SportScore",onlyDB,d=>li(d,'#'+esc(d.id)),"Rien.")
    +sec("Chez SportScore, absents de la base",onlySS,m=>li(m,m.live?"en direct":m.done?"terminé":"à venir"),"Rien.")
    +'<div class="sec"><h2>Diagnostic du direct</h2><p class="note" style="margin-top:0">Statuts reçus pour l’appel normal : '+tstat(SSM)+'.<br>Clés de la réponse : '+esc(Object.keys(D0).join(", "))+(typeof D0.total==="number"?' · total annoncé : '+D0.total:'')+'</p><button type="button" id="tp" class="btn sx-btn">Tester des paramètres</button><div id="tpo"></div></div>'
-   +'<p class="note">SportScore ne renvoie que 50 matchs par appel, classés par heure de début : un match de ta base absent de la liste peut simplement ne pas en faire partie. Les doublons et les matchs « en direct » sont, eux, fiables.</p>';
+   +'<p class="note">Liste SportScore = les 200 premiers matchs du jour, les grandes compétitions en entier et tous les matchs en direct : un match de ta base dans une autre compétition peut donc être absent de la liste sans erreur. Les doublons et les matchs « en direct » sont, eux, fiables.</p>';
  const tp=$("tp");if(tp)tp.onclick=runTests;
  }catch(e){out.innerHTML='<div class="card">Erreur : '+esc(e.message||e)+'</div>'}
 })();
