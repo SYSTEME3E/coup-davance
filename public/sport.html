@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="cards.js"></script><script src="sportscore.js"></script><script src="matchview.js"></script><script src="menu.js"></script><script>
-let COMP=null,TIMER=null,COMPS=[],MODE="goals",FILTER="all",QUERY="",LIM=50,MATCHES=[];
+let COMP=null,TIMER=null,COMPS=[],MODE="goals",FILTER="all",QUERY="",LIM=50,MATCHES=[],DAY="";
 const DEBUG=/[?&]debug=1/.test(location.search);
 
 // Compétitions proposées. Ces identifiants (slugs) ont été vérifiés auprès de SportScore.
@@ -66,12 +66,14 @@ const mhead=m=>{const sc=m.hs!=null&&m.as!=null,w=sc?(+m.hs>+m.as?"home":+m.as>+
 // ---- pages ----
 const P={
  async matches(){
-  const all=await ssToday();
+  const all=await ssToday(DAY||undefined);
   if(!all.length)return'<div class="card">Aucun match pour le moment.</div>';
   MATCHES=all;
   const n={all:all.length,live:all.filter(m=>m.live).length,done:all.filter(m=>m.done).length,next:all.filter(m=>!m.live&&!m.done).length};
   const fl=[["all","Tous"],["live","En direct"],["done","Terminés"],["next","À venir"]].map(([k,l])=>'<button type="button" data-f="'+k+'" class="'+(FILTER===k?"on":"")+'">'+l+' <small>'+n[k]+'</small></button>').join("");
-  return'<div class="srch"><input id="sq" type="search" placeholder="Rechercher une équipe ou une compétition…" autocomplete="off" value="'+esc(QUERY)+'" aria-label="Rechercher un match"></div><div class="sx-chips sx-flt">'+fl+'</div><div id="mlist">'+mlist()+'</div>'},
+  const T0=new Date().toISOString().slice(0,10),cur=DAY||T0,days=[-3,-2,-1,0,1,2,3].map(o=>{const x=new Date(Date.now()+o*864e5),k=x.toISOString().slice(0,10);
+    return'<button type="button" data-d="'+(o===0?"":k)+'" class="'+(k===cur?"on":"")+'"><b>'+(o===0?"AUJ.":x.toLocaleDateString("fr-FR",{weekday:"short",timeZone:"UTC"}).replace(".","").toUpperCase())+'</b><span>'+x.toLocaleDateString("fr-FR",{day:"numeric",month:"short",timeZone:"UTC"})+'</span></button>'}).join("");
+  return'<div class="sx-days">'+days+'</div><div class="srch"><input id="sq" type="search" placeholder="Rechercher une équipe ou une compétition…" autocomplete="off" value="'+esc(QUERY)+'" aria-label="Rechercher un match"></div><div class="sx-chips sx-flt">'+fl+'</div><div id="mlist">'+mlist()+'</div>'},
 
  async match(slug,mid){let d;
   try{d=await SS("match",{slug})}catch(e){if(!mid)throw e;d=await SS("match",{slug:mid})}
@@ -158,6 +160,7 @@ document.addEventListener("click",e=>{
   const sd=e.target.closest("[data-mvstand]");if(sd){if(sd.dataset.mvstand)COMP=sd.dataset.mvstand;location.hash="standings";return}
   const g=e.target.closest("[data-go]");if(g){location.hash=g.dataset.go;return}
   const c=e.target.closest("[data-c]");if(c){COMP=c.dataset.c;show();return}
+  const dd=e.target.closest("[data-d]");if(dd){DAY=dd.dataset.d;LIM=50;show();return}
   const f=e.target.closest("[data-f]");if(f){FILTER=f.dataset.f;LIM=50;show(true);return}
   const m=e.target.closest("[data-m]");if(m){MODE=m.dataset.m;show()}});
 document.addEventListener("input",e=>{if(e.target&&e.target.id==="sq"){QUERY=e.target.value;LIM=50;const l=$("mlist");if(l)l.innerHTML=mlist()}});
