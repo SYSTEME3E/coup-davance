@@ -1,5 +1,25 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}</style><link rel="stylesheet" href="theme.css"><title>Connexion – Pronos-bet</title></head><body><div class="wrap">
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}</style><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="ticker.css"><style>
+body.au{background:#0c0a24;color:#fff;min-height:100vh}
+body.au .tick{position:static}
+.au .wrap{max-width:460px}
+.au .logo{color:#fff}
+.au-hero{position:relative;margin:6px 0 18px;padding:22px 18px 20px;border-radius:20px;background:radial-gradient(120% 120% at 100% 0,#1fb6a6 0,rgba(31,182,166,0) 55%),linear-gradient(160deg,#16124a 0,#0e2748 100%);border:1px solid rgba(255,255,255,.12);overflow:hidden}
+.au-hero:after{content:"⚽";position:absolute;right:-14px;bottom:-26px;font-size:110px;opacity:.1;transform:rotate(-14deg)}
+.au-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border-radius:99px;padding:5px 11px;font:700 12px "Hanken Grotesk",sans-serif;letter-spacing:.03em}
+.au-pill i{width:7px;height:7px;border-radius:50%;background:#4ade80;animation:tkp 1.4s infinite}
+.au-hero h2{margin:12px 0 6px;font:800 27px/1.12 "Bricolage Grotesque",sans-serif}
+.au-hero h2 em{font-style:normal;color:#ffd24a}
+.au-hero p{margin:0 0 14px;color:rgba(255,255,255,.8);font-size:15px;line-height:1.4;max-width:30ch}
+.au-ch{display:flex;flex-wrap:wrap;gap:8px}
+.au-ch span{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:7px 10px;font:700 13px "Hanken Grotesk",sans-serif}
+.au .box{background:#fff;color:#14201A;margin:0 auto 40px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.au .box .tabs a.on{background:#0e2748;color:#fff;border-color:#0e2748}
+</style><title>Connexion – Pronos-bet</title></head><body class="au"><div id="tick" class="tick" hidden></div><div class="wrap">
 <a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a>
+<section class="au-hero"><span class="au-pill"><i></i>Matchs en direct</span>
+<h2>Joue malin, <em>pas au hasard</em></h2>
+<p>Chaque jour, les pronostics des grands championnats, avec le score le plus probable.</p>
+<div class="au-ch"><span>⚡ Scores en direct</span><span>📊 % de victoire</span><span>🎯 Score probable</span></div></section>
 <main class="box"><div class="tabs"><a id="t-login" href="#login">Connexion</a><a id="t-signup" href="#signup">Créer un compte</a></div>
 <h1 id="title"></h1>
 <div id="nm"><label for="fn">Nom complet</label><input id="fn" type="text" autocomplete="name" maxlength="100"></div>
@@ -10,7 +30,7 @@
 <label class="check" id="terms"><input id="ok" type="checkbox"><span>J’ai 18 ans ou plus et j’accepte les <a href="legal.html#cgu">conditions d’utilisation</a> et la <a href="legal.html#confidentialite">politique de confidentialité</a>.</span></label>
 <div id="msg" role="alert"></div><button class="btn" id="go"></button>
 <a href="#" id="rs" style="display:none;margin-top:14px;text-align:center;font-weight:700">Renvoyer l’e-mail de confirmation</a></main></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="sportscore.js"></script><script src="ticker.js" defer></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);let mode="login";
 // Code de parrainage : lien de partage auth.html?ref=CODE#signup (mémorisé au cas où la personne change d’onglet).
 const cleanRef=s=>String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,12);
