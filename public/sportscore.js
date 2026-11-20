@@ -78,7 +78,9 @@ function ssMatch(m){m=m||{};
 // • pas de minute de jeu : seulement status_text (« 1st half », « Halftime »…) et le score
 const SS_TOP=["english-premier-league","spanish-la-liga","italian-serie-a","french-ligue-1","bundesliga","brazilian-serie-a"];
 const ssFix=async p=>ssArr(await SS("v1/fixtures",p)).map(ssMatch);
-const ssLive=()=>ssFix({status:"live"}).catch(()=>[]);
+// Une seule requête « direct » à la fois, réutilisée 20 s (dashboard, bande live et liste du jour l'appelaient chacun de leur côté)
+let _ssLv={t:0,p:null};
+const ssLive=()=>{if(_ssLv.p&&Date.now()-_ssLv.t<2e4)return _ssLv.p;_ssLv={t:Date.now(),p:ssFix({status:"live"}).catch(()=>[])};return _ssLv.p};
 const ssKey=m=>String((m.raw&&m.raw.url)||m.home+"|"+m.away+"|"+m.start);
 const ssMerge=lists=>{const seen=new Map();lists.flat().forEach(m=>{const k=ssKey(m);if(!seen.has(k)||m.live)seen.set(k,m)});
   return[...seen.values()].sort((a,b)=>+new Date(a.start)-+new Date(b.start))};
@@ -99,7 +101,7 @@ async function ssToday(date){
       return[]};
     const base=[{},{status:"finished"},{status:"upcoming"}].map(q);
     const comps=SS_TOP.concat(SS_MORE).map(c=>q({competition:c}));
-    const r=await ssPool(base.concat(comps),4);
+    const r=await ssPool(base.concat(comps),6);
     const v=ssMerge(r);
     // Si tout a échoué on garde l'ancienne liste plutôt que d'afficher une page vide
     if(!v.length&&_ssDay.v.length&&_ssDay.d===d){_ssDay.t=Date.now()-24e4;_ssDay.err=last}
