@@ -197,3 +197,10 @@ body.ss{--ink:#1B1650;--mut:#6B6890;--navy:#1F1A52;--pill:#5B4BDB;--blue:#1D6FE0
 .ss .lb h3{color:var(--ink)}
 .ss .btn{background:var(--pill)}
 .ss .sx-m .tm span{color:var(--ink)}.ss .sx-live{color:var(--red)}
+
+/* Bandeau des jours (liste des matchs) */
+.sx-days{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 10px;padding:2px 16px 8px;scrollbar-width:none}
+.sx-days::-webkit-scrollbar{display:none}
+.sx-days button{flex:none;min-width:72px;border:0;border-radius:12px;background:#fff;color:#6B6890;padding:9px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:"Hanken Grotesk",sans-serif;box-shadow:0 1px 2px rgba(27,22,80,.06)}
+.sx-days button b{font-size:15px;color:#1B1650}.sx-days button span{font-size:13px}
+.sx-days button.on{background:#1F1A52;color:#C9C5F0}.sx-days button.on b{color:#fff}
