@@ -10,9 +10,10 @@ async function ssFetch(endpoint,params){
   const attempt=async withKey=>{
     const q=new URLSearchParams(base);
     if(c.src)q.set("src",c.src);
-    const path=SS_BASE+endpoint+"/?"+base.toString();
+    const root=/^v1\//.test(endpoint)?"https://sportscore.com/api/":SS_BASE;
+    const path=root+endpoint+"/?"+base.toString();
     let res,txt="";
-    try{res=await fetch(SS_BASE+endpoint+"/?"+q.toString());txt=await res.text()}
+    try{res=await fetch(root+endpoint+"/?"+q.toString());txt=await res.text()}
     catch(e){SS.last={path,status:0,keyed:withKey,body:String(e)};throw new Error("Réseau indisponible ou requête bloquée (CORS)")}
     SS.last={path,status:res.status,keyed:withKey,body:txt.slice(0,1500)};
     return{res,txt}};
@@ -69,3 +70,29 @@ function ssMatch(m){m=m||{};
     hid,aid,hs:sc("home"),as:sc("away"),status:st.trim(),live,done,minute,
     start:ssPick(m,["time","start_time","startTime","kickoff","date","datetime"]),comp,cl:m.competition_logo||"",
     cid:ssPick(m,["competition.slug","league.slug","competition_slug"])||ssSlug(comp)||null,raw:m}}
+
+// ---- Matchs : v1/fixtures (vérifié le 20/11/2026) ----
+// • max. 200 matchs par appel, triés par heure de début ; offset/page sont ignorés
+// • date=AAAA-MM-JJ (UTC) change de jour ; competition=<nom en minuscules avec des tirets> filtre une compétition
+// • status=live renvoie TOUS les matchs en direct du monde en un seul appel (finished/upcoming filtrent aussi)
+// • pas de minute de jeu : seulement status_text (« 1st half », « Halftime »…) et le score
+const SS_TOP=["english-premier-league","spanish-la-liga","italian-serie-a","french-ligue-1","bundesliga","brazilian-serie-a"];
+const ssFix=async p=>ssArr(await SS("v1/fixtures",p)).map(ssMatch);
+const ssLive=()=>ssFix({status:"live"}).catch(()=>[]);
+const ssKey=m=>String((m.raw&&m.raw.url)||m.home+"|"+m.away+"|"+m.start);
+const ssMerge=lists=>{const seen=new Map();lists.flat().forEach(m=>{const k=ssKey(m);if(!seen.has(k)||m.live)seen.set(k,m)});
+  return[...seen.values()].sort((a,b)=>+new Date(a.start)-+new Date(b.start))};
+// Liste du jour : 200 premiers matchs + les compétitions suivies en entier + le direct (mis à jour à chaque appel, le reste est gardé 5 min)
+let _ssDay={d:"",t:0,v:[]};
+async function ssToday(date){
+  const d=date||new Date().toISOString().slice(0,10);
+  if(_ssDay.d!==d||Date.now()-_ssDay.t>3e5){
+    const r=await Promise.all([ssFix({date:d,limit:200})].concat(SS_TOP.map(c=>ssFix({date:d,limit:200,competition:c}).catch(()=>[]))));
+    _ssDay={d,t:Date.now(),v:ssMerge(r)}}
+  return ssMerge([_ssDay.v,await ssLive()])}
+// ---- Rapprochement des noms d'équipes entre deux sources ----
+const SS_STOP=new Set("fc ec sc cr ac as fr fbpa cf afc club de da do dos del la le les the paulista and".split(" "));
+const ssToks=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\brb\b/g,"red bull").replace(/[^a-z0-9 ]+/g," ").split(/\s+/).filter(t=>t&&t.length>1&&!SS_STOP.has(t));
+const ssSameTeam=(a,b)=>{const A=ssToks(a),B=ssToks(b);if(!A.length||!B.length)return false;const i=A.filter(t=>B.includes(t)).length;return i>0&&(i===A.length||i===B.length||i/new Set(A.concat(B)).size>=0.5)};
+// x et y : {home, away, t (ms)} ; hrs = écart d'heure de début toléré
+const ssSameMatch=(x,y,hrs)=>ssSameTeam(x.home,y.home)&&ssSameTeam(x.away,y.away)&&(!x.t||!y.t||Math.abs(x.t-y.t)<=(hrs||3)*3600e3);
