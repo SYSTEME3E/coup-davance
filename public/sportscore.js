@@ -13,7 +13,7 @@ async function ssFetch(endpoint,params){
     const root=/^v1\//.test(endpoint)?"https://sportscore.com/api/":SS_BASE;
     const path=root+endpoint+"/?"+base.toString();
     let res,txt="";
-    try{res=await fetch(root+endpoint+"/?"+q.toString());txt=await res.text()}
+    try{res=await fetch(root+endpoint+"/?"+q.toString(),{cache:"no-store"});txt=await res.text()}
     catch(e){SS.last={path,status:0,keyed:withKey,body:String(e)};throw new Error("Réseau indisponible ou requête bloquée (CORS)")}
     SS.last={path,status:res.status,keyed:withKey,body:txt.slice(0,1500)};
     return{res,txt}};
