@@ -136,3 +136,64 @@
 .ms-hr{grid-template-columns:96px 28px 1fr 28px 34px;justify-content:stretch}
 .ms-hr .lw{display:flex;justify-content:center}
 .ms-hr .s{white-space:nowrap;justify-self:center;min-width:74px}
+
+/* ===== Style SportScore étendu : liste des matchs (sport.html) et match.html (pronostics) ===== */
+body.ss{--ink:#1B1650;--mut:#6B6890;--navy:#1F1A52;--pill:#5B4BDB;--blue:#1D6FE0;--red:#DC3545;background:#E9E9FC;color:var(--ink)}
+.ss .top{border-bottom-color:#D8D8F0}
+.ss .back{display:inline-block;margin:8px 0;font-weight:700;font-size:14px;color:var(--pill);text-decoration:none}
+.ss .pt{color:var(--ink)}
+.ss .sx-lead,.ss .sub,.ss .note{color:var(--mut)}
+
+/* Onglets et filtres */
+.ss .sx-tabs a{background:#fff;border-color:transparent;color:var(--mut);box-shadow:0 1px 2px rgba(27,22,80,.06)}
+.ss .sx-tabs a.on{background:var(--navy);border-color:var(--navy);color:#fff;box-shadow:none}
+.ss .sx-chips button{background:#fff;border-color:transparent;color:var(--mut);box-shadow:0 1px 2px rgba(27,22,80,.06)}
+.ss .sx-chips button.on{background:var(--pill);border-color:var(--pill);color:#fff}
+.ss .srch input{background:#fff;border:0;border-radius:12px;color:var(--ink);box-shadow:0 1px 2px rgba(27,22,80,.06)}
+
+/* Liste : chaque compétition = barre bleu nuit + lignes blanches collées */
+.ss .sx-cmp{background:var(--navy);color:#fff;margin:18px 0 0;padding:11px 14px;border-radius:14px 14px 0 0;letter-spacing:.02em;text-transform:none;font-size:15px}
+.ss .sx-cmp .lgo{background:#fff;border-radius:50%;padding:2px;width:24px;height:24px}
+.ss .sx-m{margin:0;border:0;border-bottom:1px solid #EEF0F6;border-radius:0;box-shadow:none;background:#fff;padding:13px 14px}
+.ss .sx-m:last-child,.ss .sx-m:has(+ .sx-cmp),.ss .sx-m:has(+ .sx-more){border-bottom:0;border-radius:0 0 14px 14px}
+.ss .sx-m[data-go]:hover{background:#F6F6FD;box-shadow:none}
+.ss .sx-m .st{border-right-color:#E6E8F1;color:var(--mut)}
+.ss .sx-m .sc b{color:var(--ink)}
+.ss .sx-m.lv{background:#fff;box-shadow:inset 4px 0 0 var(--red)}
+.ss .sx-m.lv .st{color:var(--red)}.ss .sx-m.lv .sc b{color:var(--red)}
+.ss .sx-h.rd{background:var(--red);color:#fff;margin:18px 0 0;padding:10px 14px;border-radius:14px 14px 0 0}
+.ss .sx-h.rd .sx-dot{background:#fff}
+.ss .sx-more{background:#fff;color:var(--pill);border:0;border-radius:12px;font-weight:800}
+.ss .card{background:#fff;border:0;color:var(--ink)}
+
+/* Cartes génériques (classements, buteurs, pronostics) : en-tête grise + corps blanc */
+.ss .sec{background:#fff;border:0;border-radius:14px;padding:0 16px 14px;overflow:hidden;margin:0 0 14px;box-shadow:0 1px 2px rgba(27,22,80,.06)}
+.ss .sec>h2{margin:0 -16px 12px;padding:14px 16px;background:#F1F2F7;border-bottom:1px solid #E4E5EE;font-size:19px;color:var(--ink)}
+.ss .sx-ph h2{color:var(--ink)}
+
+/* match.html : en-tête bleu nuit */
+.ss .mh{background:var(--navy);border:0;border-radius:14px;color:#fff;padding:0;overflow:hidden;box-shadow:0 1px 2px rgba(27,22,80,.06)}
+.ss .mh .lgl{background:#F1F2F7;color:var(--ink);margin:0;padding:12px 16px;font-weight:700}
+.ss .mh .tt{padding:20px 12px}
+.ss .mh .scr small{color:rgba(255,255,255,.8)}
+.ss .mh .scr.live{color:#fff}
+.ss .mh .scr.live small .lv{color:#FF8A96}
+.ss .mh .t b{color:#fff}
+.ss .mh .scr .g.w{color:#0B6B33;background:#CFF3DB;box-shadow:none}
+.ss .mh .tt .t.win b{color:#0B6B33}
+.ss .mh .lgo{background:#fff;border-radius:50%;padding:2px}
+
+/* Barres de stats : bleu à gauche, rouge à droite */
+.ss .sv{font-size:13px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#3A3768}
+.ss .sv b{font:800 19px "Bricolage Grotesque",sans-serif;letter-spacing:0;color:var(--ink)}
+.ss .sb div{background:#EDEEF4}
+.ss .sb .l i{background:linear-gradient(270deg,#1D6FE0,#5FA2F5)}
+.ss .sb .r i{background:linear-gradient(90deg,#F59A9A,#C62F3F)}
+
+/* Temps forts : minute dans une bulle bleue */
+.ss .evr{border-top:0;grid-template-columns:1fr 52px 1fr;align-items:center;padding:7px 0}
+.ss .evr .m{background:var(--blue);color:#fff;border-radius:99px;height:38px;display:flex;align-items:center;justify-content:center;font:800 14px "Bricolage Grotesque",sans-serif}
+.ss .evr .h,.ss .evr .a{font-weight:700}
+.ss .lb h3{color:var(--ink)}
+.ss .btn{background:var(--pill)}
+.ss .sx-m .tm span{color:var(--ink)}.ss .sx-live{color:var(--red)}
