@@ -72,8 +72,23 @@ const card=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]||{},
   +(why?'<div class="pc-why" hidden>'+why+'</div>':"")+'</div>'};
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-why]");if(!b)return;
   const w=b.closest(".pc").querySelector(".pc-why");if(!w)return;const o=w.hidden;w.hidden=!o;b.setAttribute("aria-expanded",o?"true":"false");b.textContent=o?"masquer ▴":"pourquoi ▾"});
+// ---- Carte « Historique » (style clair : barre bleu / gris / rouge, résultat vert ou rouge) ----
+const histCard=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]||{},open=isOpen(m);
+  let body;
+  if(open){const p=d.result,sg=(k,c)=>'<span class="'+c+'" style="flex:'+Math.max(p[k],1)+'">'+(p[k]>=8?p[k]+"%":"")+'</span>';
+    body='<div class="bar">'+sg("home","h")+sg("draw","d")+sg("away","a")+'</div>'
+    +'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
+    +'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div></div>'
+    +frm(d)}
+  else body=lockBox(m);
+  return '<div class="hc" data-id="'+m.fixture_id+'" role="link" tabindex="0">'
+  +'<div class="tm"><b class="tn">'+lgo(me.home_logo)+esc(m.home)+'</b><span>contre</span><b class="tn">'+lgo(me.away_logo)+esc(m.away)+'</b></div>'
+  +'<p class="sub">'+esc(m.league||"")+' · '+when(m)+'</p>'
+  +'<div class="hc-tag">'+tagOf(m)+'</div>'
+  +body+result(m)
+  +'<div class="chk go">Voir le détail et les statistiques ›</div></div>'};
 // Un clic sur une carte ouvre la page du match
-const openCard=e=>{const c=e.target.closest&&e.target.closest(".card[data-id],.pc[data-id]");if(!c||e.target.closest("a,button"))return;
+const openCard=e=>{const c=e.target.closest&&e.target.closest(".card[data-id],.pc[data-id],.hc[data-id]");if(!c||e.target.closest("a,button"))return;
   if(String(getSelection()).length)return;location.href="match.html?id="+c.dataset.id};
 document.addEventListener("click",openCard);
 document.addEventListener("keydown",e=>{if(e.key==="Enter")openCard(e)});
@@ -105,5 +120,5 @@ document.addEventListener("click",async e=>{
   const{data:row}=await sb.from("predictions_safe").select("*").eq("fixture_id",id).maybeSingle();
   if(!row||!isOpen(row))return fail("Déblocage impossible. Réessaie dans un instant.");
   FULL[id]=row;
-  document.querySelectorAll('.card[data-id="'+id+'"],.pc[data-id="'+id+'"]').forEach(c=>{c.outerHTML=card(row)});
+  document.querySelectorAll('.card[data-id="'+id+'"],.pc[data-id="'+id+'"],.hc[data-id="'+id+'"]').forEach(c=>{c.outerHTML=(c.classList.contains("hc")?histCard:card)(row)});
   if(window.afterUnlock)window.afterUnlock(row)});
