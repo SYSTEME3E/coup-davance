@@ -149,7 +149,11 @@ async function show(silent){clearInterval(TIMER);
   if(!silent)$("v").innerHTML='<p class="sub">Chargement…</p>';
   try{const f=P[p]||P.matches,h=await f(...args);
     if(!(silent&&document.activeElement&&document.activeElement.id==="sq")){$("v").innerHTML=h;chips();dbg()}
-    if(p==="matches")TIMER=setInterval(()=>{if(!document.hidden)show(true)},60000)}
+    if(p==="matches")TIMER=setInterval(()=>{if(!document.hidden)show(true)},60000);
+    // Fiche d'un match : actualisée toute seule (30 s en direct, 60 s sinon) tant que le match n'est pas terminé
+    if(p==="match"&&typeof MV_M!=="undefined"&&MV_M&&!MV_M.done){let busy=false;
+      TIMER=setInterval(async()=>{if(document.hidden||busy)return;busy=true;
+        try{if(await mvRefresh(args[0],args[1]))show(true)}catch(e){}finally{busy=false}},MV_M.live?30000:60000)}}
   catch(e){dbg();if(!silent)$("v").innerHTML=err(e);chips()}}
 function dbg(){if(!DEBUG)return;$("dbg").hidden=false;const l=SS.last;
   $("dbgp").textContent=l?"GET "+l.path+(l.keyed?"  (avec clé)":"  (sans clé)")+"\nStatut HTTP : "+l.status+"\n\n"+l.body:"Aucune requête effectuée."}
