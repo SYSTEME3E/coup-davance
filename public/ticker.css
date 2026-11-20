@@ -1,0 +1,15 @@
+/* Bande des matchs en direct (haut de page) */
+.tick{position:sticky;top:0;z-index:50;display:flex;align-items:center;height:38px;background:#0c0a24;border-bottom:1px solid rgba(255,255,255,.1);overflow:hidden;color:#fff;font:700 13px "Hanken Grotesk",sans-serif}
+.tick[hidden]{display:none}
+.tick .tk-b{flex:0 0 auto;display:flex;align-items:center;gap:6px;height:100%;padding:0 12px;background:#e5322d;letter-spacing:.04em;font-size:12px;z-index:2;box-shadow:6px 0 10px rgba(0,0,0,.35)}
+.tick .tk-b i{width:7px;height:7px;border-radius:50%;background:#fff;animation:tkp 1.2s infinite}
+@keyframes tkp{50%{opacity:.25}}
+.tick .tk-w{flex:1;overflow:hidden;white-space:nowrap}
+.tick .tk-t{display:inline-flex;align-items:center;animation:tkm var(--tkd,60s) linear infinite}
+.tick:hover .tk-t,.tick:active .tk-t{animation-play-state:paused}
+@keyframes tkm{to{transform:translateX(-50%)}}
+.tick a.tk-i{display:inline-flex;align-items:center;gap:6px;padding:0 16px;height:38px;color:#fff;text-decoration:none;border-right:1px solid rgba(255,255,255,.12)}
+.tick .tk-i img{width:16px;height:16px;object-fit:contain}
+.tick .tk-s{color:#ffd24a;font-weight:800;padding:0 2px}
+.tick .tk-m{color:#4ade80;font-size:12px;margin-left:2px}
+@media (prefers-reduced-motion:reduce){.tick .tk-t{animation:none}.tick .tk-w{overflow-x:auto}}
