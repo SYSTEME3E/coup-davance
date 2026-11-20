@@ -34,12 +34,12 @@
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="cards.js"></script><script src="menu.js"></script><script src="sportscore.js"></script><script src="ticker.js" defer></script><script>
 $("date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
-(async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
+(async()=>{const{data:{session}}=await sb.auth.getSession();if(!session){let sv=null;try{sv=localStorage.getItem("pb_home_v1")}catch(x){}if(!(navigator.onLine===false&&sv))return location.href="auth.html#login"}
 let homeHTML="",tok=0,cache=null;
 const clean=()=>$("q").value.replace(/[%_,()*\\]/g," ").trim();
 const searching=()=>clean().length>=2||!!$("qd").value;
 // Liste du jour : matchs en cours en premier (rouge), puis les matchs d’aujourd’hui uniquement. Actualisée toutes les 60 s.
-let LIM=30,LIMO=40,lastSig="",FILT="all";const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute,kind,unlocked";
+let LIM=30,LIMO=40,lastSig="",FILT="all",OFF=0;const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute,kind,unlocked";
 document.addEventListener("click",e=>{if(e.target&&e.target.id==="moreHome"){LIM+=30;build()}if(e.target&&e.target.id==="moreOth"){LIMO+=40;build()}});
 const PF=m=>FILT==="all"||(FILT==="live"?!!m.live_status:FILT==="next"?(!m.live_status&&!m.settled_at&&new Date(m.kickoff)>Date.now()):(isOpen(m)&&Math.max(m.data.result.home,m.data.result.draw,m.data.result.away)>=80));
 // ---- Autres matchs du jour (sans pronostic) : tous les championnats fournis par SportScore, comme la page « Football en direct » ----
@@ -67,6 +67,7 @@ const build=()=>{const{all:all0,error,s,tm,others}=cache;const all=all0.filter(P
  const day=d=>rest.filter(m=>new Date(m.kickoff).toDateString()===d.toDateString());
  const part=(t,d,hideEmpty)=>{const a=day(d);if(!a.length&&hideEmpty)return"";return '<p class="sub dh">'+t+' ('+a.length+')</p>'+(a.length?take(a).map(card).join(""):'<div class="card"><p class="sub" style="margin:0">Plus aucun match à venir pour le moment.</p></div>')};
  homeHTML=error?'<div class="card">Impossible de charger les matchs. Réessaie dans un instant.</div>':all0.length&&!all.length?'<div class="card">Aucun match dans cette catégorie pour le moment.</div>':all.length?(liveNow.length?'<p class="sub dh rd">En cours ('+liveNow.length+')</p>'+take(liveNow).map(card).join(""):"")+part("Aujourd’hui",s,liveNow.length>0):'<div class="card"><b>Pas de match avec pronostic pour aujourd’hui pour le moment.</b><p class="sub" style="margin:8px 0 0">Ils sont calculés toutes les 5 minutes. Il peut aussi n’y avoir aucun match dans les compétitions couvertes.</p></div>';
+ if(OFF)homeHTML='<div class="card"><b>Mode hors ligne</b><p class="sub" style="margin:6px 0 0">Derniers matchs enregistrés à '+hm(OFF)+'. Les scores en direct et les nouveaux matchs reviennent dès que la connexion revient.</p></div>'+homeHTML;
  if(!error){const o=othHTML(others||[]);homeHTML+=o||(FILT==="all"&&typeof _ssDay!=="undefined"&&_ssDay.err?'<p class="note" style="text-align:center">Les autres championnats sont momentanément indisponibles. Ils reviennent à la prochaine actualisation.</p>':"")}
  if(all.length>LIM)homeHTML+='<button id="moreHome" class="more">Afficher plus de matchs ('+(all.length-LIM)+')</button>';
  if(!searching())$("list").innerHTML=homeHTML};
@@ -85,7 +86,11 @@ const withSS=async rows=>{
 const loadHome=async first=>{
  const s=new Date();s.setHours(0,0,0,0);
  const yd=new Date(s);yd.setDate(yd.getDate()-1);const tm=new Date(s);tm.setDate(tm.getDate()+1);const e=new Date(s);e.setDate(e.getDate()+2);
- const{data,error}=await sb.from("predictions_safe").select(COLS).gte("kickoff",yd.toISOString()).lt("kickoff",tm.toISOString()).is("settled_at",null).order("kickoff");
+ let{data,error}=await sb.from("predictions_safe").select(COLS).gte("kickoff",yd.toISOString()).lt("kickoff",tm.toISOString()).is("settled_at",null).order("kickoff");
+ // Mode hors ligne : on garde la dernière liste reçue sur le téléphone et on l'affiche si internet est coupé
+ OFF=0;
+ if(!error&&data){try{localStorage.setItem("pb_home_v1",JSON.stringify({t:Date.now(),data}))}catch(x){}}
+ else if(error){try{const sv=JSON.parse(localStorage.getItem("pb_home_v1")||"null");if(sv&&Array.isArray(sv.data)){data=sv.data;error=null;OFF=sv.t||1}}catch(x){}}
  if(error&&!first)return;
  let all=(data||[]).filter(m=>m.live_status||(new Date(m.kickoff).toDateString()===s.toDateString()&&new Date(m.kickoff).getTime()>Date.now()-3*36e5));
  // 1) affichage immédiat des matchs avec pronostic (la base répond en quelques ms) ; SportScore se charge ensuite en arrière-plan
