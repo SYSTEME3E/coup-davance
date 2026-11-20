@@ -64,7 +64,7 @@ const mhead=m=>{const sc=m.hs!=null&&m.as!=null,w=sc?(+m.hs>+m.as?"home":+m.as>+
 // ---- pages ----
 const P={
  async matches(){
-  const all=ssArr(await SS("matches",{limit:50})).map(ssMatch);
+  const all=await ssToday();
   if(!all.length)return'<div class="card">Aucun match pour le moment.</div>';
   const n={all:all.length,live:all.filter(m=>m.live).length,done:all.filter(m=>m.done).length,next:all.filter(m=>!m.live&&!m.done).length};
   const ms=all.filter(m=>FILTER==="live"?m.live:FILTER==="done"?m.done:FILTER==="next"?(!m.live&&!m.done):true);
@@ -138,7 +138,7 @@ const P={
      return'<div class="bm">'+line(m.home,m.home_logo,m.home_score,w&&w===m.home)+line(m.away,m.away_logo,m.away_score,w&&w===m.away)+'</div>'}).join("")+'</div>').join("")+'</div>'},
 
  async tracker(id){
-  if(!id){const ms=ssArr(await SS("matches",{limit:50})).map(ssMatch).filter(m=>m.live);
+  if(!id){const ms=await ssLive();
    return'<div class="sec"><h2>Choisis un match en direct</h2>'+(ms.length?ms.map(m=>mrow(m,m.mid?"tracker/"+esc(m.mid):"")).join(""):'<p class="note">Aucun match en direct pour le moment.</p>')+'</div>'}
   const src=await ssTracker(id);
   return'<a class="back" href="#tracker">← Retour</a><div class="sx-trk"><iframe src="'+esc(src)+'" title="Suivi du match en direct" loading="lazy" allow="fullscreen" sandbox="allow-same-origin allow-scripts allow-popups"></iframe></div><p class="note" style="text-align:center">Suivi live fourni par SportScore.</p>'}
