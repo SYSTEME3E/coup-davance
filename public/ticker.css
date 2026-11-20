@@ -11,5 +11,5 @@
 .tick a.tk-i{display:inline-flex;align-items:center;gap:6px;padding:0 16px;height:38px;color:#fff;text-decoration:none;border-right:1px solid rgba(255,255,255,.12)}
 .tick .tk-i img{width:16px;height:16px;object-fit:contain}
 .tick .tk-s{color:#ffd24a;font-weight:800;padding:0 2px}
-.tick .tk-m{color:#4ade80;font-size:12px;margin-left:2px}
+.tick .tk-m{color:#8ab4ff;font-size:12px;margin-left:2px}
 @media (prefers-reduced-motion:reduce){.tick .tk-t{animation:none}.tick .tk-w{overflow-x:auto}}
