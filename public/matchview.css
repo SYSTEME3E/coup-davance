@@ -159,7 +159,7 @@ body.ss{--ink:#1B1650;--mut:#6B6890;--navy:#1F1A52;--pill:#5B4BDB;--blue:#1D6FE0
 .ss .sx-m[data-go]:hover{background:#F6F6FD;box-shadow:none}
 .ss .sx-m .st{border-right-color:#E6E8F1;color:var(--mut)}
 .ss .sx-m .sc b{color:var(--ink)}
-.ss .sx-m.lv{background:#fff;box-shadow:inset 4px 0 0 var(--red)}
+.ss .sx-m.lv{background:#fff;box-shadow:none}
 .ss .sx-m.lv .st{color:var(--red)}.ss .sx-m.lv .sc b{color:var(--red)}
 .ss .sx-h.rd{background:var(--red);color:#fff;margin:18px 0 0;padding:10px 14px;border-radius:14px 14px 0 0}
 .ss .sx-h.rd .sx-dot{background:#fff}
