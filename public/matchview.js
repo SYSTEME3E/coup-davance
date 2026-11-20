@@ -123,3 +123,18 @@ document.addEventListener("click",e=>{
   root.querySelectorAll("[data-mvpn]").forEach(x=>x.classList.toggle("on",x.dataset.mvpn===k));
   if(k==="h2h"){const box=document.getElementById("ms-h2h");if(box&&!box.dataset.done&&MV_M){box.dataset.done=1;mvH2H(box,MV_M)}}
   b.scrollIntoView&&b.scrollIntoView({block:"nearest",inline:"center"})});
+
+// ---- Direct : mise à jour d'une fiche déjà affichée (score, minute, stats, chronologie), sans recharger le terrain ni changer d'onglet ----
+// Renvoie true si l'état du match a changé (à venir → en direct → terminé) : l'appelant redessine alors toute la page.
+async function mvRefresh(slug,mid){
+  const root=document.querySelector(".ms");if(!root||!MV_M)return false;
+  let d;try{d=await SS("match",{slug})}catch(e){if(!mid)return false;try{d=await SS("match",{slug:mid})}catch(e2){return false}}
+  const r=d.match||d.data||d,m=ssMatch(r);if(!m.id)m.id=slug;if(!m.mid)m.mid=mid;
+  const prev=MV_M;
+  if(prev.live!==m.live||prev.done!==m.done){MV_M=m;return true}
+  const tmp=document.createElement("div");tmp.innerHTML=mvRender(r,m);   // met aussi MV_M à jour
+  const sb2=tmp.querySelector(".ms-sb"),sb1=root.querySelector(".ms-sb");
+  if(sb1&&sb2)sb1.replaceWith(sb2);
+  tmp.querySelectorAll("[data-mvpn]").forEach(n=>{const k=n.dataset.mvpn;if(k==="h2h"||k==="standings")return;
+    const cur=root.querySelector('[data-mvpn="'+k+'"]');if(cur&&cur.innerHTML!==n.innerHTML)cur.innerHTML=n.innerHTML});
+  return false}
