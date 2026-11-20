@@ -109,7 +109,7 @@ const loadHome=async first=>{
 $("pf").onclick=e=>{const b=e.target.closest("[data-pf]");if(!b)return;if(b.dataset.pf==="done"){location.href="historique.html";return}
  FILT=b.dataset.pf;LIM=30;$("pf").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));if(cache)build()};
 await loadHome(true);
-setInterval(()=>{if(!document.hidden)loadHome(false)},60000);
+setInterval(()=>{if(!document.hidden)loadHome(false)},window.LITE?90000:60000);
 const render=(t,a)=>a.length?'<p class="sub dh">'+t+' ('+a.length+')</p>'+a.map(card).join(""):"";
 const doSearch=async()=>{const my=++tok,q=clean(),dv=$("qd").value;
  if(q.length<2&&!dv){$("list").innerHTML=homeHTML;return}
