@@ -445,3 +445,6 @@ img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none;-webkit-tou
 /* Football en direct : recherche et « Voir plus » */
 .srch #sq{flex:1;width:100%}
 .sx-more{display:block;width:100%;margin:16px 0 8px}
+
+/* Mode Lite : aucune image de logo (sécurité si une image arrive d'ailleurs) */
+html.lite img.lgo,html.lite .sx-m .tm img,html.lite .oth-m img{display:none!important}
