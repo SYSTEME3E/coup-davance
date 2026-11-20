@@ -1,5 +1,5 @@
 // Service worker Pronos-bet : réseau d'abord, cache en secours (pages et fichiers du site uniquement).
-const V="pronos-bet-v5",SHELL=["style.css","cards.js","sportscore.js","matchview.js","matchview.css","predview.css","theme.css","icon.svg","icons/icon-192.png","icons/icon-512.png"];
+const V="pronos-bet-v6",SHELL=["style.css","cards.js","sportscore.js","ticker.js","ticker.css","matchview.js","matchview.css","predview.css","theme.css","icon.svg","icons/icon-192.png","icons/icon-512.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener("fetch",e=>{
