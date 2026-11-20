@@ -17,7 +17,15 @@ body.au{background:#0d0b2b;color:#fff;min-height:100vh;margin:0}
 .au-cta{display:block;width:100%;margin-top:14px;padding:17px;border:0;border-radius:16px;background:linear-gradient(90deg,#5b3fe0,#3b82f6);color:#fff;font:800 18px "Hanken Grotesk",sans-serif;text-align:center;text-decoration:none;box-shadow:0 10px 24px rgba(91,63,224,.38);cursor:pointer;box-sizing:border-box}
 .au-lt{display:block;margin:18px 0 8px;text-align:center;color:#7a7aa0;font:700 16px "Hanken Grotesk",sans-serif;text-decoration:none}
 .au-lg{margin:0;text-align:center;color:#7a7aa0;font-size:15px}.au-lg a{font-weight:800;color:#5b3fe0;text-decoration:none}
-.au-fm{padding:20px 22px 28px}
+.au-fm{padding:20px 22px 28px;background:#fff;color:#1a1745;--ink:#1a1745;--muted:#6b6890;--line:#d6d6ea;--bg:#fff;--surface:#f4f4fb;--brand:#5b3fe0;color-scheme:light}
+.au-fm label,.au-fm .check span{color:#1a1745}
+.au-fm input[type=email],.au-fm input[type=password],.au-fm input[type=text]{background:#fff;color:#1a1745;border:1.5px solid #cfcfe8;border-radius:12px;padding:13px 14px;color-scheme:light}
+.au-fm input::placeholder{color:#9a9ac0}
+.au-fm input:focus{border-color:#5b3fe0;box-shadow:0 0 0 3px rgba(91,63,224,.18)}
+.au-fm .nn{color:#7a7aa0;font-weight:400}
+.au-fm a{color:#5b3fe0}
+.au-fm .tabs a{color:#6b6890;background:#f1f1fa}
+.au-fm #msg{color:#c0263a;font-weight:700;margin:10px 0}
 .au-fm .tabs{margin-bottom:16px}.au-fm .tabs a.on{background:#4b3fd0;color:#fff;border-color:#4b3fd0}
 .au-fm h2{margin:0 0 14px;font:800 22px "Bricolage Grotesque",sans-serif}
 .au-fm .btn{background:linear-gradient(90deg,#5b3fe0,#3b82f6);border-radius:14px}
@@ -35,7 +43,7 @@ body.au{background:#0d0b2b;color:#fff;min-height:100vh;margin:0}
 <a class="au-cta" href="#signup">Je crée mon compte gratuit</a>
 <a class="au-lt" href="dashboard.html">Plus tard</a>
 <p class="au-lg">Déjà inscrit ? <a href="#login">Se connecter</a></p></section>
-<main id="frm" class="au-fm box" style="max-width:none;margin:0;border:0;background:#fff;border-radius:0;padding:20px 22px 28px"><div class="tabs"><a id="t-login" href="#login">Connexion</a><a id="t-signup" href="#signup">Créer un compte</a></div>
+<main id="frm" class="au-fm"><div class="tabs"><a id="t-login" href="#login">Connexion</a><a id="t-signup" href="#signup">Créer un compte</a></div>
 <h1 id="title" style="font:800 22px 'Bricolage Grotesque',sans-serif;margin:0 0 14px"></h1>
 <div id="nm"><label for="fn">Nom complet</label><input id="fn" type="text" autocomplete="name" maxlength="100"></div>
 <label for="email">Adresse e-mail</label><input id="email" type="email" autocomplete="email">
@@ -60,7 +68,7 @@ $("t-login").className=s?"":"on";$("t-signup").className=s?"on":"";
 $("title").textContent=s?"Crée ton compte gratuit":"Content de te revoir";
 $("go").textContent=s?"Créer mon compte":"Me connecter";$("terms").hidden=!s;$("nm").hidden=!s;$("rf").hidden=!s;$("pc").hidden=!s;
 $("pw").autocomplete=s?"new-password":"current-password";say("")}
-function say(t,ok){$("msg").style.color=ok?"#1B4332":"";$("msg").textContent=t}
+function say(t,ok){$("msg").style.color=ok?"#4b3fd0":"";$("msg").textContent=t}
 addEventListener("hashchange",view);view();
 const q=new URLSearchParams(location.search).get("email");if(q)$("email").value=q;
 $("go").onclick=async()=>{say("");const email=$("email").value.trim(),password=$("pw").value;
