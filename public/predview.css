@@ -1,0 +1,81 @@
+/* Pronostics « façon SportScore » : violet nuit, barre vert / orange / rouge, pastilles */
+body.pd{--bg:#130F33;--surface:#1B1450;--ink:#FFFFFF;--muted:#A9A4D6;--line:#322A7E;--blue-bg:#241C66;--pill:#6F5BFF;
+  background:#130F33;color:#fff;color-scheme:dark}
+.pd .logo{color:#fff}.pd .top{border-bottom-color:#2B2470}
+.pd a{color:#8F80FF}
+.pd .card{background:#1C1555;border:1px solid #3A2F9A;color:#fff}
+.pd .srch input,.pd input[type=search],.pd input[type=date]{background:#1C1555;border:1px solid #3A2F9A;color:#fff;border-radius:12px}
+.pd .more,.pd .flt button{background:#1C1555;border:1px solid #3A2F9A;color:#fff}
+.pd .more:hover{background:#241C66}
+.pd .flt button.on{background:#fff;color:#1B1650}
+.pd .inst{background:#1C1555;border-color:#3A2F9A;color:#fff}.pd .inst span{color:#A9A4D6}
+.pd .bonus .btn{background:#2A2078;border:1px solid #3A2F9A}
+.pd .pt-item{background:#1C1555;border-color:#3A2F9A}.pd .pt-code code{background:#130F33;border-color:#6F5BFF;color:#fff}
+.pd .pt-code button{background:#241C66;border-color:#3A2F9A;color:#fff}
+.pd .sub.dh{color:#A9A4D6;font-size:14px;text-transform:none}.pd .sub.dh.rd{color:#FF6B78}
+
+/* Titre + filtres du tableau de bord */
+.pc-h{margin:22px 0 2px;font:800 28px/1.1 "Bricolage Grotesque",sans-serif;color:#fff}
+.pc-sub{margin:0 0 14px;color:#A9A4D6;font-size:17px}
+.pc-flt{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+.pc-flt button{font:700 17px "Hanken Grotesk",sans-serif;color:#fff;background:#1C1555;border:1.5px solid #3A2F9A;border-radius:99px;padding:11px 20px;cursor:pointer}
+.pc-flt button.on{background:#fff;color:#1B1650;border-color:#fff}
+.pc-flt button:focus-visible{outline:3px solid #8F80FF;outline-offset:2px}
+
+/* Carte de pronostic */
+.pc{background:#1A1448;border:1px solid #382C94;border-radius:20px;padding:16px;margin:0 0 16px;color:#fff;cursor:pointer;transition:border-color .15s}
+.pc:hover,.pc:focus-visible{border-color:#6F5BFF}
+.pc.live{border-color:#E03A4A}
+.pc-top{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#A9A4D6;font:500 16px "Hanken Grotesk",sans-serif}
+.pc-badge{display:flex;align-items:center;gap:10px;font:800 18px "Hanken Grotesk",sans-serif}
+.pc-badge b.ok{color:#6CCB45;font-size:24px}.pc-badge b.ko{color:#F05252;font-size:24px}
+.pc-bd{background:#281F6A;color:#B9B4E6;font:800 14px "Hanken Grotesk",sans-serif;padding:7px 13px;border-radius:99px;display:inline-flex;align-items:center;gap:6px}
+.pc-bd.lv{background:#4A1B3A;color:#FF8A96}.pc-bd.lv i{width:8px;height:8px;border-radius:50%;background:#FF4D5E;animation:pc-pl 1.2s infinite}
+@keyframes pc-pl{50%{opacity:.3}}@media (prefers-reduced-motion:reduce){.pc-bd.lv i{animation:none}}
+.pc-lg{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 4px;color:#8E89C4;font-size:14px}
+.pc-lg .lgo{width:18px;height:18px;object-fit:contain;background:#fff;border-radius:50%;padding:1px}
+.pc-lg .cf{margin-left:auto;font-size:13px}.pc-lg .cf.hi{color:#6CCB45}.pc-lg .cf.lo{color:#FFAE1A}
+.pc-teams{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin:12px 0 14px}
+.pc-t{display:flex;align-items:center;gap:10px;min-width:0;font:800 19px/1.15 "Bricolage Grotesque",sans-serif}
+.pc-t b{overflow-wrap:anywhere}
+.pc-t.r{justify-content:flex-end;text-align:right}
+.pc-t img{width:38px;height:38px;object-fit:contain;flex:none}
+.pc-t.pk.h{color:#6CCB45}.pc-t.pk.a{color:#F05252}.pc-t.pk.d{color:#FFAE1A}
+.pc-m{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:64px}
+.pc-sc{font:800 32px/1 "Bricolage Grotesque",sans-serif;white-space:nowrap}.pc-sc.live{color:#FF8A96}
+.pc-vs{font:700 17px "Hanken Grotesk",sans-serif;color:#A9A4D6}
+.pc-or{font:800 14px "Hanken Grotesk",sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:7px 14px;border-radius:10px;background:#2B2270}
+.pc-or.h{color:#6CCB45}.pc-or.a{color:#F05252;background:#3C1D4A}.pc-or.d{color:#FFAE1A}
+
+/* Barre vert / orange / rouge */
+.pc-bar{display:flex;height:46px;border-radius:14px;overflow:hidden;border:1px solid #3A2F9A}
+.pc-bar span{display:flex;align-items:center;justify-content:center;font:800 18px "Hanken Grotesk",sans-serif;color:#fff;min-width:6px}
+.pc-bar .h{background:#6CCB45}.pc-bar .d{background:#FFAE1A}.pc-bar .a{background:linear-gradient(90deg,#C62828,#F25555)}
+
+/* Pastilles */
+.pc-pills,.pc-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.pc-pills span,.pc-chips span{background:#201860;border:1px solid #33298A;border-radius:14px;padding:11px 16px;font:500 18px "Hanken Grotesk",sans-serif;color:#B9B4E6}
+.pc-chips span{font-size:16px;padding:9px 14px}
+.pc-pills b,.pc-chips b{color:#fff;font-weight:800}
+.pc-pk{font-weight:800!important}.pc-pk.h{color:#6CCB45!important}.pc-pk.a{color:#F05252!important}.pc-pk.d{color:#FFAE1A!important}
+.pc-vd{margin-top:12px;color:#A9A4D6;font-size:14px}
+
+/* Boutons */
+.pc-act{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px}
+.pc-b{font:700 18px "Hanken Grotesk",sans-serif;color:#7F6CFF;background:#1C1560;border:1.5px solid #3A2F9A;border-radius:14px;padding:10px 18px;cursor:pointer;text-decoration:none}
+.pc-b.go{color:#8F80FF}
+.pc-b:focus-visible{outline:3px solid #8F80FF;outline-offset:2px}
+.pc-why{margin-top:12px;border-top:1px solid #2F2678;padding-top:12px}
+.pc-why .stats{color:#A9A4D6}.pc-why .stats div{border-top-color:#2F2678}.pc-why .stats b{color:#fff}
+.pc-why .frm{color:#A9A4D6}
+
+/* Pronostic masqué */
+.pc .lockbox{margin:0}
+.pc .lockbox .lkov b{color:#fff}.pc .lockbox .lkov span{color:#B9B4E6}
+.pc .lockbox .btn{background:#6F5BFF;color:#fff;border-radius:12px}
+.pc .lockbox .lkn{background:#2A2078;color:#FFB3BB}
+
+/* Dans match.html : bloc sombre à l'intérieur de la carte blanche */
+.pc-solo{background:#1A1448;border:1px solid #382C94;border-radius:16px;padding:14px;cursor:default;color:#fff}
+.pc-solo .stats{color:#A9A4D6}.pc-solo .stats div{border-top-color:#2F2678}.pc-solo .stats b{color:#fff}.pc-solo .frm{color:#A9A4D6}
+.pc-solo .lockbox .lkov b{color:#fff}.pc-solo .lockbox .lkov span{color:#B9B4E6}
