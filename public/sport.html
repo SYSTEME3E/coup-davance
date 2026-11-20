@@ -17,6 +17,8 @@ const DEBUG=/[?&]debug=1/.test(location.search);
 // Attention : « premier-league » seul n'existe pas pour les classements, il faut « english-premier-league ».
 const POP=[["Premier League","english-premier-league"],["Champions League","uefa-champions-league"],["La Liga","spanish-la-liga"],["Serie A","italian-serie-a"],["Bundesliga","bundesliga"],["Ligue 1","french-ligue-1"],["Europa League","uefa-europa-league"],["Brasileirão","brazilian-serie-a"],["MLS","united-states-major-league-soccer"],["Coupe du monde","fifa-world-cup"]];
 
+// Suivi live compact (comme 1xBet) : on n'affiche que le terrain et le score ; « Agrandir » montre le lecteur en entier.
+const trkBox=id=>'<div class="sx-trk"><div class="v"><iframe src="'+esc("https://sportscore.com/api/widget/tracker/?sport=football&id="+encodeURIComponent(id)+"&src="+encodeURIComponent((window.CFG||{}).src||""))+'" title="Suivi du match en direct" loading="lazy" allow="fullscreen" sandbox="allow-same-origin allow-scripts allow-popups"></iframe></div><button type="button" class="sx-trk-b" data-trk>Agrandir</button></div>';
 const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" loading="lazy" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
 const err=e=>'<div class="card sx-err"><b>Données indisponibles pour le moment</b><span>'+esc(ssErr(e))+'</span></div>';
 const hm=s=>{const d=new Date(typeof s==="number"&&s<1e12?s*1000:s);return isNaN(d)?"":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})};
@@ -84,7 +86,8 @@ const P={
   let h='<a class="back" href="#matches">← Retour aux matchs</a>'+mhead(m);
   if(r.home_ht_score!=null&&r.away_ht_score!=null&&m.hs!=null)h+='<p class="note" style="text-align:center">Mi-temps : '+esc(r.home_ht_score)+' – '+esc(r.away_ht_score)+'</p>';
   const tid=ssPick(r,["tracker.id"])||m.mid||mid;
-  if(tid&&!m.done)h+='<p style="text-align:center;margin:14px 0"><a class="btn sx-btn" href="#tracker/'+esc(tid)+'">▶ Suivre en direct</a></p>';
+  if(tid&&m.live)h+=trkBox(tid);
+  else if(tid&&!m.done)h+='<p style="text-align:center;margin:14px 0"><a class="btn sx-btn" href="#tracker/'+esc(tid)+'">▶ Suivre en direct</a></p>';
   const ev=ssArr(r,["incidents","events","timeline"]);
   if(ev.length)h+='<div class="sec"><h2>Temps forts</h2>'+ev.slice().reverse().map(evRow).join("")+'</div>';
   const stt=ssPick(r,["statistics","stats"]);
@@ -140,10 +143,7 @@ const P={
  async tracker(id){
   if(!id){const ms=await ssLive();
    return'<div class="sec"><h2>Choisis un match en direct</h2>'+(ms.length?ms.map(m=>mrow(m,m.mid?"tracker/"+esc(m.mid):"")).join(""):'<p class="note">Aucun match en direct pour le moment.</p>')+'</div>'}
-  // On intègre la page-enveloppe de SportScore (conçue pour être incorporée : X-Frame-Options ALLOWALL), pas l'adresse interne du lecteur :
-  // le lecteur (TheSports) n'accepte que les domaines autorisés par SportScore ; vu depuis sportscore.com, il fonctionne.
-  const src="https://sportscore.com/api/widget/tracker/?sport=football&id="+encodeURIComponent(id)+"&src="+encodeURIComponent((window.CFG||{}).src||"");
-  return'<a class="back" href="#tracker">← Retour</a><div class="sx-trk"><iframe src="'+esc(src)+'" title="Suivi du match en direct" loading="lazy" allow="fullscreen" sandbox="allow-same-origin allow-scripts allow-popups"></iframe></div><p class="note" style="text-align:center">Suivi live fourni par SportScore.</p>'}
+  return'<a class="back" href="#tracker">← Retour</a>'+trkBox(id)+'<p class="note" style="text-align:center">Suivi live fourni par SportScore.</p>'}
 };
 
 async function show(silent){clearInterval(TIMER);
@@ -158,6 +158,7 @@ function dbg(){if(!DEBUG)return;$("dbg").hidden=false;const l=SS.last;
   $("dbgp").textContent=l?"GET "+l.path+(l.keyed?"  (avec clé)":"  (sans clé)")+"\nStatut HTTP : "+l.status+"\n\n"+l.body:"Aucune requête effectuée."}
 
 document.addEventListener("click",e=>{
+  const tb=e.target.closest("[data-trk]");if(tb){const t=tb.closest(".sx-trk"),f=t.classList.toggle("full");tb.textContent=f?"Réduire":"Agrandir";return}
   const g=e.target.closest("[data-go]");if(g){location.hash=g.dataset.go;return}
   const c=e.target.closest("[data-c]");if(c){COMP=c.dataset.c;show();return}
   const f=e.target.closest("[data-f]");if(f){FILTER=f.dataset.f;show(true);return}
