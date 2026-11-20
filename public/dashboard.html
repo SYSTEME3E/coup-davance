@@ -88,12 +88,15 @@ const loadHome=async first=>{
  const{data,error}=await sb.from("predictions_safe").select(COLS).gte("kickoff",yd.toISOString()).lt("kickoff",tm.toISOString()).is("settled_at",null).order("kickoff");
  if(error&&!first)return;
  let all=(data||[]).filter(m=>m.live_status||(new Date(m.kickoff).toDateString()===s.toDateString()&&new Date(m.kickoff).getTime()>Date.now()-3*36e5));
+ // 1) affichage immédiat des matchs avec pronostic (la base répond en quelques ms) ; SportScore se charge ensuite en arrière-plan
+ if(first&&!error){cache={all,error,s,tm,others:[]};build()}
+ const rows=data||[];
+ const oP=(async()=>{try{const t=await ssToday();
+  return t.filter(x=>!x.done&&x.start&&new Date(x.start).toDateString()===s.toDateString()
+   &&!rows.some(m=>ssSameMatch({home:m.home,away:m.away,t:+new Date(m.kickoff)},{home:x.home,away:x.away,t:+new Date(x.start)},3)))}catch(e){return[]}})();
  all=await withSS(all);
- // Matchs du jour de tous les championnats (SportScore) qui n'ont pas (encore) de pronostic en base
- let others=[];
- try{const t=await ssToday(),rows=data||[];
-  others=t.filter(x=>!x.done&&x.start&&new Date(x.start).toDateString()===s.toDateString()
-   &&!rows.some(m=>ssSameMatch({home:m.home,away:m.away,t:+new Date(m.kickoff)},{home:x.home,away:x.away,t:+new Date(x.start)},3)))}catch(e){}
+ if(first&&!error){cache={all,error,s,tm,others:[]};build()} // 2) avec les scores en direct
+ const others=await oP; // 3) avec les autres championnats
  const sig=s.toDateString()+JSON.stringify(all.map(m=>[m.fixture_id,m.live_status,m.live_home,m.live_away,m.live_minute]))+JSON.stringify(others.map(x=>[x.id,x.live,x.hs,x.as]));
  if(!first&&!error&&sig===lastSig)return; // rien n'a changé : on ne redessine pas la liste
  lastSig=sig;cache={all,error,s,tm,others};build();
