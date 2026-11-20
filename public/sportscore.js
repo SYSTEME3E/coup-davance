@@ -85,13 +85,25 @@ const ssMerge=lists=>{const seen=new Map();lists.flat().forEach(m=>{const k=ssKe
 // Liste du jour. L'API limite chaque appel à 200 matchs : on additionne donc plusieurs appels (par statut et par compétition) puis on enlève les doublons.
 // Statuts : en cours, terminés, à venir (200 chacun) + les grandes compétitions en entier. Gardé 5 min (le direct est mis à jour à chaque appel).
 const SS_MORE=["uefa-champions-league","uefa-europa-league","uefa-conference-league","united-states-major-league-soccer","english-championship","dutch-eredivisie","portuguese-primeira-liga","turkish-super-lig","mexican-liga-mx","saudi-pro-league","scottish-premiership","belgian-pro-league","argentine-liga-profesional","fifa-world-cup"];
-let _ssDay={d:"",t:0,v:[]};
+let _ssDay={d:"",t:0,v:[],err:""};
+// Les appels sont lancés par petits groupes (4 à la fois) : 23 requêtes en parallèle se faisaient refuser par SportScore (limite de débit),
+// ce qui laissait la liste « Autres matchs du jour » vide sans aucun message.
+async function ssPool(tasks,n){const out=[];let i=0;
+  await Promise.all(Array.from({length:n},async()=>{while(i<tasks.length){const k=i++;out[k]=await tasks[k]()}}));return out}
 async function ssToday(date){
   const today=new Date().toISOString().slice(0,10),d=date||today;
   if(_ssDay.d!==d||Date.now()-_ssDay.t>3e5){
-    const q=p=>ssFix(Object.assign({date:d,limit:200},p)).catch(()=>[]);
-    const r=await Promise.all([q({}),q({status:"finished"}),q({status:"upcoming"})].concat(SS_TOP.concat(SS_MORE).map(c=>q({competition:c}))));
-    _ssDay={d,t:Date.now(),v:ssMerge(r)}}
+    let fails=0,last="";
+    const q=p=>async()=>{
+      for(let a=0;a<2;a++){try{return await ssFix(Object.assign({date:d,limit:200},p))}catch(e){last=String((e&&e.message)||e);fails++;await new Promise(r=>setTimeout(r,500))}}
+      return[]};
+    const base=[{},{status:"finished"},{status:"upcoming"}].map(q);
+    const comps=SS_TOP.concat(SS_MORE).map(c=>q({competition:c}));
+    const r=await ssPool(base.concat(comps),4);
+    const v=ssMerge(r);
+    // Si tout a échoué on garde l'ancienne liste plutôt que d'afficher une page vide
+    if(!v.length&&_ssDay.v.length&&_ssDay.d===d){_ssDay.t=Date.now()-24e4;_ssDay.err=last}
+    else _ssDay={d,t:Date.now(),v,err:v.length?"":last}}
   return d===today?ssMerge([_ssDay.v,await ssLive()]):_ssDay.v}
 // ---- Rapprochement des noms d'équipes entre deux sources ----
 const SS_STOP=new Set("fc ec sc cr ac as fr fbpa cf afc club de da do dos del la le les the paulista and".split(" "));
