@@ -36,20 +36,44 @@ const when=m=>new Date(m.kickoff).toLocaleDateString("fr-FR",{weekday:"short",da
 const isOpen=m=>!!(m.data&&m.data.result);
 const tagOf=m=>{const solid=m.kind?m.kind==="solid":(()=>{const p=m.data.result;return Math.max(p.home,p.draw,p.away)>=55})();
   return /friendl/i.test(m.league||"")?'<span class="cf lo">Match amical · très imprévisible</span>':solid?'<span class="cf hi">Favori probable</span>':'<span class="cf lo">Match incertain</span>'};
+// ---- Cartes de pronostic (style SportScore sombre) ----
+const PCN={h:"Domicile",d:"Nul",a:"Extérieur"},PCK={h:"home",d:"draw",a:"away"};
+const pcPick=p=>{const m=Math.max(p.home,p.draw,p.away);return p.home===m?"h":p.away===m?"a":"d"};
+const pcBar=p=>{const sg=(k,c)=>'<span class="'+c+'" style="flex:'+Math.max(p[k],1)+'">'+(p[k]>=10?p[k]+"%":"")+'</span>';return'<div class="pc-bar">'+sg("home","h")+sg("draw","d")+sg("away","a")+'</div>'};
 // Pronostic masqué (le serveur n'envoie pas les vraies valeurs : ce flou n'est qu'un décor)
-const FAKE='<div class="bar"><span class="h" style="flex:40">00%</span><span class="d" style="flex:30">00%</span><span class="a" style="flex:30">00%</span></div><div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div><div class="stats"><div>Les deux marquent<b>00%</b></div><div>Plus de 2,5 buts<b>00%</b></div><div>Score probable<b>0-0</b></div></div>';
+const FAKE='<div class="pc-bar"><span class="h" style="flex:40">00%</span><span class="d" style="flex:30">00%</span><span class="a" style="flex:30">00%</span></div><div class="pc-pills"><span class="pc-pk h">pronostic Domicile · 00%</span><span>score prévu <b>0-0</b></span></div><div class="pc-chips"><span>Plus de 2,5 buts <b>00%</b></span><span>Les deux marquent <b>00%</b></span></div>';
 const lockBox=m=>'<div class="lockbox"><div class="blurred" aria-hidden="true">'+FAKE+'</div><div class="lkov"><b>Pronostic masqué</b><span>Match '+(m.kind==="solid"?"solide":"incertain")+'</span><button type="button" class="btn" data-unlock="'+m.fixture_id+'">Débloquer le pronostic</button></div></div>';
 const FULL={};
-const probs=d=>{const p=d.result;
-  return '<div class="bar"><span class="h" style="flex:'+p.home+'">'+p.home+'%</span><span class="d" style="flex:'+p.draw+'">'+p.draw+'%</span><span class="a" style="flex:'+p.away+'">'+p.away+'%</span></div>'
-  +'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
-  +'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div></div>'+xt(d)+frm(d)};
-const card=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]||{};
-  return '<div class="card" data-id="'+m.fixture_id+'" role="link" tabindex="0"><div class="tm"><b class="tn">'+lgo(me.home_logo)+esc(m.home)+'</b><span>contre</span><b class="tn">'+lgo(me.away_logo)+esc(m.away)+'</b></div>'
-  +'<div class="mk">'+lgo(me.league_logo,"sm")+'<span>'+esc(m.league||"")+' · '+when(m)+'</span>'+tagOf(m)+'</div>'
-  +(isOpen(m)?probs(d):lockBox(m))+result(m)+'<div class="chk go">Voir le détail et les statistiques ›</div></div>'};
+const pcWhy=d=>xt(d)+frm(d);
+// fold = true : le détail (corners, forme…) est renvoyé à part, dans un bloc repliable (voir card)
+const probs=(d,fold)=>{const p=d.result,k=pcPick(p);
+  return pcBar(p)+'<div class="pc-pills"><span class="pc-pk '+k+'">pronostic '+PCN[k]+' · '+p[PCK[k]]+'%</span><span>score prévu <b>'+esc(d.likelyScore)+'</b></span></div>'
+  +'<div class="pc-chips"><span>Plus de 2,5 buts <b>'+d.over["2.5"]+'%</b></span><span>Les deux marquent <b>'+d.btts+'%</b></span></div>'+(fold?"":pcWhy(d))};
+const pcState=m=>m.settled_at?(m.final_home!=null?"done":"void"):m.live_status?"live":new Date(m.kickoff)<Date.now()?"wait":"next";
+const card=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]||{},st=pcState(m),open=isOpen(m),k=open?pcPick(d.result):"",v=m.verdict||{},good=!!v.ok1x2||!!v.scoreHit;
+  let badge="",mid='<span class="pc-vs">vs</span>',tag="";
+  if(st==="done"){const o=m.final_home>m.final_away?"h":m.final_home<m.final_away?"a":"d";
+    badge=(m.verdict?'<b class="'+(good?"ok":"ko")+'">'+(good?"✓":"✗")+'</b>':"")+'<span class="pc-bd">FT</span>';
+    mid='<span class="pc-sc">'+m.final_home+' – '+m.final_away+'</span>';tag='<span class="pc-or '+o+'">'+PCN[o]+'</span>'}
+  else if(st==="live"){const has=m.live_home!=null&&m.live_away!=null;
+    badge='<span class="pc-bd lv"><i></i>'+(m.live_status==="HT"?"MI-TEMPS":m.live_minute?m.live_minute+"’":"LIVE")+'</span>';
+    mid=has?'<span class="pc-sc live">'+m.live_home+' – '+m.live_away+'</span>':'<span class="pc-vs">–</span>'}
+  else if(st==="wait")badge='<span class="pc-bd">…</span>';
+  else if(st==="void")badge='<span class="pc-bd">'+esc(m.final_status||"Annulé")+'</span>';
+  const side=x=>(k===x&&st!=="done"?" pk "+x:"");
+  const vd=st==="done"&&m.verdict?'<div class="pc-vd">Prévu : '+(LB[v.predicted]||"?")+(v.scoreHit?' · 🎯 Score exact':"")+(v.btts&&v.over25?' · Les deux marquent '+yn(v.btts.ok)+' · +2,5 buts '+yn(v.over25.ok):"")+'</div>':"";
+  const why=open?pcWhy(d):"";
+  return '<div class="pc '+st+'" data-id="'+m.fixture_id+'" role="link" tabindex="0">'
+  +'<div class="pc-top"><span>'+when(m)+'</span><span class="pc-badge">'+badge+'</span></div>'
+  +'<div class="pc-lg">'+lgo(me.league_logo,"sm")+'<span>'+esc(m.league||"")+'</span>'+tagOf(m)+'</div>'
+  +'<div class="pc-teams"><div class="pc-t l'+side("h")+'">'+lgo(me.home_logo)+'<b>'+esc(m.home)+'</b></div><div class="pc-m">'+mid+tag+'</div><div class="pc-t r'+side("a")+'"><b>'+esc(m.away)+'</b>'+lgo(me.away_logo)+'</div></div>'
+  +(open?probs(d,true):lockBox(m))+vd
+  +'<div class="pc-act">'+(why?'<button type="button" class="pc-b" data-why aria-expanded="false">pourquoi ▾</button>':'<span></span>')+'<a class="pc-b go" href="match.html?id='+m.fixture_id+'">Voir le match ↗</a></div>'
+  +(why?'<div class="pc-why" hidden>'+why+'</div>':"")+'</div>'};
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-why]");if(!b)return;
+  const w=b.closest(".pc").querySelector(".pc-why");if(!w)return;const o=w.hidden;w.hidden=!o;b.setAttribute("aria-expanded",o?"true":"false");b.textContent=o?"masquer ▴":"pourquoi ▾"});
 // Un clic sur une carte ouvre la page du match
-const openCard=e=>{const c=e.target.closest&&e.target.closest(".card[data-id]");if(!c||e.target.closest("a,button"))return;
+const openCard=e=>{const c=e.target.closest&&e.target.closest(".card[data-id],.pc[data-id]");if(!c||e.target.closest("a,button"))return;
   if(String(getSelection()).length)return;location.href="match.html?id="+c.dataset.id};
 document.addEventListener("click",openCard);
 document.addEventListener("keydown",e=>{if(e.key==="Enter")openCard(e)});
@@ -81,5 +105,5 @@ document.addEventListener("click",async e=>{
   const{data:row}=await sb.from("predictions_safe").select("*").eq("fixture_id",id).maybeSingle();
   if(!row||!isOpen(row))return fail("Déblocage impossible. Réessaie dans un instant.");
   FULL[id]=row;
-  document.querySelectorAll('.card[data-id="'+id+'"]').forEach(c=>{c.outerHTML=card(row)});
+  document.querySelectorAll('.card[data-id="'+id+'"],.pc[data-id="'+id+'"]').forEach(c=>{c.outerHTML=card(row)});
   if(window.afterUnlock)window.afterUnlock(row)});
