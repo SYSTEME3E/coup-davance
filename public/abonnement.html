@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}</style><link rel="stylesheet" href="theme.css"><title>Abonnement – Pronos-bet</title></head><body><div class="wrap wide ab">
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}</style><link rel="stylesheet" href="theme.css"><title>Abonnement – Pronos-bet</title><style>.ab-act{display:block;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(34,197,94,.16);border:1px solid rgba(34,197,94,.55);color:#fff;font-size:15px;line-height:1.4}.ab-act.tr{background:rgba(255,201,51,.14);border-color:rgba(255,201,51,.6)}.ab-act b{font-weight:800}
+.ck select{width:100%;padding:12px 14px;border-radius:8px;border:1px solid #3A2F9A;background:#1C1555;color:#fff;font:inherit}.ck select:focus{outline:2px solid var(--brand,#6C5CFF)}</style>
+</head><body><div class="wrap wide ab">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
 <h1 class="pt">Abonnement</h1><p class="sub" style="text-transform:none">Choisis le plan qui te convient. Paiement par Mobile Money, activation automatique.</p>
 <div id="st" class="ab-st" role="status" hidden></div>
@@ -10,6 +12,10 @@
 <div class="sum"><span id="ckS">30 jours</span><b id="ckA"></b></div>
 <p class="note" id="ckU" style="margin:4px 0 0"></p>
 <label for="ckN">Nom complet</label><div class="ab-f"><input id="ckN" type="text" autocomplete="name" maxlength="60"></div>
+<div id="ckH" hidden><label for="ckO">Opérateur Mobile Money</label><div class="ab-f"><select id="ckO"></select></div>
+<label for="ckP">Numéro Mobile Money</label><div class="ab-f"><input id="ckP" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="Ex. : 07 00 00 00 00"></div>
+<p class="note" style="margin:4px 0 8px">Avec ou sans l’indicatif du pays.</p>
+<div id="ckOW" hidden><label for="ckOt">Code de validation Orange (OTP)</label><div class="ab-f"><input id="ckOt" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></div></div></div>
 <div class="fm" id="ckM" role="alert"></div>
 <button class="btn go" id="ckG" type="submit">Payer</button>
 <button class="btn ghost cx" id="ckC" type="button">Annuler</button>
@@ -34,7 +40,7 @@ const usd=v=>v.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDi
 const dt=s=>s?new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):"";
 const dtt=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
 const BD={pending:["in","En attente"],paid:["ok","Payé"],failed:["ko","Échoué"]};
-let PR=[],ME=null,PAYS=[],CTRY="BJ",NAME="",CUR=null,busy=false;
+let PR=[],ME=null,PAYS=[],CTRY="BJ",NAME="",CUR=null,busy=false,MM=[];
 
 // Appel de la fonction serveur « subscribe » avec le jeton de connexion
 async function call(body){
@@ -61,8 +67,11 @@ function meBox(){
   const pl=ME.plan,u=ME.solid,v=ME.uncertain;
   const q=(t,o)=>{const lim=o.limit;
     return '<div class="q"><b><span>'+t+'</span><span>'+(lim==null?"Illimité":o.used+" / "+lim)+'</span></b><div class="pb" role="progressbar" aria-label="'+t+'" aria-valuemin="0" aria-valuemax="'+(lim==null?1:lim)+'" aria-valuenow="'+(lim==null?1:Math.min(o.used,lim))+'"><i style="width:'+(lim==null?100:Math.min(100,Math.round(o.used/lim*100)))+'%"></i></div></div>'};
-  const ex=ME.trial?"Essai gratuit : accès Gold complet jusqu’au "+dt(ME.trial_ends_at)+". Ensuite, le plan Gratuit s’applique.":pl==="free"?"Aucun abonnement actif.":ME.ends_at?"Actif jusqu’au "+dt(ME.ends_at)+".":"Accès sans limite de durée.";
-  return '<section class="ab-me" aria-label="Mon abonnement"><div><h2>Ton plan actuel</h2><div class="pl">'+(ME.trial?"Essai gratuit":PN[pl])+'</div><div class="ex">'+ex+'</div></div>'
+  const left=d=>{const n=Math.max(1,Math.ceil((new Date(d)-Date.now())/864e5));return n+" jour"+(n>1?"s":"")};
+  const ex=ME.trial?"Ensuite, le plan Gratuit s’applique.":pl==="free"?"Aucun abonnement actif.":ME.ends_at?"":"Accès sans limite de durée.";
+  const act=ME.trial?'<div class="ab-act tr">⏳ Essai gratuit en cours : accès Gold complet jusqu’au <b>'+dt(ME.trial_ends_at)+'</b> · encore '+left(ME.trial_ends_at)+'</div>'
+    :(pl!=="free"&&ME.ends_at?'<div class="ab-act">✅ Tu as un abonnement <b>'+PN[pl]+'</b> actif jusqu’au <b>'+dt(ME.ends_at)+'</b> · encore '+left(ME.ends_at)+'</div>':"");
+  return '<section class="ab-me" aria-label="Mon abonnement"><div><h2>Ton plan actuel</h2><div class="pl">'+(ME.trial?"Essai gratuit":PN[pl])+'</div>'+act+(ex?'<div class="ex">'+ex+'</div>':"")+'</div>'
     +'<div class="qs">'+q("Pronostics solides débloqués aujourd’hui",u)+q("Matchs incertains débloqués aujourd’hui",v)+'</div></section>'}
 
 // ---------- Cartes des plans ----------
@@ -122,7 +131,11 @@ function openCk(plan){
   $("ckT").textContent="Abonnement "+PN[plan];
   $("ckA").textContent=money(amt,c.currency);
   $("ckS").textContent="30 jours · "+c.country_name;
-  $("ckU").textContent="Tu choisis ton moyen de paiement dans la fenêtre suivante.";
+  MM=c.operators.filter(o=>o!=="bank"&&o!=="card"); // opérateurs Mobile Money : demande de paiement envoyée sur le téléphone (iKeePay H2H)
+  $("ckH").hidden=!MM.length;
+  $("ckO").innerHTML=MM.map(o=>'<option value="'+esc(o)+'">'+esc((OPS[o]||[o])[0])+'</option>').join("");
+  $("ckP").value="";$("ckOt").value="";ckOtp();
+  $("ckU").textContent=MM.length?"Tu recevras une demande de paiement sur ton téléphone : valide-la avec ton code secret.":"Tu choisis ton moyen de paiement dans la fenêtre suivante.";
   $("ckN").value=NAME;$("ckM").textContent="";
   $("ckG").disabled=false;$("ckG").textContent="Payer "+money(amt,c.currency);
   busy=false;
@@ -131,16 +144,31 @@ const closeCk=()=>{if(busy)return;ck.close?ck.close():ck.removeAttribute("open")
 $("ckX").onclick=closeCk;$("ckC").onclick=closeCk;
 ck.addEventListener("click",e=>{if(e.target===ck)closeCk()});
 ck.addEventListener("cancel",e=>{if(busy)e.preventDefault()});
+const ckOtp=()=>{$("ckOW").hidden=!(MM.length&&CUR&&CUR.c.country_code==="BF"&&$("ckO").value==="orange")};
+$("ckO").onchange=ckOtp;
 $("ckF").onsubmit=async e=>{
   e.preventDefault();if(busy||!CUR)return;
   const say=t=>{$("ckM").textContent=t||""};say("");
   const name=$("ckN").value.trim();
   if(name.length<2)return say("Saisis ton nom complet.");
-  busy=true;$("ckG").disabled=true;$("ckG").textContent="Redirection en cours…";
-  const r=await call({action:"create",provider:"ikeepay",plan:CUR.plan,country:CUR.c.country_code,name});
+  const h2h=MM.length>0,idle=()=>{busy=false;$("ckG").disabled=false;$("ckG").textContent="Payer "+money(CUR.amt,CUR.c.currency)};
+  const msg={plan:CUR.plan,country:CUR.c.country_code,name};
+  if(h2h){
+    const op=$("ckO").value,ph=$("ckP").value.replace(/\D/g,""),otp=$("ckOt").value.replace(/\D/g,"");
+    if(!op)return say("Choisis ton opérateur Mobile Money.");
+    if(ph.length<8)return say("Saisis ton numéro Mobile Money.");
+    if(!$("ckOW").hidden&&otp.length<4)return say("Saisis le code de validation Orange (OTP).");
+    Object.assign(msg,{provider:"ikeepay_h2h",operator:op,phone:$("ckP").value.trim(),otp:otp||undefined})}
+  else msg.provider="ikeepay";
+  busy=true;$("ckG").disabled=true;$("ckG").textContent=h2h?"Envoi de la demande…":"Ouverture du paiement…";
+  const r=await call({action:"create",...msg});
+  if(r.ok&&r.provider==="ikeepay_h2h"&&r.id){
+    busy=false;ck.close?ck.close():ck.removeAttribute("open");
+    if(typeof r.payment_link==="string"&&/^https:\/\//.test(r.payment_link)){if(!window.open(r.payment_link,"_blank","noopener"))location.href=r.payment_link}
+    verify(r.id,false);return}
   if(r.ok&&r.provider==="ikeepay"&&r.pk&&r.order_id){busy=false;ck.close?ck.close():ck.removeAttribute("open");openIke(r);return}
   if(r.ok&&typeof r.url==="string"&&/^https:\/\//.test(r.url)){location.href=r.url;return}
-  busy=false;$("ckG").disabled=false;$("ckG").textContent="Payer "+money(CUR.amt,CUR.c.currency);
+  idle();
   say(r.message||"Impossible de démarrer le paiement. Réessaie dans un instant.")};
 
 // ---------- Fenêtre iKeePay ----------
@@ -166,7 +194,7 @@ function showSt(kind,title,msg){
   const s=$("st");s.hidden=false;s.className="ab-st"+(kind==="ok"||kind==="ko"?" "+kind:"");
   s.innerHTML=(kind==="wait"?'<div class="spin" aria-hidden="true"></div>':"")+'<div><b>'+esc(title)+'</b><span>'+esc(msg)+'</span></div>'}
 async function verify(id,manual){
-  showSt("wait","Vérification du paiement…","Cela prend quelques secondes.");
+  showSt("wait","Vérification du paiement…","Si une demande de paiement est arrivée sur ton téléphone, valide-la avec ton code secret. Cela prend quelques secondes.");
   window.scrollTo({top:0,behavior:"smooth"});
   for(let i=0;i<(manual?3:30);i++){
     const r=await call({action:"check",id});
