@@ -27,7 +27,7 @@ const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const F=n=>Number(n||0).toLocaleString("fr-FR")+" F";
 const dt=s=>s?new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
-const ST={pending:["in","En attente"],processing:["in","En cours"],paid:["ok","Payé"],failed:["ko","Échoué"],canceled:["mu","Annulé"]};
+const ST={pending:["in","En attente"],processing:["in","En cours"],manual:["in","En traitement"],paid:["ok","Payé"],failed:["ko","Échoué"],canceled:["mu","Annulé"]};
 const KD={referral_reward:"Parrainage",withdrawal:"Retrait",withdrawal_refund:"Retrait recrédité",adjustment:"Ajustement"};
 let NETS=[],NMAP={},R=null,WD=[],TX=[],busy=false;
 
@@ -40,7 +40,7 @@ async function api(path,body){const{data:{session}}=await sb.auth.getSession();i
 async function load(){
   const [a,n,w,t]=await Promise.all([
     sb.rpc("my_referral"),
-    sb.from("payout_networks").select("country_code,country_name,dial,network,label").eq("enabled",true),
+    sb.from("payout_networks").select("country_code,country_name,dial,network,label,manual").eq("enabled",true),
     sb.from("withdrawals").select("*").order("created_at",{ascending:false}).limit(15),
     sb.from("wallet_transactions").select("kind,amount,note,created_at").order("created_at",{ascending:false}).limit(30)]);
   if(a.error){$("app").innerHTML='<div class="card">Impossible de charger tes gains pour le moment. Réessaie dans un instant.</div>';return false}
@@ -59,59 +59,107 @@ function codeCard(){
 function statCard(){return '<div class="sec"><h2>Mon solde</h2><div class="bal">'+F(R.balance)+'</div>'
   +'<div class="stats" style="margin-top:12px"><div><b>'+R.referred+'</b>filleuls inscrits</div><div><b>'+R.rewarded+'</b>filleuls abonnés</div><div><b>'+F(R.earned)+'</b>gagnés au total</div></div></div>'}
 
+// ----- Retrait : Mobile Money (automatique ou manuel), virement bancaire, USDT TRC20, PayPal -----
+const METHODS=[["mobile","Mobile Money"],["bank","Virement bancaire"],["usdt","USDT (TRC20)"],["paypal","PayPal"]];
+const ISO="AD AE AF AG AI AL AM AO AR AT AU AW AZ BA BB BD BE BF BG BH BI BJ BM BN BO BR BS BT BW BY BZ CA CD CF CG CH CI CK CL CM CN CO CR CU CV CW CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FO FR GA GB GD GE GF GH GI GL GM GN GP GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IN IQ IR IS IT JM JO JP KE KG KH KM KN KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MG MK ML MM MN MO MQ MR MS MT MU MV MW MX MY MZ NA NC NE NG NI NL NO NP NZ OM PA PE PF PG PH PK PL PR PS PT PY QA RE RO RS RU RW SA SB SC SD SE SG SI SK SL SM SN SO SR SS ST SV SY SZ TC TD TG TH TJ TL TM TN TO TR TT TW TZ UA UG US UY UZ VA VC VE VG VN VU WS YE YT ZA ZM ZW".split(" ");
+const regionName=(()=>{try{const d=new Intl.DisplayNames(["fr"],{type:"region"});return c=>d.of(c)||c}catch(e){return c=>c}})();
+const FEEP=0.10,MINM=1000;
+const sortFr=(a,b)=>a[1].localeCompare(b[1],"fr",{sensitivity:"base"});
 function formCard(){
-  const active=WD.find(w=>w.status==="pending"||w.status==="processing");
-  const countries=[...new Map(NETS.map(x=>[x.country_code,x.country_name])).entries()].sort((x,y)=>x[1].localeCompare(y[1],"fr",{sensitivity:"base"}));
+  const active=WD.find(w=>w.status==="pending"||w.status==="processing"||w.status==="manual");
+  const mc=[...new Map(NETS.map(x=>[x.country_code,x.country_name])).entries()].sort(sortFr);
+  const bc=ISO.map(c=>[c,regionName(c)]).sort(sortFr);
   let off="";
   if(active)off="Un retrait est déjà en cours de traitement. Tu pourras en demander un autre dès qu’il sera terminé.";
   else if(R.balance<R.min_withdrawal)off="Il te faut au moins "+F(R.min_withdrawal)+" pour retirer. Il te manque "+F(R.min_withdrawal-R.balance)+".";
+  const inp=(id,lab,ph,extra)=>'<label for="'+id+'">'+lab+'</label><input class="fld" id="'+id+'" type="text" placeholder="'+ph+'" '+(extra||"")+'>';
   return '<div class="sec"><h2>Retirer mes gains</h2>'+(off?'<p class="note">'+esc(off)+'</p>':"")
    +'<form id="wf" novalidate'+(off?' hidden':"")+'>'
-   +'<label for="wc">Pays</label><select id="wc">'+countries.map(c=>'<option value="'+esc(c[0])+'">'+esc(c[1])+'</option>').join("")+'</select>'
+   +'<label for="wm2">Moyen de retrait</label><select id="wm2">'+METHODS.map(m=>'<option value="'+m[0]+'">'+m[1]+'</option>').join("")+'</select>'
+   +'<div id="g-mobile"><label for="wc">Pays</label><select id="wc">'+mc.map(c=>'<option value="'+esc(c[0])+'">'+esc(c[1])+'</option>').join("")+'</select>'
    +'<label for="wn">Réseau</label><select id="wn"></select>'
-   +'<label for="wp">Numéro Mobile Money</label><div class="ph"><span id="wd"></span><input class="fld" id="wp" type="text" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="Numéro sans l’indicatif"></div>'
+   +'<label for="wp">Numéro Mobile Money</label><div class="ph"><span id="wd"></span><input class="fld" id="wp" type="text" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="Numéro sans l’indicatif"></div></div>'
+   +'<div id="g-bank" hidden><label for="bk-c">Pays de la banque</label><select id="bk-c">'+bc.map(c=>'<option value="'+esc(c[0])+'">'+esc(c[1])+'</option>').join("")+'</select>'
+   +inp("bk-n","Nom de la banque","Ex : Ecobank",'maxlength="80"')
+   +inp("bk-h","Nom du destinataire","Ex : Jean Dupont",'maxlength="80" autocomplete="name"')
+   +inp("bk-a","Numéro de compte ou IBAN","Ex : GB33BUKB20201555555555",'maxlength="40" autocapitalize="characters" autocomplete="off"')
+   +inp("bk-s","Code SWIFT (facultatif)","Ex : BOFAUS3N",'maxlength="11" autocapitalize="characters" autocomplete="off"')
+   +'<p class="note" style="margin:16px 0 0"><b>Adresse du destinataire</b></p>'
+   +inp("bk-st","Nom de rue","Ex : Rue des Maquis",'maxlength="80"')
+   +inp("bk-no","Numéro de rue","Ex : 4",'maxlength="10"')
+   +inp("bk-ci","Ville","Ex : Abidjan",'maxlength="60"')
+   +inp("bk-po","Code postal","Ex : 00225",'maxlength="12"')+'</div>'
+   +'<div id="g-usdt" hidden>'+inp("us-a","Adresse USDT (réseau TRC20 uniquement)","Adresse commençant par T",'maxlength="40" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"')
+   +'<p class="note">Réseau TRC20 uniquement : un envoi sur un autre réseau ferait perdre les fonds.</p></div>'
+   +'<div id="g-paypal" hidden>'+inp("pp-e","E-mail du compte PayPal","exemple@mail.com",'maxlength="120" inputmode="email" autocomplete="email" autocapitalize="off"')+'</div>'
    +'<label for="wa">Montant (F CFA)</label><input class="fld" id="wa" type="text" inputmode="numeric" maxlength="9" value="'+R.balance+'">'
+   +'<p class="note" id="fee"></p>'
    +'<p class="note">Solde disponible : '+F(R.balance)+' · <button type="button" class="alln" id="all">Tout retirer</button></p>'
-   +'<button class="btn" id="wb" type="submit" style="margin-top:14px">Retirer</button></form>'+(off?'':'<p class="note">Retrait par Mobile Money, disponible dans les pays de la liste. Ton pays n’y est pas ? Contacte le support.</p>')+'</div>'}
+   +'<p class="note" id="hint"></p>'
+   +'<button class="btn" id="wb" type="submit" style="margin-top:14px">Retirer</button></form></div>'}
+
+const isManual=()=>{if($("wm2").value!=="mobile")return true;const x=NMAP[$("wc").value+"|"+$("wn").value];return !!(x&&x.manual)};
+function wireForm(){
+  const syncNet=()=>{const c=$("wc").value,l=NETS.filter(x=>x.country_code===c);
+    $("wn").innerHTML=l.map(x=>'<option value="'+esc(x.network)+'">'+esc(x.label)+'</option>').join("");
+    $("wd").textContent="+"+(l[0]?l[0].dial:"")};
+  const upd=()=>{const m=$("wm2").value;
+    ["mobile","bank","usdt","paypal"].forEach(k=>{$("g-"+k).hidden=k!==m});
+    const man=isManual(),a=parseInt($("wa").value.replace(/\D/g,""),10)||0;
+    if(man){const fee=Math.ceil(a*FEEP);
+      $("fee").textContent=a?"Frais de 10 % : − "+F(fee)+" · Tu reçois : "+F(Math.max(0,a-fee))+" (minimum "+F(MINM)+")":"Frais de 10 % sur ce type de retrait · minimum "+F(MINM)}
+    else $("fee").textContent="";
+    $("hint").textContent=man?"Retrait traité manuellement par notre équipe : tu es payé après vérification.":"Retrait automatique : le paiement arrive sur ton Mobile Money dans quelques instants."};
+  $("wc").onchange=()=>{syncNet();upd()};$("wn").onchange=upd;$("wm2").onchange=upd;$("wa").oninput=upd;
+  $("all").onclick=()=>{$("wa").value=R.balance;upd()};
+  $("wf").onsubmit=submit;syncNet();upd()}
 
 function histCard(){
-  const w=WD.length?WD.map(x=>{const n=NMAP[x.country+"|"+x.network],s=ST[x.status]||["mu",x.status];
-    return '<div class="hr"><div><b>'+F(x.amount)+'</b> · '+esc(n?n.label:x.network)+'<small>'+dt(x.created_at)+' · ••• '+esc(String(x.phone).slice(-3))+'</small>'
+  const lab=x=>x.method==="bank"?"Virement"+(x.details&&x.details.bank_name?" · "+x.details.bank_name:""):x.method==="usdt"?"USDT TRC20":x.method==="paypal"?"PayPal":(NMAP[x.country+"|"+x.network]?NMAP[x.country+"|"+x.network].label:x.network);
+  const tail=x=>x.method==="bank"?"••• "+String(x.details&&x.details.account||"").slice(-4):x.method==="usdt"?"••• "+String(x.details&&x.details.address||"").slice(-4):x.method==="paypal"?String(x.details&&x.details.email||""):"••• "+String(x.phone).slice(-3);
+  const w=WD.length?WD.map(x=>{const s=ST[x.status]||["mu",x.status];
+    return '<div class="hr"><div><b>'+F(x.amount)+'</b> · '+esc(lab(x))+'<small>'+dt(x.created_at)+' · '+esc(tail(x))+'</small>'
+      +(x.fee>0?'<small>Frais '+F(x.fee)+' · tu reçois '+F(x.amount-x.fee)+'</small>':"")
       +(x.status==="failed"&&x.error?'<small>'+esc(x.error)+'</small>':"")
-      +(x.status==="pending"?'<button class="lk2" data-c="'+esc(x.id)+'" type="button">Annuler ce retrait</button>':"")+'</div><span class="bd '+s[0]+'">'+s[1]+'</span></div>'}).join("")
+      +((x.status==="pending"||x.status==="manual")?'<button class="lk2" data-c="'+esc(x.id)+'" type="button">Annuler ce retrait</button>':"")+'</div><span class="bd '+s[0]+'">'+s[1]+'</span></div>'}).join("")
     :'<p class="note">Aucun retrait pour le moment.</p>';
   const t=TX.length?TX.map(x=>'<div class="hr"><div>'+esc(KD[x.kind]||x.kind)+'<small>'+dt(x.created_at)+'</small></div><b class="'+(x.amount>=0?"pos":"neg")+'">'+(x.amount>=0?"+":"−")+F(Math.abs(x.amount))+'</b></div>').join("")
     :'<p class="note">Aucun mouvement pour le moment.</p>';
   return '<div class="sec"><h2>Mes retraits</h2>'+w+'</div><div class="sec"><h2>Mouvements du solde</h2>'+t+'</div>'}
 
-function refBox(){return '<div class="sec"><h2>Parraine et gagne</h2><p class="note" style="margin-top:0">Quand ton filleul active un plan, tu touches une récompense créditée automatiquement sur ton solde.</p><div class="ref"><div><b>500 F</b><span>quand ton filleul active Basic</span></div><div><b>1 500 F</b><span>quand ton filleul active Gold</span></div></div><p class="note">Ton code de parrainage est disponible dès que ton abonnement est actif. Les gains se retirent automatiquement par Mobile Money.</p></div>'}
+function refBox(){return '<div class="sec"><h2>Parraine et gagne</h2><p class="note" style="margin-top:0">Quand ton filleul active un plan, tu touches une récompense créditée automatiquement sur ton solde.</p><div class="ref"><div><b>500 F</b><span>quand ton filleul active Basic</span></div><div><b>1 500 F</b><span>quand ton filleul active Gold</span></div></div><p class="note">Ton code de parrainage est disponible dès que ton abonnement est actif. Les gains se retirent par Mobile Money, virement bancaire, PayPal ou USDT (TRC20).</p></div>'}
 function draw(){
   $("app").innerHTML=refBox()+codeCard()+statCard()+formCard()+histCard();
   if($("cp")){const link=location.origin+"/auth.html?ref="+encodeURIComponent(R.code)+"#signup";
     $("cp").onclick=async()=>{try{await navigator.clipboard.writeText(link);$("cp").textContent="Lien copié ✓"}catch(e){prompt("Copie ce lien :",link)}};
     $("sh").onclick=()=>{const txt="Rejoins Pronos-bet avec mon code "+R.code+" : "+link;
       if(navigator.share)navigator.share({title:"Pronos-bet",text:txt,url:link}).catch(()=>{});else open("https://wa.me/?text="+encodeURIComponent(txt),"_blank","noopener")}}
-  if($("wf")){
-    const sync=()=>{const c=$("wc").value,l=NETS.filter(x=>x.country_code===c);
-      $("wn").innerHTML=l.map(x=>'<option value="'+esc(x.network)+'">'+esc(x.label)+'</option>').join("");
-      $("wd").textContent="+"+(l[0]?l[0].dial:"")};
-    $("wc").onchange=sync;sync();
-    $("all").onclick=()=>{$("wa").value=R.balance};
-    $("wf").onsubmit=submit}
+  if($("wf"))wireForm();
   document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>cancel(b.dataset.c))}
 
 const say=(t,ok)=>{const m=$("wm");if(m){m.textContent=t||"";m.className=t?(ok?"ok":"ko"):""}};
 async function submit(e){e.preventDefault();if(busy)return;say("");
-  const amount=parseInt($("wa").value.replace(/\D/g,""),10),phone=$("wp").value.replace(/\D/g,"");
+  const m=$("wm2").value,amount=parseInt($("wa").value.replace(/\D/g,""),10),v=id=>($(id).value||"").trim();
   if(!amount||amount<1)return say("Saisis un montant valide.");
   if(amount>R.balance)return say("Solde insuffisant.");
-  if(phone.length<8)return say("Numéro de téléphone invalide.");
+  let rpc,args,manual=true;
+  if(m==="mobile"){const c=$("wc").value,n=$("wn").value,phone=$("wp").value.replace(/\D/g,"");
+    if(phone.length<8)return say("Numéro de téléphone invalide.");
+    const net=NMAP[c+"|"+n];
+    if(net&&net.manual){rpc="request_manual_withdrawal";args={p_amount:amount,p_method:"mobile_manual",p_country:c,p_network:n,p_phone:phone,p_details:null}}
+    else{manual=false;rpc="request_withdrawal";args={p_amount:amount,p_country:c,p_network:n,p_phone:phone}}}
+  else{rpc="request_manual_withdrawal";
+    const base={p_amount:amount,p_method:m,p_country:null,p_network:null,p_phone:null};
+    if(m==="bank")args={...base,p_country:$("bk-c").value,p_details:{bank_name:v("bk-n"),holder:v("bk-h"),account:v("bk-a"),swift:v("bk-s"),street:v("bk-st"),street_no:v("bk-no"),city:v("bk-ci"),postal:v("bk-po")}};
+    else if(m==="usdt")args={...base,p_details:{address:v("us-a")}};
+    else args={...base,p_details:{email:v("pp-e")}}}
   busy=true;$("wb").disabled=true;$("wb").textContent="Envoi en cours…";
-  const{data:wid,error}=await sb.rpc("request_withdrawal",{p_amount:amount,p_country:$("wc").value,p_network:$("wn").value,p_phone:phone});
+  const{data:wid,error}=await sb.rpc(rpc,args);
   if(error){busy=false;$("wb").disabled=false;$("wb").textContent="Retirer";return say(error.message)}
-  let res=null;try{res=await api("/api/withdraw",{id:wid})}catch(x){}
+  let res=null;if(!manual){try{res=await api("/api/withdraw",{id:wid})}catch(x){}}
   busy=false;await refresh();
-  say(res&&res.ok===false?(res.message||"Retrait échoué."):"Demande envoyée. Le paiement arrive sur ton Mobile Money dans quelques instants.",!(res&&res.ok===false))}
+  if(manual)say("Demande envoyée. Notre équipe va la traiter : tu seras payé après vérification.",true);
+  else say(res&&res.ok===false?(res.message||"Retrait échoué."):"Demande envoyée. Le paiement arrive sur ton Mobile Money dans quelques instants.",!(res&&res.ok===false))}
 async function cancel(id){if(busy||!confirm("Annuler ce retrait ? Le montant sera remis sur ton solde."))return;busy=true;
   const{error}=await sb.rpc("cancel_my_withdrawal",{wid:id});busy=false;await refresh();if(error)say(error.message)}
 
