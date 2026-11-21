@@ -1,6 +1,9 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="ticker.css"><title>Matchs du jour – Pronos-bet</title><style>
 .bonus{margin:14px 0}.bonus .btn{background:var(--navy);}
 #bonusList{margin-top:10px}
+dialog.wl{border:1px solid var(--brand);border-radius:18px;background:var(--surface);color:var(--ink,#fff);padding:26px 22px 20px;max-width:340px;width:calc(100% - 40px);text-align:center}dialog.wl::backdrop{background:rgba(0,0,0,.65)}
+.wl-e{font-size:46px;line-height:1}.wl h2{margin:8px 0 6px;font:800 24px/1.15 "Bricolage Grotesque",sans-serif}.wl p{margin:6px 0;font-size:16px;line-height:1.45}.wl .wl-s{color:var(--muted);font-size:14px}
+.wl-b{display:block;width:100%;margin:16px 0 8px;padding:13px;border:0;border-radius:12px;background:#FFC933;color:#1B1500;font:800 16px/1.2 inherit;cursor:pointer}.wl-a{display:inline-block;padding:8px;color:var(--muted);font-size:14px}
 .dc{margin:0 0 14px}.dc-card{background:var(--surface);border:1px solid var(--brand);border-radius:12px;padding:14px;margin:10px 0}
 .dc-card h3{margin:0 0 4px;font:800 18px/1.2 "Bricolage Grotesque",sans-serif}.dc-card p{margin:4px 0 10px;color:var(--muted);font-size:15px}
 .pt-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
@@ -219,6 +222,36 @@ const PARTNERS=[
  box.addEventListener("touchend",function(e){if(sx==null||n<2)return;var dx=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(dx)>40){go(i+(dx<0?1:-1));run()}});
  sb.auth.getSession().then(function(r){if(r&&r.data&&r.data.session)load()});
  setInterval(function(){if(!document.hidden)load()},300000);
+})();
+</script>
+<script>
+// ---- Fenêtre de bienvenue : une seule fois, pour un compte tout juste créé (essai gratuit de 3 jours) ----
+(function(){
+ if(typeof sb==="undefined")return;
+ var esc=function(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+ function seen(k){try{return !!localStorage.getItem(k)}catch(e){try{return !!sessionStorage.getItem(k)}catch(x){return false}}}
+ function mark(k){try{localStorage.setItem(k,"1")}catch(e){try{sessionStorage.setItem(k,"1")}catch(x){}}}
+ function show(days,end){
+  var d=document.createElement("dialog");d.className="wl";d.setAttribute("aria-labelledby","wlT");
+  d.innerHTML='<div class="wl-e" aria-hidden="true">🎉</div><h2 id="wlT">Félicitations !</h2>'
+   +'<p>Ton compte est créé. Tu as accès à <b>'+days+' jour'+(days>1?'s':'')+' d’essai gratuit</b> avant de choisir un abonnement.</p>'
+   +'<p class="wl-s">Essai jusqu’au '+esc(end)+'.</p>'
+   +'<button type="button" class="wl-b" id="wlOk">C’est parti</button><a class="wl-a" href="abonnement.html">Voir les abonnements</a>';
+  document.body.appendChild(d);
+  var close=function(){try{d.close()}catch(e){d.removeAttribute("open")}d.remove()};
+  d.querySelector("#wlOk").onclick=close;d.addEventListener("cancel",function(e){e.preventDefault();close()});
+  if(d.showModal)d.showModal();else d.setAttribute("open","")}
+ (async function(){
+  try{
+   var s=await sb.auth.getSession(),u=s&&s.data&&s.data.session&&s.data.session.user;if(!u)return;
+   var k="pb_welcome_"+u.id;if(seen(k))return;
+   var r=await Promise.all([sb.rpc("my_plan"),sb.from("profiles").select("created_at").eq("id",u.id).maybeSingle()]);
+   var m=r[0].data,p=r[1].data;if(!m||!m.trial||!m.trial_ends_at||!p||!p.created_at)return;
+   var created=new Date(p.created_at),end=new Date(m.trial_ends_at);
+   if(Date.now()-created>864e5)return; // compte de plus de 24 h : ce n'est plus un nouveau compte
+   var days=Math.max(1,Math.round((end-created)/864e5));
+   mark(k);show(days,end.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}));
+  }catch(e){}})();
 })();
 </script>
 </body></html>
