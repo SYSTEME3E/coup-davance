@@ -13,8 +13,10 @@
 <div class="fm" id="ckM" role="alert"></div>
 <button class="btn go" id="ckG" type="submit">Payer</button>
 <button class="btn ghost cx" id="ckC" type="button">Annuler</button>
-<p class="sec2">Tu seras redirigé vers la page sécurisée GeniusPay pour choisir ton moyen de paiement (Mobile Money ou carte) et valider.</p>
+<p class="sec2">Une fenêtre sécurisée iKeePay s’ouvre pour choisir ton moyen de paiement (Mobile Money ou carte) et valider.</p>
 </form></dialog>
+
+<div id="ikO" style="display:none;position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.6);align-items:center;justify-content:center"><div style="position:relative;width:100%;max-width:450px;height:90vh;padding:0 8px"><button id="ikX" type="button" aria-label="Fermer" style="position:absolute;top:-2.6rem;right:.5rem;background:none;border:0;color:#fff;font-size:28px;line-height:1;cursor:pointer">✕</button><iframe id="ikF" title="Paiement iKeePay" allow="payment" style="border:0;width:100%;height:100%;background:transparent;border-radius:24px"></iframe></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
@@ -89,7 +91,7 @@ function pickBox(){
 
 function extra(){
   const rows=PR.map(x=>'<tr><td>'+esc(x.flag)+" "+esc(x.country_name)+'</td><td>'+esc(x.currency)+'</td><td>'+money(x.basic,x.currency)+'</td><td>'+money(x.gold,x.currency)+'</td><td>'+(x.operators.length?x.operators.map(o=>esc((OPS[o]||[o])[0])).join(", "):"Bientôt disponible")+'</td></tr>').join("");
-  return '<section class="ab-sec"><h2>Comment ça marche</h2><ol class="steps"><li>Tu choisis ton pays.</li><li>Le prix s’affiche dans ta monnaie.</li><li>Tu choisis ton moyen de paiement (Mobile Money ou carte).</li><li>Tu paies sur la page sécurisée GeniusPay.</li><li>Ton plan s’active tout seul.</li></ol>'
+  return '<section class="ab-sec"><h2>Comment ça marche</h2><ol class="steps"><li>Tu choisis ton pays.</li><li>Le prix s’affiche dans ta monnaie.</li><li>Tu choisis ton moyen de paiement (Mobile Money ou carte).</li><li>Tu paies dans la fenêtre sécurisée iKeePay.</li><li>Ton plan s’active tout seul.</li></ol>'
    +'<p class="note">L’abonnement dure 30 jours et ne se renouvelle pas automatiquement : tu choisis quand le prolonger.</p></section>'
    +'<section class="ab-sec"><h2>Solide ou incertain ?</h2><div class="kind"><div><b>Pronostic solide</b>Une issue du match dépasse 55 % de probabilité : le favori est net.</div><div><b>Match incertain</b>Aucune issue n’atteint 55 % : le résultat est plus difficile à prévoir.</div></div>'
    +'<p class="note">Les quotas se renouvellent chaque jour. Un pronostic déjà débloqué reste visible, et les matchs commencés ne comptent pas dans ton quota.</p></section>'
@@ -120,7 +122,7 @@ function openCk(plan){
   $("ckT").textContent="Abonnement "+PN[plan];
   $("ckA").textContent=money(amt,c.currency);
   $("ckS").textContent="30 jours · "+c.country_name;
-  $("ckU").textContent="Tu choisis ton moyen de paiement sur la page suivante.";
+  $("ckU").textContent="Tu choisis ton moyen de paiement dans la fenêtre suivante.";
   $("ckN").value=NAME;$("ckM").textContent="";
   $("ckG").disabled=false;$("ckG").textContent="Payer "+money(amt,c.currency);
   busy=false;
@@ -135,12 +137,31 @@ $("ckF").onsubmit=async e=>{
   const name=$("ckN").value.trim();
   if(name.length<2)return say("Saisis ton nom complet.");
   busy=true;$("ckG").disabled=true;$("ckG").textContent="Redirection en cours…";
-  const r=await call({action:"create",plan:CUR.plan,country:CUR.c.country_code,name});
+  const r=await call({action:"create",provider:"ikeepay",plan:CUR.plan,country:CUR.c.country_code,name});
+  if(r.ok&&r.provider==="ikeepay"&&r.pk&&r.order_id){busy=false;ck.close?ck.close():ck.removeAttribute("open");openIke(r);return}
   if(r.ok&&typeof r.url==="string"&&/^https:\/\//.test(r.url)){location.href=r.url;return}
   busy=false;$("ckG").disabled=false;$("ckG").textContent="Payer "+money(CUR.amt,CUR.c.currency);
   say(r.message||"Impossible de démarrer le paiement. Réessaie dans un instant.")};
 
-// ---------- Retour de GeniusPay / vérification ----------
+// ---------- Fenêtre iKeePay ----------
+// Le message « succès » vient du navigateur : il sert seulement à lancer la vérification. Le plan s'active uniquement
+// quand le serveur a confirmé le paiement auprès d'iKeePay (montant et devise contrôlés).
+const IKO=["https://ikeepay.com","https://www.ikeepay.com"];let IKP=null,IKOK=false;
+function ikClose(){$("ikO").style.display="none";$("ikF").src="about:blank";window.removeEventListener("message",ikMsg)}
+function ikMsg(e){
+  if(!IKP||IKO.indexOf(e.origin)<0||e.source!==$("ikF").contentWindow)return;
+  if(e.data==="ikeepay-ready")$("ikO").style.display="flex";
+  else if(e.data==="ikeepay-close"){ikClose();if(!IKOK)load().then(o=>{if(o)draw()})}
+  else if(e.data==="ikeepay-success"&&!IKOK){IKOK=true;const id=IKP.id;setTimeout(()=>{ikClose();verify(id,false)},1500)}
+  else if(e.data&&e.data.type==="ikeepay-error"){ikClose();showSt("ko","Paiement impossible",e.data.message||"Erreur iKeePay. Réessaie dans un instant.")}}
+function openIke(r){
+  IKP=r;IKOK=false;
+  const p=new URLSearchParams({pk:r.pk,amount:r.amount,currency:r.currency,order_id:r.order_id});if(r.email)p.set("email",r.email);
+  window.addEventListener("message",ikMsg);
+  $("ikF").src="https://ikeepay.com/checkout/v1/inline?"+p.toString()}
+$("ikX").onclick=ikClose;
+
+// ---------- Retour du paiement / vérification ----------
 function showSt(kind,title,msg){
   const s=$("st");s.hidden=false;s.className="ab-st"+(kind==="ok"||kind==="ko"?" "+kind:"");
   s.innerHTML=(kind==="wait"?'<div class="spin" aria-hidden="true"></div>':"")+'<div><b>'+esc(title)+'</b><span>'+esc(msg)+'</span></div>'}
