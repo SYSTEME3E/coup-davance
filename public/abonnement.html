@@ -12,10 +12,23 @@
 .ck .ph2 span{display:grid;place-items:center;padding:0 14px;border-radius:12px;border:1.5px solid #3A2F9A;background:#1C1555;color:#fff;font-weight:700;font-size:18px}
 .ck #ckP,.ck #ckOt{flex:1;width:100%;min-width:0;box-sizing:border-box;min-height:58px;padding:16px 14px;border-radius:12px;border:1.5px solid #3A2F9A;background:#1C1555;color:#fff;font-size:22px;font-weight:600;letter-spacing:.5px;font-family:inherit}
 .ck #ckP:focus,.ck #ckOt:focus{outline:2px solid var(--brand,#6C5CFF)}
-.ck #ckP::placeholder{font-size:17px;font-weight:400;letter-spacing:0;opacity:.6}</style>
+.ck #ckP::placeholder{font-size:17px;font-weight:400;letter-spacing:0;opacity:.6}
+.cpk{position:relative}
+.cpk .cpb{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;border-radius:10px;border:1px solid #3A2F9A;background:#1C1555;color:#fff;font:inherit;font-size:16px;text-align:left;cursor:pointer}
+.cpk .cpb:focus-visible{outline:2px solid var(--brand,#6C5CFF)}
+.cpk .cpp{margin-top:6px;border:1px solid #3A2F9A;border-radius:12px;background:#1C1555;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.cpk .cpq{display:block;width:100%;box-sizing:border-box;padding:12px 14px;border:0;border-bottom:1px solid #3A2F9A;background:#241B6B;color:#fff;font:inherit;font-size:16px}
+.cpk .cpq:focus{outline:none}
+.cpk .cpq::placeholder{color:#b9b3e6}
+.cpk .cpl{list-style:none;margin:0;padding:4px 0;max-height:min(46vh,320px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.cpk .cpl li{padding:11px 14px;color:#fff;font-size:16px;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
+.cpk .cpl li small{opacity:.65;white-space:nowrap}
+.cpk .cpl li:hover,.cpk .cpl li.on{background:rgba(108,92,255,.35)}
+.cpk .cpl li[aria-selected="true"]{font-weight:800}
+.cpk .cpl .nores{cursor:default;opacity:.7;justify-content:center}</style>
 </head><body><div class="wrap wide ab">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
-<h1 class="pt">Abonnement</h1><p class="sub" style="text-transform:none">Choisis le plan qui te convient. Paiement par Mobile Money, activation automatique.</p>
+<h1 class="pt">Abonnement</h1><p class="sub" style="text-transform:none">Choisis le plan qui te convient. Paiement par Mobile Money, virement bancaire ou carte. Activation automatique.</p>
 <div id="st" class="ab-st" role="status" hidden></div>
 <div id="app"><p class="sub">Chargement…</p></div>
 <div style="height:48px"></div></div>
@@ -30,14 +43,14 @@
 <label for="ckP">Numéro Mobile Money</label><div class="ph2"><span id="ckDial">+</span><input id="ckP" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="Ton numéro"></div>
 <p class="note" style="margin:6px 0 10px">Avec ou sans l’indicatif du pays.</p>
 <div id="ckOW" hidden><label for="ckOt">Code de validation Orange (OTP)</label><div class="ab-f"><input id="ckOt" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></div></div></div>
-<p class="note" id="ckCardNote" hidden style="margin:10px 0">Une fenêtre sécurisée iKeePay s’ouvre : tu y paies par carte bancaire, virement ou autre moyen proposé dans ton pays.</p>
+<p class="note" id="ckCardNote" hidden style="margin:10px 0">Une fenêtre sécurisée s’ouvre : tu y paies par carte bancaire, virement ou autre moyen proposé dans ton pays.</p>
 <div class="fm" id="ckM" role="alert"></div>
 <button class="btn go" id="ckG" type="submit">Payer</button>
 <button class="btn ghost cx" id="ckC" type="button">Annuler</button>
-<p class="sec2">Paiement sécurisé par iKeePay. Les moyens proposés dépendent de ton pays.</p>
+<p class="sec2">Paiement sécurisé. Les moyens proposés dépendent de ton pays.</p>
 </form></dialog>
 
-<div id="ikO" style="display:none;position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.6);align-items:center;justify-content:center"><div style="position:relative;width:100%;max-width:450px;height:90vh;padding:0 8px"><button id="ikX" type="button" aria-label="Fermer" style="position:absolute;top:-2.6rem;right:.5rem;background:none;border:0;color:#fff;font-size:28px;line-height:1;cursor:pointer">✕</button><iframe id="ikF" title="Paiement iKeePay" allow="payment" style="border:0;width:100%;height:100%;background:transparent;border-radius:24px"></iframe></div></div>
+<div id="ikO" style="display:none;position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.6);align-items:center;justify-content:center"><div style="position:relative;width:100%;max-width:450px;height:90vh;padding:0 8px"><button id="ikX" type="button" aria-label="Fermer" style="position:absolute;top:-2.6rem;right:.5rem;background:none;border:0;color:#fff;font-size:28px;line-height:1;cursor:pointer">✕</button><iframe id="ikF" title="Paiement sécurisé" allow="payment" style="border:0;width:100%;height:100%;background:transparent;border-radius:24px"></iframe></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
@@ -50,7 +63,7 @@ const ICON={bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const CK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>';
 const LK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="9" width="11" height="8" rx="2"/><path d="M7 9V6.5a3 3 0 016 0V9"/></svg>';
 const num=n=>Number(n||0).toLocaleString("fr-FR");
-const money=(n,c)=>num(n)+(c==="XOF"||c==="XAF"?" F":c==="NGN"?" ₦":" "+c);
+const money=(n,c)=>num(n)+(c==="XOF"||c==="XAF"?" F":c==="NGN"?" ₦":c==="USD"?" $":" "+c);
 const usd=v=>v.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" $";
 const dt=s=>s?new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):"";
 const dtt=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
@@ -108,14 +121,41 @@ function plansBox(){
    +'<article class="plan gold"><span class="tag">Le plus complet</span><h3>Gold</h3><p class="tl">Sans aucune limite</p><div class="pr">'+money(c.gold,c.currency)+' <small>/ mois</small></div><ul>'
      +li("Tous les pronostics solides, en illimité")+li("Tous les matchs incertains, en illimité")+li("Tous les matchs, lives et stats, sans flou")+li("Aucun quota à surveiller au quotidien")+'</ul>'+act("gold")+'</article></div>'}
 
+const fold=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[’'`-]/g," ").toLowerCase().trim();
+const ALIAS={CD:"republique democratique du congo rdc drc congo kinshasa",CG:"congo brazzaville republique du congo",CI:"cote d ivoire ivory coast",US:"usa etats unis america",GB:"uk royaume uni angleterre england",AE:"uae emirats dubai",CZ:"tchequie republique tcheque",MM:"birmanie myanmar",SZ:"swaziland eswatini"};
+const byName=(a,b)=>a.country_name.localeCompare(b.country_name,"fr",{sensitivity:"base"});
+const sortedPR=()=>PR.slice().sort(byName);
 function pickBox(){
   const c=country();
-  return '<div class="ab-pick"><div><label for="cs">Ton pays</label><select id="cs">'+PR.map(x=>'<option value="'+esc(x.country_code)+'"'+(x.country_code===c.country_code?" selected":"")+'>'+esc(x.flag)+" "+esc(x.country_name)+" · "+esc(x.currency)+'</option>').join("")+'</select></div>'
-    +'<p>Les prix s’affichent dans la monnaie de ton pays.</p></div>'}
+  return '<div class="ab-pick"><div class="cpk"><label for="cpb">Ton pays</label>'
+    +'<button type="button" class="cpb" id="cpb" aria-haspopup="listbox" aria-expanded="false"><span>'+esc(c.flag)+" "+esc(c.country_name)+" · "+esc(c.currency)+'</span><span aria-hidden="true">▾</span></button>'
+    +'<div class="cpp" id="cpp" hidden><input class="cpq" id="cpq" type="search" placeholder="Rechercher un pays…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Rechercher un pays"><ul class="cpl" id="cpl" role="listbox" aria-label="Pays"></ul></div></div>'
+    +'<p>Les prix s’affichent dans la monnaie de ton pays. Dans les pays sans Mobile Money, tu paies par virement bancaire ou carte.</p></div>'}
+function cpInit(){
+  const b=$("cpb"),pp=$("cpp"),q=$("cpq"),ul=$("cpl");let cur=[],act=-1;
+  const list=()=>{
+    const t=fold(q.value);
+    cur=sortedPR().filter(x=>!t||fold(x.country_name).includes(t)||fold(ALIAS[x.country_code]||"").includes(t)||x.country_code.toLowerCase()===t);
+    act=cur.findIndex(x=>x.country_code===CTRY);if(t)act=cur.length?0:-1;
+    ul.innerHTML=cur.length?cur.map((x,i)=>'<li role="option" data-c="'+esc(x.country_code)+'" aria-selected="'+(x.country_code===CTRY)+'"'+(i===act?' class="on"':'')+'><span>'+esc(x.flag)+" "+esc(x.country_name)+'</span><small>'+esc(x.currency)+'</small></li>').join(""):'<li class="nores">Aucun pays trouvé</li>';
+    const on=ul.querySelector(".on")||ul.querySelector('[aria-selected="true"]');if(on&&on.scrollIntoView)on.scrollIntoView({block:"nearest"})};
+  const open=()=>{pp.hidden=false;b.setAttribute("aria-expanded","true");q.value="";list();setTimeout(()=>q.focus(),0)};
+  const close=()=>{pp.hidden=true;b.setAttribute("aria-expanded","false")};
+  const pick=cc=>{if(!cc)return;CTRY=cc;try{localStorage.setItem("pb_country",CTRY)}catch(x){}draw()};
+  const mark=()=>{ul.querySelectorAll("li").forEach((li,i)=>li.classList.toggle("on",i===act));const on=ul.querySelector(".on");if(on&&on.scrollIntoView)on.scrollIntoView({block:"nearest"})};
+  b.onclick=()=>pp.hidden?open():close();
+  q.oninput=list;
+  q.onkeydown=e=>{
+    if(e.key==="ArrowDown"){e.preventDefault();if(cur.length){act=Math.min(cur.length-1,act+1);mark()}}
+    else if(e.key==="ArrowUp"){e.preventDefault();if(cur.length){act=Math.max(0,act-1);mark()}}
+    else if(e.key==="Enter"){e.preventDefault();if(cur[act])pick(cur[act].country_code)}
+    else if(e.key==="Escape"){e.preventDefault();close();b.focus()}};
+  ul.onclick=e=>{const li=e.target.closest("li[data-c]");if(li)pick(li.dataset.c)};
+  document.addEventListener("click",e=>{if(!pp.hidden&&!e.target.closest(".cpk"))close()},true)}
 
 function extra(){
-  const rows=PR.map(x=>'<tr><td>'+esc(x.flag)+" "+esc(x.country_name)+'</td><td>'+esc(x.currency)+'</td><td>'+money(x.basic,x.currency)+'</td><td>'+money(x.gold,x.currency)+'</td><td>'+(x.operators.length?x.operators.map(o=>esc((OPS[o]||[o])[0])).join(", "):"Bientôt disponible")+'</td></tr>').join("");
-  return '<section class="ab-sec"><h2>Comment ça marche</h2><ol class="steps"><li>Tu choisis ton pays.</li><li>Le prix s’affiche dans ta monnaie.</li><li>Tu choisis ton moyen de paiement (Mobile Money ou carte).</li><li>Tu paies dans la fenêtre sécurisée iKeePay.</li><li>Ton plan s’active tout seul.</li></ol>'
+  const rows=sortedPR().map(x=>'<tr><td>'+esc(x.flag)+" "+esc(x.country_name)+'</td><td>'+esc(x.currency)+'</td><td>'+money(x.basic,x.currency)+'</td><td>'+money(x.gold,x.currency)+'</td><td>'+(x.operators.length?x.operators.map(o=>esc((OPS[o]||[o])[0])).join(", "):"Bientôt disponible")+'</td></tr>').join("");
+  return '<section class="ab-sec"><h2>Comment ça marche</h2><ol class="steps"><li>Tu choisis ton pays.</li><li>Le prix s’affiche dans ta monnaie.</li><li>Tu choisis ton moyen de paiement (Mobile Money ou carte).</li><li>Tu paies dans une fenêtre sécurisée.</li><li>Ton plan s’active tout seul.</li></ol>'
    +'<p class="note">L’abonnement dure 30 jours et ne se renouvelle pas automatiquement : tu choisis quand le prolonger.</p></section>'
    +'<section class="ab-sec"><h2>Solide ou incertain ?</h2><div class="kind"><div><b>Pronostic solide</b>Une issue du match dépasse 55 % de probabilité : le favori est net.</div><div><b>Match incertain</b>Aucune issue n’atteint 55 % : le résultat est plus difficile à prévoir.</div></div>'
    +'<p class="note">Les quotas se renouvellent chaque jour. Un pronostic déjà débloqué reste visible, et les matchs commencés ne comptent pas dans ton quota.</p></section>'
@@ -129,7 +169,7 @@ function histBox(){
 
 function draw(){
   $("app").innerHTML=meBox()+pickBox()+plansBox()+extra()+histBox();
-  $("cs").onchange=e=>{CTRY=e.target.value;try{localStorage.setItem("pb_country",CTRY)}catch(x){}draw()};
+  cpInit();
   document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>openCk(b.dataset.p));
   document.querySelectorAll("[data-chk]").forEach(b=>b.onclick=()=>verify(b.dataset.chk,true))}
 
@@ -153,7 +193,7 @@ function ckMode(){
   document.querySelectorAll("#ckTabs button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.m===MODE)));
   $("ckH").hidden=!(has&&MODE==="mm");
   $("ckCardNote").hidden=MODE!=="card";
-  $("ckU").textContent=MODE==="mm"?"Tu recevras une demande de paiement sur ton téléphone : valide-la avec ton code secret.":"Tu paies dans une fenêtre sécurisée iKeePay.";
+  $("ckU").textContent=MODE==="mm"?"Tu recevras une demande de paiement sur ton téléphone : valide-la avec ton code secret.":"Tu paies dans une fenêtre sécurisée.";
   if(CUR)$("ckG").textContent="Payer "+money(CUR.amt,CUR.c.currency)+(MODE==="card"?" par carte ou virement":"");
   ckOtp()}
 function openCk(plan){
@@ -198,7 +238,7 @@ $("ckF").onsubmit=async e=>{
     if(typeof r.payment_link==="string"&&/^https:\/\//.test(r.payment_link)){if(!window.open(r.payment_link,"_blank","noopener"))location.href=r.payment_link}
     verify(r.id,false);return}
   if(r.ok&&r.provider==="ikeepay"&&r.pk&&r.order_id){busy=false;ck.close?ck.close():ck.removeAttribute("open");openIke(r);return}
-  if(r.ok&&typeof r.url==="string"&&/^https:\/\//.test(r.url)){location.href=r.url;return}
+  if(r.ok&&typeof r.url==="string"&&/^https:\/\//.test(r.url)){$("ckG").textContent=r.fallback?"Redirection vers un autre paiement sécurisé…":"Redirection…";location.href=r.url;return}
   idle();
   say(r.message||"Impossible de démarrer le paiement. Réessaie dans un instant.")};
 
@@ -212,7 +252,13 @@ function ikMsg(e){
   if(e.data==="ikeepay-ready")$("ikO").style.display="flex";
   else if(e.data==="ikeepay-close"){ikClose();if(!IKOK)load().then(o=>{if(o)draw()})}
   else if(e.data==="ikeepay-success"&&!IKOK){IKOK=true;const id=IKP.id;setTimeout(()=>{ikClose();verify(id,false)},1500)}
-  else if(e.data&&e.data.type==="ikeepay-error"){ikClose();showSt("ko","Paiement impossible",e.data.message||"Erreur iKeePay. Réessaie dans un instant.")}}
+  else if(e.data&&e.data.type==="ikeepay-error"){ikClose();if(IKP&&IKP.mf&&CUR)mfRelay(e.data.message);else showSt("ko","Paiement impossible",e.data.message||"Erreur de paiement. Réessaie dans un instant.")}}
+// Relais automatique : iKeePay a échoué, Money Fusion prend la suite et on redirige vers sa page de paiement.
+async function mfRelay(why){
+  showSt("wait","Changement de moyen de paiement…","Redirection vers un autre paiement sécurisé.");
+  const r=await call({action:"create",plan:CUR.plan,country:CUR.c.country_code,name:($("ckN").value||NAME).trim(),provider:"moneyfusion"});
+  if(r.ok&&typeof r.url==="string"&&/^https:\/\//.test(r.url)){location.href=r.url;return}
+  showSt("ko","Paiement impossible",why||r.message||"Impossible de démarrer le paiement. Réessaie dans un instant.")}
 function openIke(r){
   IKP=r;IKOK=false;
   const p=new URLSearchParams({pk:r.pk,amount:r.amount,currency:r.currency,order_id:r.order_id});if(r.email)p.set("email",r.email);
