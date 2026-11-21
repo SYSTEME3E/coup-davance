@@ -61,7 +61,7 @@ function statCard(){return '<div class="sec"><h2>Mon solde</h2><div class="bal">
 
 function formCard(){
   const active=WD.find(w=>w.status==="pending"||w.status==="processing");
-  const countries=[...new Map(NETS.map(x=>[x.country_code,x.country_name])).entries()];
+  const countries=[...new Map(NETS.map(x=>[x.country_code,x.country_name])).entries()].sort((x,y)=>x[1].localeCompare(y[1],"fr",{sensitivity:"base"}));
   let off="";
   if(active)off="Un retrait est déjà en cours de traitement. Tu pourras en demander un autre dès qu’il sera terminé.";
   else if(R.balance<R.min_withdrawal)off="Il te faut au moins "+F(R.min_withdrawal)+" pour retirer. Il te manque "+F(R.min_withdrawal-R.balance)+".";
@@ -72,7 +72,7 @@ function formCard(){
    +'<label for="wp">Numéro Mobile Money</label><div class="ph"><span id="wd"></span><input class="fld" id="wp" type="text" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="Numéro sans l’indicatif"></div>'
    +'<label for="wa">Montant (F CFA)</label><input class="fld" id="wa" type="text" inputmode="numeric" maxlength="9" value="'+R.balance+'">'
    +'<p class="note">Solde disponible : '+F(R.balance)+' · <button type="button" class="alln" id="all">Tout retirer</button></p>'
-   +'<button class="btn" id="wb" type="submit" style="margin-top:14px">Retirer</button></form></div>'}
+   +'<button class="btn" id="wb" type="submit" style="margin-top:14px">Retirer</button></form>'+(off?'':'<p class="note">Retrait par Mobile Money, disponible dans les pays de la liste. Ton pays n’y est pas ? Contacte le support.</p>')+'</div>'}
 
 function histCard(){
   const w=WD.length?WD.map(x=>{const n=NMAP[x.country+"|"+x.network],s=ST[x.status]||["mu",x.status];
