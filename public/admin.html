@@ -130,4 +130,4 @@ async function loadUsers(reset){if(reset){tok++;off=0;rows=[]}const my=tok;
  (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return;const{data:adm}=await sb.rpc("is_admin");if(adm)load()})();
 })();
 </script>
-</body></html>
+<script src="admin-nav.js"></script></body></html>
