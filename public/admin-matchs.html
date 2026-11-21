@@ -9,15 +9,30 @@
 .mc .ac{margin-top:10px}.mc .ac button{font:inherit;font-weight:700;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;border-radius:10px;padding:8px 14px;min-height:40px;cursor:pointer}
 .mc .ac button:disabled{opacity:.5}
 .sm{font-size:13px;opacity:.8;margin:2px 0 0}
+.sc{margin:10px 0;padding:16px}.sc .rk{display:inline-block;min-width:34px;text-align:center;font:800 14px 'Bricolage Grotesque',sans-serif;background:#6F5BFF;color:#fff;border-radius:999px;padding:3px 10px;margin-right:8px}
+.sc .lg{display:flex;justify-content:space-between;gap:8px;font-size:13px;opacity:.85;align-items:center}
+.sc .tm{font:800 18px/1.25 'Bricolage Grotesque',sans-serif;margin:8px 0 4px}
+.sc .pk{font:800 20px/1.2 'Bricolage Grotesque',sans-serif;margin:6px 0 10px;color:#3DDC97}
+.sc .bs{display:flex;flex-wrap:wrap;gap:6px}.sc ul{margin:10px 0 0;padding-left:18px;font-size:14px;opacity:.9}.sc li{margin:3px 0}
+.sc .hs{font-size:13px;opacity:.85;margin:8px 0 0}
 </style><link rel="stylesheet" href="theme.css"><title>Matchs – Administration</title></head><body><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
-<h1 class="pt">Matchs</h1><p class="sub" style="text-transform:none">Tous les matchs de la base. Un match fourni par deux sources apparaît une seule fois : le doublon est masqué automatiquement. Tu peux aussi masquer ou rétablir un match à la main.</p>
+<h1 class="pt">Matchs</h1>
+<div class="flt" id="tabs"><button data-t="sel" class="on" type="button">Ma sélection</button><button data-t="all" type="button">Tous les matchs</button></div>
+<div id="psel"><p class="sub" style="text-transform:none">Les 15 meilleurs matchs du jour, pour toi seul : cette sélection n’est visible par aucun joueur. Seuls les grands championnats et les coupes d’Europe sont analysés. Un match n’est retenu que si le favori est net, en forme et supérieur à l’adversaire.</p>
+<div class="flt" id="sday"></div>
+<label class="tgl"><input id="strict" type="checkbox"> Plus strict : 70 % et plus seulement</label>
+<div id="smsg" class="pfm" role="status"></div><p class="sm" id="scnt"></p>
+<div id="sel"><p class="sub">Chargement…</p></div>
+<button class="more" id="cp" type="button" hidden style="margin-top:14px">Copier ma sélection</button>
+<p class="note" style="margin-top:16px">Aucun pronostic n’est garanti : même à 80 %, un match sur cinq environ est perdu. Ne mise que ce que tu peux te permettre de perdre.</p></div>
+<div id="pall" hidden><p class="sub" style="text-transform:none">Tous les matchs de la base. Un match fourni par deux sources apparaît une seule fois : le doublon est masqué automatiquement. Tu peux aussi masquer ou rétablir un match à la main.</p>
 <div class="tb"><input id="q" type="search" placeholder="Chercher une équipe ou un championnat" aria-label="Chercher un match" autocomplete="off">
 <div class="flt" id="per"><button data-p="today" class="on" type="button">Aujourd’hui</button><button data-p="tomorrow" type="button">Demain</button><button data-p="we" type="button">Week-end</button><button data-p="week" type="button">7 jours</button></div>
 <label class="tgl"><input id="hid" type="checkbox"> Afficher aussi les matchs masqués</label>
 <button class="more" id="dup" type="button" style="justify-self:start">Chercher les doublons</button></div>
 <div id="msg" class="pfm" role="status"></div><p class="sm" id="cnt"></p>
-<div id="list"><p class="sub">Chargement…</p></div></div>
+<div id="list"><p class="sub">Chargement…</p></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="menu.js"></script><script>
@@ -74,8 +89,51 @@ $("dup").addEventListener("click",async()=>{
  const{data,error}=await sb.rpc("admin_merge_duplicates");bt.disabled=false;
  if(error){say("Échec : "+error.message);return}
  say(data>0?data+" doublon"+(data>1?"s":"")+" masqué"+(data>1?"s":"")+".":"Aucun doublon trouvé.",true);load()});
+
+// ---------- Ma sélection (15 matchs du jour, réservée à l'admin) ----------
+let tab="sel",sd=0,SEL=[];
+const dayR=o=>{const a=day0(new Date());a.setDate(a.getDate()+o);const b=new Date(a);b.setDate(a.getDate()+1);return[a,b]};
+const lab=o=>o===0?"Aujourd’hui":o===1?"Demain":dayR(o)[0].toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"});
+const sdBuild=()=>{$("sday").innerHTML=[0,1,2,3].map(o=>'<button type="button" data-o="'+o+'"'+(o===sd?' class="on"':'')+'>'+esc(lab(o))+'</button>').join("")};
+const f1=x=>Number(x).toFixed(1).replace(".",",");
+const pickName=m=>"Victoire "+(m.side==="home"?m.home:m.away);
+const fm=f=>f?String(f).split("").join(" "):"—";
+const sCard=(m,i)=>{
+ const hr=m.hist_n>0?Math.round(100*m.hist_ok/m.hist_n):null;
+ const xs=m.side==="home"?[m.xh,m.xa]:[m.xa,m.xh];
+ const why=["Favori net : "+m.gap+" points d’avance sur la 2e issue."];
+ why.push("Buts attendus : "+f1(xs[0])+" pour le favori contre "+f1(xs[1])+".");
+ why.push("Forme du favori : "+fm(m.ffav)+" · adversaire : "+fm(m.fopp)+".");
+ const b=['<span class="bd mu">Nul '+esc(m.d)+' %</span>'];
+ if(m.likely_score)b.push('<span class="bd mu">Score probable '+esc(m.likely_score)+'</span>');
+ if(m.over15!=null)b.push('<span class="bd mu">+1,5 but '+esc(m.over15)+' %</span>');
+ if(m.btts!=null)b.push('<span class="bd mu">Les 2 marquent '+esc(m.btts)+' %</span>');
+ return '<div class="card sc"><div class="lg"><span><span class="rk">#'+(i+1)+'</span>'+esc(m.league)+'</span><span>'+hm(m.kickoff)+'</span></div>'
+  +'<div class="tm">'+esc(m.home)+' – '+esc(m.away)+'</div><div class="pk">'+esc(pickName(m))+' · '+esc(m.pp)+' %</div>'
+  +'<div class="bs">'+b.join("")+'</div><ul>'+why.map(w=>'<li>'+esc(w)+'</li>').join("")+'</ul>'
+  +(hr!==null?'<p class="hs">Historique : '+esc(m.hist_ok)+' justes sur '+esc(m.hist_n)+' ('+hr+' %) pour une confiance comparable'+(m.hist_n<30?' · échantillon petit, à prendre avec prudence':'')+'.</p>':'')+'</div>'};
+async function loadSel(){
+ const[a,b]=dayR(sd),k=++t0;$("sel").innerHTML='<p class="sub">Chargement…</p>';$("cp").hidden=true;
+ const{data,error}=await sb.rpc("admin_daily_picks",{p_from:a.toISOString(),p_to:b.toISOString(),p_limit:15,p_min:$("strict").checked?70:60});
+ if(k!==t0)return;
+ if(error){$("sel").innerHTML="";$("smsg").textContent="Impossible de charger la sélection : "+error.message;$("smsg").style.color="#FF7A8A";return}
+ $("smsg").textContent="";SEL=(data&&data.picks)||[];const an=(data&&data.analysed)||0;
+ $("scnt").textContent=SEL.length+" match"+(SEL.length>1?"s":"")+" retenu"+(SEL.length>1?"s":"")+" sur "+an+" analysé"+(an>1?"s":"")+" dans les grands championnats";
+ if(!SEL.length){$("sel").innerHTML='<p class="sub">Aucun match ne remplit les critères ce jour-là. Mieux vaut ne rien jouer que forcer un pari.</p>';return}
+ $("sel").innerHTML=SEL.map(sCard).join("")+(SEL.length<15?'<p class="sub">Moins de 15 matchs remplissent les critères : la sélection n’est pas complétée avec des matchs plus risqués.</p>':"");
+ $("cp").hidden=false}
+$("sday").addEventListener("click",e=>{const x=e.target.closest("button");if(!x)return;sd=Number(x.dataset.o);sdBuild();loadSel()});
+$("strict").addEventListener("change",loadSel);
+$("cp").addEventListener("click",async()=>{
+ const t=lab(sd)+" – ma sélection\n"+SEL.map((m,i)=>(i+1)+". "+m.home+" – "+m.away+" : "+pickName(m)+" ("+m.pp+" %)").join("\n");
+ try{await navigator.clipboard.writeText(t);$("cp").textContent="Copié ✓"}catch(e){$("cp").textContent="Copie impossible"}
+ setTimeout(()=>{$("cp").textContent="Copier ma sélection"},2000)});
+$("tabs").addEventListener("click",e=>{const x=e.target.closest("button");if(!x)return;tab=x.dataset.t;
+ [...$("tabs").children].forEach(y=>y.classList.toggle("on",y===x));
+ $("psel").hidden=tab!=="sel";$("pall").hidden=tab!=="all";tab==="sel"?loadSel():load()});
+sdBuild();
 (async()=>{
  const{data:{session}}=await sb.auth.getSession();if(!session){location.replace("auth.html#login");return}
  const{data:adm}=await sb.rpc("is_admin");if(!adm){location.replace("dashboard.html");return}
- load()})();
+ loadSel()})();
 </script><script src="admin-nav.js"></script></body></html>
