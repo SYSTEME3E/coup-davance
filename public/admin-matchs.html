@@ -1,0 +1,81 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}
+.tb{display:grid;gap:10px;margin:10px 0 6px}.tb input[type=search]{width:100%;font:inherit;padding:12px 14px;border:1px solid rgba(128,128,128,.35);border-radius:12px;background:transparent;color:inherit}
+.flt{flex-wrap:wrap}.tgl{display:flex;gap:8px;align-items:center;font-size:15px}.tgl input{width:20px;height:20px}
+.dh{font:800 16px 'Bricolage Grotesque',sans-serif;margin:22px 0 6px;text-transform:capitalize}
+.mc{margin:8px 0;padding:14px}.mc.hd{opacity:.6;border-style:dashed}
+.mc .lg{display:flex;justify-content:space-between;gap:8px;font-size:13px;opacity:.8}
+.mc .tm{font:800 18px/1.25 'Bricolage Grotesque',sans-serif;margin:4px 0 8px}
+.mc .bs{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mc .ac{margin-top:10px}.mc .ac button{font:inherit;font-weight:700;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;border-radius:10px;padding:8px 14px;min-height:40px;cursor:pointer}
+.mc .ac button:disabled{opacity:.5}
+.sm{font-size:13px;opacity:.8;margin:2px 0 0}
+</style><link rel="stylesheet" href="theme.css"><title>Matchs – Administration</title></head><body><div class="wrap">
+<header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
+<h1 class="pt">Matchs</h1><p class="sub" style="text-transform:none">Tous les matchs de la base. Un match fourni par deux sources apparaît une seule fois : le doublon est masqué automatiquement. Tu peux aussi masquer ou rétablir un match à la main.</p>
+<div class="tb"><input id="q" type="search" placeholder="Chercher une équipe ou un championnat" aria-label="Chercher un match" autocomplete="off">
+<div class="flt" id="per"><button data-p="today" class="on" type="button">Aujourd’hui</button><button data-p="tomorrow" type="button">Demain</button><button data-p="we" type="button">Week-end</button><button data-p="week" type="button">7 jours</button></div>
+<label class="tgl"><input id="hid" type="checkbox"> Afficher aussi les matchs masqués</label>
+<button class="more" id="dup" type="button" style="justify-self:start">Chercher les doublons</button></div>
+<div id="msg" class="pfm" role="status"></div><p class="sm" id="cnt"></p>
+<div id="list"><p class="sub">Chargement…</p></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+</script><script src="menu.js"></script><script>
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let per="today",rows=[],t0=0;
+const day0=d=>{const x=new Date(d);x.setHours(0,0,0,0);return x};
+const range=()=>{const a=day0(new Date()),b=new Date(a);
+ if(per==="today")b.setDate(a.getDate()+1);
+ else if(per==="tomorrow"){a.setDate(a.getDate()+1);b.setDate(a.getDate()+1)}
+ else if(per==="we"){const w=a.getDay();if(w!==0&&w!==6)a.setDate(a.getDate()+(6-w));const s=a.getDay()===0?-1:0;a.setDate(a.getDate()+s);b.setTime(a.getTime());b.setDate(a.getDate()+2)}
+ else b.setDate(a.getDate()+7);
+ return[a,b]};
+const say=(t,ok)=>{$("msg").textContent=t||"";$("msg").style.color=ok?"#3DDC97":"#FF7A8A"};
+const hm=s=>new Date(s).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+const dl=s=>new Date(s).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+const card=m=>{
+ const sc=m.live_status&&m.live_home!=null?m.live_home+" – "+m.live_away:(m.final_home!=null?m.final_home+" – "+m.final_away:"");
+ const b=['<span class="bd mu">'+esc(m.source)+'</span>'];
+ if(m.conf!=null)b.push('<span class="bd in">Confiance '+esc(m.conf)+' %</span>');
+ if(m.likely_score)b.push('<span class="bd mu">Score probable '+esc(m.likely_score)+'</span>');
+ if(sc)b.push('<span class="bd ok">'+esc(sc)+(m.settled_at?" · terminé":" · en cours")+'</span>');
+ if(!m.has_logos)b.push('<span class="bd ko">Sans logos</span>');
+ if(m.unlocks>0)b.push('<span class="bd mu">'+esc(m.unlocks)+' déblocage(s)</span>');
+ if(m.hidden)b.push('<span class="bd ko">'+(m.dup_of?"Doublon masqué":"Masqué")+'</span>');
+ return '<div class="card mc'+(m.hidden?" hd":"")+'" data-id="'+esc(m.fixture_id)+'"><div class="lg"><span>'+esc(m.league)+'</span><span>'+hm(m.kickoff)+'</span></div>'
+  +'<div class="tm">'+esc(m.home)+' – '+esc(m.away)+'</div><div class="bs">'+b.join("")+'</div>'
+  +'<div class="ac"><button type="button" data-a="'+(m.hidden?"show":"hide")+'">'+(m.hidden?"Rétablir ce match":"Masquer ce match")+'</button></div></div>'};
+const draw=()=>{
+ if(!rows.length){$("list").innerHTML='<p class="sub">Aucun match pour cette période.</p>';$("cnt").textContent="";return}
+ let h="",d="";
+ rows.forEach(m=>{const k=day0(m.kickoff).getTime();if(k!==d){d=k;h+='<h2 class="dh">'+esc(dl(m.kickoff))+'</h2>'}h+=card(m)});
+ $("list").innerHTML=h;
+ const v=rows.filter(m=>!m.hidden).length,x=rows.length-v;
+ $("cnt").textContent=v+" match"+(v>1?"s":"")+(x?" · "+x+" masqué"+(x>1?"s":""):"")};
+async function load(){
+ const[a,b]=range(),k=++t0;$("list").innerHTML='<p class="sub">Chargement…</p>';
+ const{data,error}=await sb.rpc("admin_matches",{p_from:a.toISOString(),p_to:b.toISOString(),p_q:$("q").value.trim()||null,p_hidden:$("hid").checked});
+ if(k!==t0)return;
+ if(error){$("list").innerHTML="";say("Impossible de charger les matchs : "+error.message);return}
+ say("");rows=data||[];draw()}
+$("per").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;per=b.dataset.p;[...$("per").children].forEach(x=>x.classList.toggle("on",x===b));load()});
+$("hid").addEventListener("change",load);
+let tq;$("q").addEventListener("input",()=>{clearTimeout(tq);tq=setTimeout(load,350)});
+$("list").addEventListener("click",async e=>{
+ const bt=e.target.closest("button[data-a]");if(!bt)return;
+ const c=bt.closest(".mc"),id=Number(c.dataset.id),hide=bt.dataset.a==="hide";
+ if(hide&&!confirm("Masquer ce match ? Il disparaît de l’app pour tous les joueurs."))return;
+ bt.disabled=true;
+ const{error}=await sb.rpc("admin_set_match_hidden",{p_fixture:id,p_hidden:hide});
+ if(error){bt.disabled=false;say("Échec : "+error.message);return}
+ say(hide?"Match masqué.":"Match rétabli.",true);load()});
+$("dup").addEventListener("click",async()=>{
+ const bt=$("dup");bt.disabled=true;say("Recherche…",true);
+ const{data,error}=await sb.rpc("admin_merge_duplicates");bt.disabled=false;
+ if(error){say("Échec : "+error.message);return}
+ say(data>0?data+" doublon"+(data>1?"s":"")+" masqué"+(data>1?"s":"")+".":"Aucun doublon trouvé.",true);load()});
+(async()=>{
+ const{data:{session}}=await sb.auth.getSession();if(!session){location.replace("auth.html#login");return}
+ const{data:adm}=await sb.rpc("is_admin");if(!adm){location.replace("dashboard.html");return}
+ load()})();
+</script><script src="admin-nav.js"></script></body></html>
