@@ -1,7 +1,7 @@
 // Service worker Pronos-bet : l'app s'ouvre sans internet (pages, styles, scripts et bibliothèque Supabase gardés en cache).
 // Réseau d'abord ; si le réseau échoue, on sert la copie en cache. Les données (Supabase, SportScore) ne sont jamais mises en cache ici :
 // le dashboard enregistre lui-même sa dernière liste de matchs sur le téléphone.
-const V="pronos-bet-v9";
+const V="pronos-bet-v10";
 const SB="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js";
 const FONTS="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap";
 const PAGES=["index.html","auth.html","dashboard.html","historique.html","match.html","sport.html","legal.html","reglages.html","balance.html","abonnement.html"];
