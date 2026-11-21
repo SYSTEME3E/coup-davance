@@ -17,7 +17,7 @@
   const dr=document.createElement("aside");dr.className="drw";dr.setAttribute("role","dialog");dr.setAttribute("aria-modal","true");dr.setAttribute("aria-label","Menu");
   dr.innerHTML=''
     +'<div class="dtop"><b>Menu</b><button type="button" class="dx" aria-label="Fermer le menu">✕</button></div>'
-    +'<nav class="mn"><a href="dashboard.html">Matchs du jour</a><a href="sport.html">Football en direct</a><a href="historique.html">Historique</a><a href="abonnement.html">Abonnement</a><a href="balance.html">Parrainage et gains</a><a href="reglages.html">Réglages</a><a href="admin.html" id="mAdmin" hidden>Espace administrateur</a><a href="admin-retraits.html" id="mAdminW" hidden>Retraits à suivre (admin)</a></nav>'
+    +'<nav class="mn"><a href="dashboard.html">Matchs du jour</a><a href="sport.html">Football en direct</a><a href="historique.html">Historique</a><a href="abonnement.html">Abonnement</a><a href="balance.html">Parrainage et gains</a><a href="reglages.html">Réglages</a><a href="admin.html" id="mAdmin" hidden>Espace administrateur</a></nav>'
     +'<button type="button" class="out2" id="mLite" style="margin-bottom:10px">'+(window.LITE?'Mode Lite activé · sans images (touche pour désactiver)':'Activer le mode Lite (sans images, plus léger)')+'</button>'
     +'<button type="button" class="out2" id="mOut">Quitter</button>';
   document.body.appendChild(ov);document.body.appendChild(dr);
@@ -37,7 +37,7 @@
     const{data}=await sb.from("profiles").select("is_admin,blocked").eq("id",session.user.id).maybeSingle();
     if(data){
       if(data.blocked){await sb.auth.signOut();location.href="auth.html#login";return}
-      if(data.is_admin){g("mAdmin").hidden=false;g("mAdminW").hidden=false}
+      if(data.is_admin){g("mAdmin").hidden=false}
     }
   })();
 })();
