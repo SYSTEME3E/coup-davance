@@ -18,7 +18,7 @@ const draw=()=>{const l=filter==="open"?rows.filter(w=>w.status==="pending"||w.s
   +'<div class="kv"><span>Utilisateur</span><b>'+esc(w.full_name||w.email)+'</b></div>'
   +'<div class="kv"><span>Destination</span><b>'+esc(w.country)+' · '+esc(w.network)+' · '+esc(w.phone)+'</b></div>'
   +'<div class="kv"><span>Demandé le</span><b>'+dt(w.created_at)+'</b></div>'
-  +(w.provider_ref?'<div class="kv"><span>Réf. MoneyFusion</span><b>'+esc(w.provider_ref)+'</b></div>':"")
+  +(w.provider_ref?'<div class="kv"><span>Réf. paiement</span><b>'+esc(w.provider_ref)+'</b></div>':"")
   +(w.error?'<p class="note">'+esc(w.error)+'</p>':"")
   +(open?'<div class="ab"><button class="btn" data-w="'+w.id+'" data-s="paid" type="button">Marquer payé</button><button class="btn danger" data-w="'+w.id+'" data-s="failed" type="button">Échoué + recréditer</button></div>':"")+'</div>'}).join(""):'<div class="card"><p class="sub" style="margin:0">Aucun retrait.</p></div>';
  document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>act(b.dataset.w,b.dataset.s))};
@@ -30,7 +30,7 @@ async function load(){totals();const{data,error}=await sb.rpc("admin_withdrawals
  if(error){if(error.code==="42501")return location.href="dashboard.html";$("list").innerHTML='<div class="card">'+esc(error.message)+'</div>';return}
  rows=data||[];draw()}
 async function act(id,st){
- if(!confirm(st==="paid"?"Confirmer que ce retrait a bien été payé à l’utilisateur ?":"Marquer ce retrait comme échoué et recréditer l’utilisateur ?\nVérifie d’abord dans MoneyFusion qu’il n’a PAS été payé."))return;
+ if(!confirm(st==="paid"?"Confirmer que ce retrait a bien été payé à l’utilisateur ?":"Marquer ce retrait comme échoué et recréditer l’utilisateur ?\nVérifie d’abord dans iKeePay (ou MoneyFusion pour les anciens retraits) qu’il n’a PAS été payé."))return;
  const{error}=await sb.rpc("admin_set_withdrawal",{wid:id,new_status:st,ref:null,err:st==="failed"?"Clôturé manuellement par un administrateur.":null});
  $("msg").className="pfm "+(error?"ko":"ok");$("msg").textContent=error?error.message:"Retrait mis à jour.";load()}
 $("flt").onclick=e=>{const b=e.target.closest("button");if(!b)return;filter=b.dataset.s;document.querySelectorAll("#flt button").forEach(x=>x.className=x===b?"on":"");draw()};
