@@ -39,6 +39,7 @@
 <p class="note" id="ckU" style="margin:4px 0 0"></p>
 <label for="ckN">Nom complet</label><div class="ab-f"><input id="ckN" type="text" autocomplete="name" maxlength="60"></div>
 <div class="mt" id="ckTabs" role="group" aria-label="Moyen de paiement" hidden><button type="button" data-m="mm" aria-pressed="true">📱 Mobile Money</button><button type="button" data-m="card" aria-pressed="false">💳 Carte ou virement</button></div>
+<div class="mt" id="ckCW" role="group" aria-label="Monnaie de paiement" hidden><button type="button" data-cur="CDF" aria-pressed="true">Payer en francs congolais</button><button type="button" data-cur="USD" aria-pressed="false">Payer en dollars</button></div>
 <div id="ckH" hidden><label>Choisis ton réseau</label><div class="ops" id="ckOps" role="radiogroup" aria-label="Opérateur Mobile Money"></div><input type="hidden" id="ckO">
 <label for="ckP">Numéro Mobile Money</label><div class="ph2"><span id="ckDial">+</span><input id="ckP" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="Ton numéro"></div>
 <p class="note" style="margin:6px 0 10px">Avec ou sans l’indicatif du pays.</p>
@@ -58,7 +59,7 @@ const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const USD={basic:5.33,gold:17.5};
 const PN={free:"Gratuit",basic:"Basic",gold:"Gold"};
-const OPS={mtn:["MTN MoMo","mtn.png"],moov:["Moov Money","moov.png"],orange:["Orange Money","orange.png","#FF7900"],africell:["Africell Money","africell.png","#8E24AA"],telecel:["Telecel Cash","telecel.png","#E60000"],kulu:["Kulu","kulu.png","#6C3FC5"],soutra:["Soutra Money","soutra.png","#F28C00"],amana:["Amana","amana.png","#1B75BC"],zamanicash:["Zamani Cash","zamanicash.png","#0E8A5F"],nita:["NITA","nita.png","#B5121B"],celtiis:["Celtiis Cash","celtiis.png","#00A651"],tmoney:["T-Money","tmoney.png","#E4002B"],wave:["Wave","wave.png"],free:["Free Money","free.png"],airtel:["Airtel Money","airtel.png"],airteltigo:["AirtelTigo","airteltigo.png"],mpesa:["M-Pesa","mpesa.png"],bank:["Virement bancaire"],card:["Carte bancaire"]};
+const OPS={mtn:["MTN MoMo","mtn.png"],moov:["Moov Money","moov.png"],orange:["Orange Money","orange.png","#FF7900"],africell:["Africell Money","africell.png","#8E24AA"],telecel:["Telecel Cash","telecel.png","#E60000"],kulu:["Kulu","kulu.png","#6C3FC5"],soutra:["Soutra Money","soutra.png","#F28C00"],amana:["Amana","amana.png","#1B75BC"],zamanicash:["Zamani Cash","zamanicash.png","#0E8A5F"],nita:["NITA","nita.png","#B5121B"],celtiis:["Celtiis Cash","celtiis.png","#00A651"],tmoney:["T-Money","tmoney.png","#E4002B"],wave:["Wave","wave.png"],free:["Free Money","free.png"],airtel:["Airtel Money","airtel.png"],airteltigo:["AirtelTigo","airteltigo.png"],mpesa:["M-Pesa","mpesa.png"],vodacom:["Vodacom M-Pesa","mpesa.png"],halopesa:["HaloPesa",null,"#E4002B"],tigo:["Tigo Pesa",null,"#0057B8"],zamtel:["Zamtel Kwacha",null,"#1B9E3E"],qmoney:["QMoney",null,"#6C3FC5"],afrimoney:["Afrimoney",null,"#E60000"],opay:["OPay",null,"#00B876"],moniepoint:["Moniepoint",null,"#0A4DFF"],bank:["Virement bancaire"],card:["Carte bancaire"]};
 const ICON={bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></svg>'};
 const CK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>';
 const LK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="9" width="11" height="8" rx="2"/><path d="M7 9V6.5a3 3 0 016 0V9"/></svg>';
@@ -183,6 +184,14 @@ function opTile(o){
   return '<label class="op"><input type="radio" name="op" value="'+esc(o)+'"><span class="opb">'+logo+'<span>'+esc(d[0])+'</span></span></label>'}
 const DIAL={BF:"226",BJ:"229",CD:"243",CF:"236",CG:"242",CI:"225",CM:"237",GA:"241",GH:"233",GN:"224",GQ:"240",GW:"245",ML:"223",NE:"227",NG:"234",SN:"221",TD:"235",TG:"228"};
 let MODE="mm";
+// RDC : paiement en CDF (prix du pays) ou en dollars (5 $ / 18 $, comme les pays payant en USD)
+const USD_ALT={CD:{basic:5,gold:18}};
+function curSet(code){
+  if(!CUR)return;const alt=USD_ALT[CUR.c.country_code],usd=!!alt&&code==="USD";
+  CUR.cur=usd?"USD":CUR.c.currency;CUR.amt=usd?alt[CUR.plan]:(CUR.plan==="gold"?CUR.c.gold:CUR.c.basic);
+  $("ckA").textContent=money(CUR.amt,CUR.cur);
+  document.querySelectorAll("#ckCW button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.cur===CUR.cur)));ckMode()}
+document.querySelectorAll("#ckCW button").forEach(b=>b.onclick=()=>curSet(b.dataset.cur));
 function ckOps(){
   $("ckOps").innerHTML=MM.map(o=>{const d=OPS[o]||[o];
     return '<button type="button" class="op" role="radio" aria-checked="'+(o===$("ckO").value)+'" data-o="'+esc(o)+'">'+(d[1]?'<img src="'+esc(d[1])+'" alt="" loading="lazy">':'')+'<span>'+esc(d[0])+'</span></button>'}).join("")}
@@ -194,15 +203,17 @@ function ckMode(){
   $("ckH").hidden=!(has&&MODE==="mm");
   $("ckCardNote").hidden=MODE!=="card";
   $("ckU").textContent=MODE==="mm"?"Tu recevras une demande de paiement sur ton téléphone : valide-la avec ton code secret.":"Tu paies dans une fenêtre sécurisée.";
-  if(CUR)$("ckG").textContent="Payer "+money(CUR.amt,CUR.c.currency)+(MODE==="card"?" par carte ou virement":"");
+  if(CUR)$("ckG").textContent="Payer "+money(CUR.amt,CUR.cur||CUR.c.currency)+(MODE==="card"?" par carte ou virement":"");
   ckOtp()}
 function openCk(plan){
-  const c=country(),amt=plan==="gold"?c.gold:c.basic;CUR={plan,c,amt};
+  const c=country(),amt=plan==="gold"?c.gold:c.basic;CUR={plan,c,amt,cur:c.currency};
+  $("ckCW").hidden=!USD_ALT[c.country_code];
   $("ckT").textContent="Abonnement "+PN[plan];
   $("ckA").textContent=money(amt,c.currency);
   $("ckS").textContent="30 jours · "+c.country_name;
   MM=c.operators.filter(o=>o!=="bank"&&o!=="card"); // opérateurs Mobile Money : demande de paiement envoyée sur le téléphone (iKeePay H2H)
   MODE="mm";
+  document.querySelectorAll("#ckCW button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.cur===c.currency)));
   $("ckO").value=MM[0]||"";ckOps();
   $("ckDial").textContent="+"+(DIAL[c.country_code]||"");
   $("ckP").value="";$("ckOt").value="";
@@ -224,6 +235,7 @@ $("ckF").onsubmit=async e=>{
   if(name.length<2)return say("Saisis ton nom complet.");
   const h2h=MM.length>0&&MODE==="mm",idle=()=>{busy=false;$("ckG").disabled=false;ckMode()};
   const msg={plan:CUR.plan,country:CUR.c.country_code,name};
+  if(CUR.cur==="USD"&&CUR.c.currency!=="USD")msg.currency="USD";
   if(h2h){
     const op=$("ckO").value,ph=$("ckP").value.replace(/\D/g,""),otp=$("ckOt").value.replace(/\D/g,"");
     if(!op)return say("Choisis ton opérateur Mobile Money.");
