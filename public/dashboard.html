@@ -9,7 +9,12 @@
 .pt-code{display:flex;gap:8px;align-items:center;margin:0 0 10px}
 .pt-code code{flex:1;padding:10px 12px;border:1px dashed var(--brand);border-radius:8px;background:var(--bg);font:700 16px ui-monospace,monospace;word-break:break-all}
 .pt-code button,.pt-go{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:10px 14px;font:700 15px "Hanken Grotesk",sans-serif;cursor:pointer;text-decoration:none;text-align:center}
-.pt-go{display:block;background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+a.pt-go,a.pt-go:visited{display:block;background:#FFC933;color:#1B1500;border-color:#FFC933;font-weight:800}a.pt-go:hover{background:#FFD65C}a.pt-go:active{background:#F2B814}
+.bn{position:relative;margin:0 0 14px;border-radius:16px;overflow:hidden;background:var(--surface);aspect-ratio:16/7;touch-action:pan-y}
+.bn-t{display:flex;height:100%;transition:transform .5s ease;will-change:transform}.bn-s{flex:0 0 100%;height:100%}.bn-s a{display:block;height:100%}
+.bn-s img{width:100%;height:100%;object-fit:cover;display:block}
+.bn-d{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;gap:7px}.bn-d button{width:8px;height:8px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.55);cursor:pointer}.bn-d button.on{background:#FFC933}
+@media (prefers-reduced-motion:reduce){.bn-t{transition:none}}
 .pt-group{margin-top:14px}
 .oth-h{margin:22px 0 4px;font:800 19px/1.2 "Bricolage Grotesque",sans-serif}
 .oth-s{margin:0 0 8px;color:var(--muted);font-size:14px}
@@ -23,6 +28,7 @@
 </style>
 </head><body class="pd"><div id="tick" class="tick" hidden></div><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
+<section class="bn" id="bn" hidden aria-label="Annonces"></section>
 <h1 class="pt">Matchs du jour</h1><p class="sub" id="date"></p>
 <div id="install" class="inst" hidden><img src="icon.svg" alt="" width="44" height="44"><div><b>Pronos-bet sur ton téléphone</b><span>Installe l’app pour y accéder en un geste.</span></div><button type="button" id="installBtn" class="btn">Installer l’app</button><p id="installHelp" class="note" hidden></p></div>
 <section class="bonus" id="bonus"><button type="button" class="btn" id="bonusBtn" aria-expanded="false" aria-controls="bonusList">🎁 Bonus partenaires</button>
@@ -185,6 +191,34 @@ const PARTNERS=[
   else{var t=document.createElement("textarea");t.value=c.code;document.body.appendChild(t);t.select();try{document.execCommand("copy");done()}catch(x){}t.remove()}});
  sb.auth.getSession().then(function(r){if(r&&r.data&&r.data.session)load()});
  setInterval(function(){if(!document.hidden)load()},120000);
+})();
+</script>
+<script>
+// ---- Carrousel d'images (gérées depuis l'administration) : 1 image = fixe ; 2 images ou plus = défilement toutes les 5 secondes ----
+(function(){
+ var box=document.getElementById("bn");if(!box||typeof sb==="undefined")return;
+ var esc=function(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+ var sig="",n=0,i=0,timer=null,sx=null;
+ function go(k){i=(k+n)%n;var t=box.querySelector(".bn-t");if(t)t.style.transform="translateX(-"+(i*100)+"%)";
+  var d=box.querySelectorAll(".bn-d button");for(var j=0;j<d.length;j++)d[j].className=j===i?"on":""}
+ function run(){clearInterval(timer);if(n>1)timer=setInterval(function(){if(!document.hidden)go(i+1)},5000)}
+ function draw(list){
+  n=list.length;i=0;clearInterval(timer);
+  if(!n){box.hidden=true;box.innerHTML="";return}
+  box.innerHTML='<div class="bn-t">'+list.map(function(b,k){
+    var u=sb.storage.from("banners").getPublicUrl(b.path).data.publicUrl,im='<img src="'+esc(u)+'" alt="" draggable="false"'+(k?' loading="lazy"':'')+'>';
+    return '<div class="bn-s">'+(b.link?'<a href="'+esc(b.link)+'" target="_blank" rel="noopener sponsored nofollow">'+im+'</a>':im)+'</div>'}).join("")+'</div>'
+   +(n>1?'<div class="bn-d">'+list.map(function(b,k){return '<button type="button" aria-label="Image '+(k+1)+'"'+(k?'':' class="on"')+'></button>'}).join("")+'</div>':"");
+  box.hidden=false;run()}
+ async function load(){
+  try{var r=await sb.from("banners").select("id,path,link,created_at").order("created_at",{ascending:true}).limit(10);
+   if(r.error)return;var l=r.data||[],s=l.map(function(b){return b.id+b.path+(b.link||"")}).join("|");
+   if(s===sig)return;sig=s;draw(l)}catch(x){}}
+ box.addEventListener("click",function(e){var b=e.target.closest(".bn-d button");if(!b)return;var k=Array.prototype.indexOf.call(b.parentNode.children,b);go(k);run()});
+ box.addEventListener("touchstart",function(e){sx=e.touches[0].clientX},{passive:true});
+ box.addEventListener("touchend",function(e){if(sx==null||n<2)return;var dx=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(dx)>40){go(i+(dx<0?1:-1));run()}});
+ sb.auth.getSession().then(function(r){if(r&&r.data&&r.data.session)load()});
+ setInterval(function(){if(!document.hidden)load()},300000);
 })();
 </script>
 </body></html>
