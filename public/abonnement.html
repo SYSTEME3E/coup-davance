@@ -1,257 +1,222 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="ticker.css"><title>Matchs du jour – Pronos-bet</title><style>
-.bonus{margin:14px 0}.bonus .btn{background:var(--navy);}
-#bonusList{margin-top:10px}
-dialog.wl{border:1px solid var(--brand);border-radius:18px;background:var(--surface);color:var(--ink,#fff);padding:26px 22px 20px;max-width:340px;width:calc(100% - 40px);text-align:center}dialog.wl::backdrop{background:rgba(0,0,0,.65)}
-.wl-e{font-size:46px;line-height:1}.wl h2{margin:8px 0 6px;font:800 24px/1.15 "Bricolage Grotesque",sans-serif}.wl p{margin:6px 0;font-size:16px;line-height:1.45}.wl .wl-s{color:var(--muted);font-size:14px}
-.wl-b{display:block;width:100%;margin:16px 0 8px;padding:13px;border:0;border-radius:12px;background:#FFC933;color:#1B1500;font:800 16px/1.2 inherit;cursor:pointer}.wl-a{display:inline-block;padding:8px;color:var(--muted);font-size:14px}
-.dc{margin:0 0 14px}.dc-card{background:var(--surface);border:1px solid var(--brand);border-radius:12px;padding:14px;margin:10px 0}
-.dc-card h3{margin:0 0 4px;font:800 18px/1.2 "Bricolage Grotesque",sans-serif}.dc-card p{margin:4px 0 10px;color:var(--muted);font-size:15px}
-.pt-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
-.pt-item h3{margin:0 0 4px;font:800 19px/1.2 "Bricolage Grotesque",sans-serif}
-.pt-item p{margin:4px 0 10px;color:var(--muted);font-size:15px}
-.pt-code{display:flex;gap:8px;align-items:center;margin:0 0 10px}
-.pt-code code{flex:1;padding:10px 12px;border:1px dashed var(--brand);border-radius:8px;background:var(--bg);font:700 16px ui-monospace,monospace;word-break:break-all}
-.pt-code button,.pt-go{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:10px 14px;font:700 15px "Hanken Grotesk",sans-serif;cursor:pointer;text-decoration:none;text-align:center}
-a.pt-go,a.pt-go:visited{display:block;background:#FFC933;color:#1B1500;border-color:#FFC933;font-weight:800}a.pt-go:hover{background:#FFD65C}a.pt-go:active{background:#F2B814}
-.bn{position:relative;margin:0 0 14px;border-radius:16px;overflow:hidden;background:var(--surface);aspect-ratio:16/7;touch-action:pan-y}
-.bn-t{display:flex;height:100%;transition:transform .5s ease;will-change:transform}.bn-s{flex:0 0 100%;height:100%}.bn-s a{display:block;height:100%}
-.bn-s img{width:100%;height:100%;object-fit:cover;display:block}
-.bn-d{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;gap:7px}.bn-d button{width:8px;height:8px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.55);cursor:pointer}.bn-d button.on{background:#FFC933}
-@media (prefers-reduced-motion:reduce){.bn-t{transition:none}}
-.pt-group{margin-top:14px}
-.oth-h{margin:22px 0 4px;font:800 19px/1.2 "Bricolage Grotesque",sans-serif}
-.oth-s{margin:0 0 8px;color:var(--muted);font-size:14px}
-.oth-c{display:flex;align-items:center;gap:8px;margin:14px 0 4px;font:700 14px "Hanken Grotesk",sans-serif;color:var(--muted)}
-.oth-m{display:flex;align-items:center;gap:12px;padding:11px 12px;margin:6px 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;color:var(--ink);text-decoration:none}
-.oth-m .st{flex:0 0 52px;font:700 13px "Hanken Grotesk",sans-serif;color:var(--muted);text-align:center}
-.oth-m .tm{flex:1;min-width:0}.oth-m .tm div{display:flex;align-items:center;gap:8px;padding:2px 0}
-.oth-m .tm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
-.oth-m .sc{display:flex;flex-direction:column;gap:2px;font:800 15px "Hanken Grotesk",sans-serif;text-align:right}
-.oth-m.lv .st{color:#e5322d}.oth-lv i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e5322d;margin-right:4px}
-</style>
-</head><body class="pd"><div id="tick" class="tick" hidden></div><div class="wrap">
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}</style><link rel="stylesheet" href="theme.css"><title>Abonnement – Pronos-bet</title><style>.ab-act{display:block;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(34,197,94,.16);border:1px solid rgba(34,197,94,.55);color:#fff;font-size:15px;line-height:1.4}.ab-act.tr{background:rgba(255,201,51,.14);border-color:rgba(255,201,51,.6)}.ab-act b{font-weight:800}
+.ck select{width:100%;padding:12px 14px;border-radius:8px;border:1px solid #3A2F9A;background:#1C1555;color:#fff;font:inherit}.ck select:focus{outline:2px solid var(--brand,#6C5CFF)}</style>
+</head><body><div class="wrap wide ab">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
-<section class="bn" id="bn" hidden aria-label="Annonces"></section>
-<h1 class="pt">Matchs du jour</h1><p class="sub" id="date"></p>
-<div id="install" class="inst" hidden><img src="icon.svg" alt="" width="44" height="44"><div><b>Pronos-bet sur ton téléphone</b><span>Installe l’app pour y accéder en un geste.</span></div><button type="button" id="installBtn" class="btn">Installer l’app</button><p id="installHelp" class="note" hidden></p></div>
-<section class="bonus" id="bonus"><button type="button" class="btn" id="bonusBtn" aria-expanded="false" aria-controls="bonusList">🎁 Bonus partenaires</button>
-<div id="bonusList" hidden></div></section>
-<section class="dc" id="dcode" hidden aria-live="polite"></section>
-<div class="srch"><input id="q" type="search" placeholder="Rechercher une équipe ou une compétition…" autocomplete="off"><input id="qd" type="date" aria-label="Date du match"></div>
-<h2 class="pc-h">Prédictions</h2><p class="pc-sub" id="pcn"></p>
-<div class="pc-flt" id="pf"><button type="button" data-pf="all" class="on">Tous</button><button type="button" data-pf="live">En direct</button><button type="button" data-pf="next">À venir</button><button type="button" data-pf="done">Terminés</button><button type="button" data-pf="top">80 %+</button></div>
-<div id="list"><p class="sub">Chargement des matchs…</p></div>
-<p class="note" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p></div>
+<h1 class="pt">Abonnement</h1><p class="sub" style="text-transform:none">Choisis le plan qui te convient. Paiement par Mobile Money, activation automatique.</p>
+<div id="st" class="ab-st" role="status" hidden></div>
+<div id="app"><p class="sub">Chargement…</p></div>
+<div style="height:48px"></div></div>
+
+<dialog class="ck" id="ck" aria-labelledby="ckT"><form id="ckF" novalidate>
+<div class="hd"><h2 id="ckT">Abonnement</h2><button type="button" class="x" id="ckX" aria-label="Fermer">✕</button></div>
+<div class="sum"><span id="ckS">30 jours</span><b id="ckA"></b></div>
+<p class="note" id="ckU" style="margin:4px 0 0"></p>
+<label for="ckN">Nom complet</label><div class="ab-f"><input id="ckN" type="text" autocomplete="name" maxlength="60"></div>
+<div id="ckH" hidden><label for="ckO">Opérateur Mobile Money</label><div class="ab-f"><select id="ckO"></select></div>
+<label for="ckP">Numéro Mobile Money</label><div class="ab-f"><input id="ckP" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="Ex. : 07 00 00 00 00"></div>
+<p class="note" style="margin:4px 0 8px">Avec ou sans l’indicatif du pays.</p>
+<div id="ckOW" hidden><label for="ckOt">Code de validation Orange (OTP)</label><div class="ab-f"><input id="ckOt" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></div></div></div>
+<div class="fm" id="ckM" role="alert"></div>
+<button class="btn go" id="ckG" type="submit">Payer</button>
+<button class="btn ghost cx" id="ckC" type="button">Annuler</button>
+<p class="sec2">Une fenêtre sécurisée iKeePay s’ouvre pour choisir ton moyen de paiement (Mobile Money ou carte) et valider.</p>
+</form></dialog>
+
+<div id="ikO" style="display:none;position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.6);align-items:center;justify-content:center"><div style="position:relative;width:100%;max-width:450px;height:90vh;padding:0 8px"><button id="ikX" type="button" aria-label="Fermer" style="position:absolute;top:-2.6rem;right:.5rem;background:none;border:0;color:#fff;font-size:28px;line-height:1;cursor:pointer">✕</button><iframe id="ikF" title="Paiement iKeePay" allow="payment" style="border:0;width:100%;height:100%;background:transparent;border-radius:24px"></iframe></div></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="cards.js"></script><script src="menu.js"></script><script src="sportscore.js"></script><script src="ticker.js" defer></script><script>
-$("date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
-(async()=>{const{data:{session}}=await sb.auth.getSession();if(!session){let sv=null;try{sv=localStorage.getItem("pb_home_v1")}catch(x){}if(!(navigator.onLine===false&&sv))return location.href="auth.html#login"}
-let homeHTML="",tok=0,cache=null;
-const clean=()=>$("q").value.replace(/[%_,()*\\]/g," ").trim();
-const searching=()=>clean().length>=2||!!$("qd").value;
-// Liste du jour : matchs en cours en premier (rouge), puis les matchs d’aujourd’hui uniquement. Actualisée toutes les 60 s.
-let LIM=30,LIMO=40,lastSig="",FILT="all",OFF=0;const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute,kind,unlocked";
-document.addEventListener("click",e=>{if(e.target&&e.target.id==="moreHome"){LIM+=30;build()}if(e.target&&e.target.id==="moreOth"){LIMO+=40;build()}});
-const PF=m=>FILT==="all"||(FILT==="live"?!!m.live_status:FILT==="next"?(!m.live_status&&!m.settled_at&&new Date(m.kickoff)>Date.now()):(isOpen(m)&&Math.max(m.data.result.home,m.data.result.draw,m.data.result.away)>=80));
-// ---- Autres matchs du jour (sans pronostic) : tous les championnats fournis par SportScore, comme la page « Football en direct » ----
-const PRIO=/^(english premier league|spanish la liga|italian serie a|french ligue 1|bundesliga|uefa champions league|uefa europa league|uefa conference league)$/i;
-const EURO=/premier league|la liga|serie a|serie b|ligue 1|ligue 2|bundesliga|championship|eredivisie|primeira liga|super lig|super league|premiership|pro league|segunda|league one|league two|champions league|europa|conference|cup|coupe|copa|pokal|coppa|ekstraklasa|allsvenskan|eliteserien|superliga|superettan|veikkausliiga|hnl|nb i|liga i|fortuna|a-league|euro/i;
-const hm=d=>new Date(d).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
-const othRow=x=>{const sc=x.hs!=null&&x.as!=null,
-  t=x.live?'<span class="oth-lv"><i></i>'+(x.minute?esc(x.minute)+"’":"LIVE")+'</span>':esc(hm(x.start)),
-  inner='<div class="st">'+t+'</div><div class="tm"><div>'+lgo(x.hl,"sm")+'<span>'+esc(x.home)+'</span></div><div>'+lgo(x.al,"sm")+'<span>'+esc(x.away)+'</span></div></div><div class="sc">'+(sc?'<b>'+esc(x.hs)+'</b><b>'+esc(x.as)+'</b>':'<b>–</b><b>–</b>')+'</div>';
-  return x.id?'<a class="oth-m'+(x.live?" lv":"")+'" href="sport.html#match/'+encodeURIComponent(x.id)+(x.mid?"/"+encodeURIComponent(x.mid):"")+'">'+inner+'</a>':'<div class="oth-m'+(x.live?" lv":"")+'">'+inner+'</div>'};
-const othHTML=list=>{
- const a=list.filter(x=>FILT==="all"||(FILT==="live"?x.live:FILT==="next"?!x.live&&!x.done:false));
- if(!a.length)return"";
- const tier=k=>PRIO.test(k)?0:EURO.test(k)?1:2,g={},logo={};
- a.forEach(x=>{const k=x.comp||"Autres";(g[k]=g[k]||[]).push(x);if(x.cl)logo[k]=x.cl});
- const keys=Object.keys(g).sort((p,q)=>tier(p)-tier(q)||g[q].length-g[p].length);
- let left=LIMO,h='<h2 class="oth-h">Autres matchs du jour</h2><p class="oth-s">'+a.length+(a.length>1?" matchs":" match")+' dans les championnats du monde · sans pronostic pour l’instant</p>';
- keys.forEach(k=>{if(left<=0)return;const rows=g[k].slice(0,left);left-=rows.length;
-  h+='<div class="oth-c">'+lgo(logo[k],"sm")+'<span>'+esc(k)+'</span></div>'+rows.map(othRow).join("")});
- if(a.length>LIMO)h+='<button id="moreOth" class="more">Afficher plus de matchs ('+(a.length-LIMO)+')</button>';
- return h};
-const build=()=>{const{all:all0,error,s,tm,others}=cache;const all=all0.filter(PF);$("pcn").textContent=error?"":all.length+(all.length>1?" affichés":" affiché");
- const liveNow=all.filter(m=>m.live_status),rest=all.filter(m=>!m.live_status);
- let budget=LIM;const take=a=>{const x=a.slice(0,Math.max(0,budget));budget-=x.length;return x};
- const day=d=>rest.filter(m=>new Date(m.kickoff).toDateString()===d.toDateString());
- const part=(t,d,hideEmpty)=>{const a=day(d);if(!a.length&&hideEmpty)return"";return '<p class="sub dh">'+t+' ('+a.length+')</p>'+(a.length?take(a).map(card).join(""):'<div class="card"><p class="sub" style="margin:0">Plus aucun match à venir pour le moment.</p></div>')};
- homeHTML=error?'<div class="card">Impossible de charger les matchs. Réessaie dans un instant.</div>':all0.length&&!all.length?'<div class="card">Aucun match dans cette catégorie pour le moment.</div>':all.length?(liveNow.length?'<p class="sub dh rd">En cours ('+liveNow.length+')</p>'+take(liveNow).map(card).join(""):"")+part("Aujourd’hui",s,liveNow.length>0):'<div class="card"><b>Pas de match avec pronostic pour aujourd’hui pour le moment.</b><p class="sub" style="margin:8px 0 0">Ils sont calculés toutes les 5 minutes. Il peut aussi n’y avoir aucun match dans les compétitions couvertes.</p></div>';
- if(OFF)homeHTML='<div class="card"><b>Mode hors ligne</b><p class="sub" style="margin:6px 0 0">Derniers matchs enregistrés à '+hm(OFF)+'. Les scores en direct et les nouveaux matchs reviennent dès que la connexion revient.</p></div>'+homeHTML;
- if(all.length>LIM)homeHTML+='<button id="moreHome" class="more">Afficher plus de matchs ('+(all.length-LIM)+')</button>';
- if(!error){const o=othHTML(others||[]);homeHTML+=o||(FILT==="all"&&typeof _ssDay!=="undefined"&&_ssDay.err?'<p class="note" style="text-align:center">Les autres championnats sont momentanément indisponibles. Ils reviennent à la prochaine actualisation.</p>':"")}
- if(!searching())$("list").innerHTML=homeHTML};
-// Direct : SportScore (status=live) fournit le statut et le score ; les pronostics ne changent pas.
-// Doublons (même match venu de deux sources) : on n'en affiche qu'un, le plus ancien — la base n'est pas modifiée.
-const withSS=async rows=>{
- const asX=m=>({home:m.home,away:m.away,t:+new Date(m.kickoff)}),uniq=[];
- rows.slice().sort((a,b)=>a.fixture_id-b.fixture_id).forEach(m=>{if(!uniq.some(u=>ssSameMatch(asX(m),asX(u),2)))uniq.push(m)});
- const keep=rows.filter(m=>uniq.includes(m));
- let live=[];try{live=await ssLive()}catch(e){}
- keep.forEach(m=>{const l=live.find(v=>ssSameMatch(asX(m),{home:v.home,away:v.away,t:v.start?+new Date(v.start):0},3));
-  if(!l)return;
-  m.live_status=/half[- ]?time|\bht\b/.test(l.status)?"HT":(m.live_status&&m.live_status!=="HT"?m.live_status:"LIVE");
-  if(l.hs!=null&&l.as!=null){m.live_home=l.hs;m.live_away=l.as}});
- return keep};
-const loadHome=async first=>{
- const s=new Date();s.setHours(0,0,0,0);
- const yd=new Date(s);yd.setDate(yd.getDate()-1);const tm=new Date(s);tm.setDate(tm.getDate()+1);const e=new Date(s);e.setDate(e.getDate()+2);
- let{data,error}=await sb.from("predictions_safe").select(COLS).gte("kickoff",yd.toISOString()).lt("kickoff",tm.toISOString()).is("settled_at",null).order("kickoff");
- // Mode hors ligne : on garde la dernière liste reçue sur le téléphone et on l'affiche si internet est coupé
- OFF=0;
- if(!error&&data){try{localStorage.setItem("pb_home_v1",JSON.stringify({t:Date.now(),data}))}catch(x){}}
- else if(error){try{const sv=JSON.parse(localStorage.getItem("pb_home_v1")||"null");if(sv&&Array.isArray(sv.data)){data=sv.data;error=null;OFF=sv.t||1}}catch(x){}}
- if(error&&!first)return;
- let all=(data||[]).filter(m=>m.live_status||(new Date(m.kickoff).toDateString()===s.toDateString()&&new Date(m.kickoff).getTime()>Date.now()-3*36e5));
- // 1) affichage immédiat des matchs avec pronostic (la base répond en quelques ms) ; SportScore se charge ensuite en arrière-plan
- if(first&&!error){cache={all,error,s,tm,others:[]};build()}
- const rows=data||[];
- const oP=(async()=>{try{const t=await ssToday();
-  return t.filter(x=>!x.done&&x.start&&new Date(x.start).toDateString()===s.toDateString()
-   &&!rows.some(m=>ssSameMatch({home:m.home,away:m.away,t:+new Date(m.kickoff)},{home:x.home,away:x.away,t:+new Date(x.start)},3)))}catch(e){return[]}})();
- all=await withSS(all);
- if(first&&!error){cache={all,error,s,tm,others:[]};build()} // 2) avec les scores en direct
- const others=await oP; // 3) avec les autres championnats
- const sig=s.toDateString()+JSON.stringify(all.map(m=>[m.fixture_id,m.live_status,m.live_home,m.live_away,m.live_minute]))+JSON.stringify(others.map(x=>[x.id,x.live,x.hs,x.as]));
- if(!first&&!error&&sig===lastSig)return; // rien n'a changé : on ne redessine pas la liste
- lastSig=sig;cache={all,error,s,tm,others};build();
- ensureLogos(all.slice(0,60),build)};
-$("pf").onclick=e=>{const b=e.target.closest("[data-pf]");if(!b)return;if(b.dataset.pf==="done"){location.href="historique.html";return}
- FILT=b.dataset.pf;LIM=30;$("pf").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));if(cache)build()};
-await loadHome(true);
-setInterval(()=>{if(!document.hidden)loadHome(false)},window.LITE?90000:60000);
-const render=(t,a)=>a.length?'<p class="sub dh">'+t+' ('+a.length+')</p>'+a.map(card).join(""):"";
-const doSearch=async()=>{const my=++tok,q=clean(),dv=$("qd").value;
- if(q.length<2&&!dv){$("list").innerHTML=homeHTML;return}
- const s=new Date();s.setHours(0,0,0,0);
- let a=sb.from("predictions_safe").select(COLS).order("kickoff",{ascending:false}).limit(60);
- if(q.length>=2)a=a.or("home.ilike.%"+q+"%,away.ilike.%"+q+"%,league.ilike.%"+q+"%");
- if(dv){const d0=new Date(dv+"T00:00:00"),d1=new Date(d0);d1.setDate(d1.getDate()+1);a=a.gte("kickoff",d0.toISOString()).lt("kickoff",d1.toISOString())}
- const{data:r,error:er}=await a;if(my!==tok)return;
- if(er){$("list").innerHTML='<div class="card">Recherche impossible pour le moment. Réessaie dans un instant.</div>';return}
- const up=(r||[]).filter(m=>new Date(m.kickoff)>=s).reverse(),past=(r||[]).filter(m=>new Date(m.kickoff)<s);
- const html=()=>(up.length||past.length)?render("À venir",up)+render("Déjà joués",past):'<div class="card"><b>Aucun match trouvé.</b><p class="sub" style="margin:8px 0 0">Essaie un autre nom d’équipe, de compétition ou une autre date.</p></div>';
- $("list").innerHTML=html();
- ensureLogos(r||[],()=>{if(my===tok)$("list").innerHTML=html()})};
-let tm_;$("q").oninput=()=>{clearTimeout(tm_);tm_=setTimeout(doSearch,300)};$("qd").onchange=doSearch;
-})();
-</script><script src="pwa.js" defer></script><script>
-// ---- Bonus partenaires : modifie uniquement cette configuration ----
-// code : code promo à saisir à l'inscription ; link : lien d'inscription affilié (laisser "" tant qu'il n'est pas renseigné)
-// bonus : texte de l'offre. N'y mets un pourcentage que s'il est identique à l'offre actuellement affichée par le partenaire, avec ses conditions.
-const GROUP_URL="";// lien d'invitation du groupe (WhatsApp ou Telegram)
-const PARTNERS=[
- {name:"1xBet",code:"1x_6232579",link:"https://refpa-65760.com/L?tag=d_6320689m_1599c_&site=6320689&ad=1599",bonus:"Bonus sport : 200 % sur le premier dépôt, jusqu’à 250 000 XOF au Bénin. Conditions de mise sur le site de 1xBet."},
- {name:"Melbet",code:"ml_3902811",link:"https://refpa3665.com/L?tag=d_6375130m_2170c_&site=6375130&ad=2170",bonus:"Bonus de bienvenue sur ton premier dépôt (conditions sur le site du partenaire)."},
- {name:"1win",code:"1w_13960",link:"https://1wymky.life/?open=register&p=k88j",bonus:"Bonus de bienvenue sur tes premiers dépôts (conditions sur le site du partenaire)."}
-];
-(function(){
- var btn=document.getElementById("bonusBtn"),box=document.getElementById("bonusList");
- var h='<p class="note">Crée ton compte chez un partenaire avec notre code promo pour profiter de son bonus de bienvenue.</p>';
- PARTNERS.forEach(function(p,i){
-  h+='<div class="pt-item"><h3>'+p.name+'</h3><p>'+p.bonus+'</p>'
-   +'<div class="pt-code"><code>'+p.code+'</code><button type="button" data-copy="'+i+'">Copier</button></div>'
-   +(p.link?'<a class="pt-go" data-pc="'+i+'" href="'+p.link+'" target="_blank" rel="noopener sponsored nofollow">Créer mon compte chez '+p.name+'</a><p class="note pt-hint" style="margin:6px 0 0">Le code sera copié : colle-le dans le champ « Code promo » à l’inscription.</p>':'<p class="note" style="margin:0">Sur le site de '+p.name+', saisis ce code promo au moment de l’inscription.</p>')+'</div>';
- });
- h+='<div class="pt-group"><p class="note"><b>Après ton inscription</b>, rejoins notre groupe pour recevoir des pronostics gratuits.</p>'
-  +(GROUP_URL?'<a class="pt-go" href="'+GROUP_URL+'" target="_blank" rel="noopener">Rejoindre le groupe</a>':'<p class="note">Le lien du groupe arrive bientôt.</p>')+'</div>'
-  +'<p class="note">Liens partenaires : nous touchons une commission si tu t’inscris, sans frais pour toi. Réservé aux 18 ans et plus. Les paris comportent des risques : joue avec modération et vérifie que les paris en ligne sont autorisés dans ton pays. Bonus soumis à conditions.</p>';
- box.innerHTML=h;
- btn.onclick=function(){var open=box.hidden;box.hidden=!open;btn.setAttribute("aria-expanded",open?"true":"false");btn.textContent=open?"🎁 Masquer les bonus":"🎁 Bonus partenaires"};
- box.addEventListener("click",function(e){var g=e.target.closest("[data-pc]");if(g){var code=PARTNERS[+g.dataset.pc].code,h=g.nextElementSibling;
-   try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code)}catch(x){}
-   if(h&&h.classList.contains("pt-hint"))h.textContent="Code "+code+" copié ✓ Colle-le dans le champ « Code promo » à l’inscription.";return}
-  var b=e.target.closest("[data-copy]");if(!b)return;var c=PARTNERS[+b.dataset.copy].code;
-  var done=function(){b.textContent="Copié ✓";setTimeout(function(){b.textContent="Copier"},1800)};
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c).then(done,function(){});
-  else{var t=document.createElement("textarea");t.value=c;document.body.appendChild(t);t.select();try{document.execCommand("copy");done()}catch(x){}t.remove()}});
-})();
-</script>
-<script>
-// ---- Code du jour : publié par l'administrateur (plateforme + code), visible 24 h ----
-(function(){
- var box=document.getElementById("dcode");if(!box||typeof sb==="undefined")return;
- var esc=function(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
- var key=function(n){return String(n||"").toLowerCase().replace(/[^a-z0-9]/g,"")};
- var CODES=[];
- function link(pf){var k=key(pf);for(var i=0;i<PARTNERS.length;i++){if(key(PARTNERS[i].name)===k&&PARTNERS[i].link)return PARTNERS[i].link}return""}
- function draw(){
-  if(!CODES.length){box.hidden=true;box.innerHTML="";return}
-  box.innerHTML=CODES.map(function(c,i){var l=link(c.platform);
-   return '<div class="dc-card"><h3>🎟️ Code du jour · '+esc(c.platform)+'</h3>'
-    +'<p>C’est le code d’aujourd’hui pour <b>'+esc(c.platform)+'</b>. Copie-le, puis colle-le sur le site.</p>'
-    +'<div class="pt-code"><code>'+esc(c.code)+'</code><button type="button" data-dcopy="'+i+'">Copier</button></div>'
-    +(l?'<a class="pt-go" href="'+esc(l)+'" target="_blank" rel="noopener sponsored nofollow">Aller sur '+esc(c.platform)+'</a>':'')+'</div>'}).join("");
-  box.hidden=false}
- async function load(){
-  try{var r=await sb.from("daily_codes").select("id,platform,code,created_at").order("created_at",{ascending:false}).limit(6);
-   if(r.error)return;CODES=r.data||[];draw()}catch(x){}}
- box.addEventListener("click",function(e){var b=e.target.closest("[data-dcopy]");if(!b)return;var c=CODES[+b.dataset.dcopy];if(!c)return;
-  var done=function(){b.textContent="Copié ✓";setTimeout(function(){b.textContent="Copier"},1800)};
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c.code).then(done,function(){});
-  else{var t=document.createElement("textarea");t.value=c.code;document.body.appendChild(t);t.select();try{document.execCommand("copy");done()}catch(x){}t.remove()}});
- sb.auth.getSession().then(function(r){if(r&&r.data&&r.data.session)load()});
- setInterval(function(){if(!document.hidden)load()},120000);
-})();
-</script>
-<script>
-// ---- Carrousel d'images (gérées depuis l'administration) : 1 image = fixe ; 2 images ou plus = défilement toutes les 5 secondes ----
-(function(){
- var box=document.getElementById("bn");if(!box||typeof sb==="undefined")return;
- var esc=function(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
- var sig="",n=0,i=0,timer=null,sx=null;
- function go(k){i=(k+n)%n;var t=box.querySelector(".bn-t");if(t)t.style.transform="translateX(-"+(i*100)+"%)";
-  var d=box.querySelectorAll(".bn-d button");for(var j=0;j<d.length;j++)d[j].className=j===i?"on":""}
- function run(){clearInterval(timer);if(n>1)timer=setInterval(function(){if(!document.hidden)go(i+1)},5000)}
- function draw(list){
-  n=list.length;i=0;clearInterval(timer);
-  if(!n){box.hidden=true;box.innerHTML="";return}
-  box.innerHTML='<div class="bn-t">'+list.map(function(b,k){
-    var u=sb.storage.from("banners").getPublicUrl(b.path).data.publicUrl,im='<img src="'+esc(u)+'" alt="" draggable="false"'+(k?' loading="lazy"':'')+'>';
-    return '<div class="bn-s">'+(b.link?'<a href="'+esc(b.link)+'" target="_blank" rel="noopener sponsored nofollow">'+im+'</a>':im)+'</div>'}).join("")+'</div>'
-   +(n>1?'<div class="bn-d">'+list.map(function(b,k){return '<button type="button" aria-label="Image '+(k+1)+'"'+(k?'':' class="on"')+'></button>'}).join("")+'</div>':"");
-  box.hidden=false;run()}
- async function load(){
-  try{var r=await sb.from("banners").select("id,path,link,created_at").order("created_at",{ascending:true}).limit(10);
-   if(r.error)return;var l=r.data||[],s=l.map(function(b){return b.id+b.path+(b.link||"")}).join("|");
-   if(s===sig)return;sig=s;draw(l)}catch(x){}}
- box.addEventListener("click",function(e){var b=e.target.closest(".bn-d button");if(!b)return;var k=Array.prototype.indexOf.call(b.parentNode.children,b);go(k);run()});
- box.addEventListener("touchstart",function(e){sx=e.touches[0].clientX},{passive:true});
- box.addEventListener("touchend",function(e){if(sx==null||n<2)return;var dx=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(dx)>40){go(i+(dx<0?1:-1));run()}});
- sb.auth.getSession().then(function(r){if(r&&r.data&&r.data.session)load()});
- setInterval(function(){if(!document.hidden)load()},300000);
-})();
-</script>
-<script>
-// ---- Fenêtre de bienvenue : une seule fois, pour un compte tout juste créé (essai gratuit de 3 jours) ----
-(function(){
- if(typeof sb==="undefined")return;
- var esc=function(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
- function seen(k){try{return !!localStorage.getItem(k)}catch(e){try{return !!sessionStorage.getItem(k)}catch(x){return false}}}
- function mark(k){try{localStorage.setItem(k,"1")}catch(e){try{sessionStorage.setItem(k,"1")}catch(x){}}}
- function show(days,end){
-  var d=document.createElement("dialog");d.className="wl";d.setAttribute("aria-labelledby","wlT");
-  d.innerHTML='<div class="wl-e" aria-hidden="true">🎉</div><h2 id="wlT">Félicitations !</h2>'
-   +'<p>Ton compte est créé. Tu as accès à <b>'+days+' jour'+(days>1?'s':'')+' d’essai gratuit</b> avant de choisir un abonnement.</p>'
-   +'<p class="wl-s">Essai jusqu’au '+esc(end)+'.</p>'
-   +'<button type="button" class="wl-b" id="wlOk">C’est parti</button><a class="wl-a" href="abonnement.html">Voir les abonnements</a>';
-  document.body.appendChild(d);
-  var close=function(){try{d.close()}catch(e){d.removeAttribute("open")}d.remove()};
-  d.querySelector("#wlOk").onclick=close;d.addEventListener("cancel",function(e){e.preventDefault();close()});
-  if(d.showModal)d.showModal();else d.setAttribute("open","")}
- (async function(){
-  try{
-   var s=await sb.auth.getSession(),u=s&&s.data&&s.data.session&&s.data.session.user;if(!u)return;
-   var k="pb_welcome_"+u.id;if(seen(k))return;
-   var r=await Promise.all([sb.rpc("my_plan"),sb.from("profiles").select("created_at").eq("id",u.id).maybeSingle()]);
-   var m=r[0].data,p=r[1].data;if(!m||!m.trial||!m.trial_ends_at||!p||!p.created_at)return;
-   var created=new Date(p.created_at),end=new Date(m.trial_ends_at);
-   if(Date.now()-created>864e5)return; // compte de plus de 24 h : ce n'est plus un nouveau compte
-   var days=Math.max(1,Math.round((end-created)/864e5));
-   mark(k);show(days,end.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}));
-  }catch(e){}})();
-})();
-</script>
-</body></html>
+</script><script src="menu.js"></script><script>
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const USD={basic:5.33,gold:17.5};
+const PN={free:"Gratuit",basic:"Basic",gold:"Gold"};
+const OPS={mtn:["MTN MoMo","mtn.png"],moov:["Moov Money","moov.png"],orange:["Orange Money","orange.png","#FF7900"],celtiis:["Celtiis Cash","celtiis.png","#0B7A3E"],africell:["Africell Money","africell.png","#8E24AA"],telecel:["Telecel Cash","telecel.png","#E60000"],kulu:["Kulu","kulu.png","#6C3FC5"],soutra:["Soutra Money","soutra.png","#F28C00"],amana:["Amana","amana.png","#1B75BC"],zamanicash:["Zamani Cash","zamanicash.png","#0E8A5F"],nita:["NITA","nita.png","#B5121B"],tmoney:["T-Money","tmoney.png","#E4002B"],wave:["Wave","wave.png"],free:["Free Money","free.png"],airtel:["Airtel Money","airtel.png"],airteltigo:["AirtelTigo","airteltigo.png"],mpesa:["M-Pesa","mpesa.png"],bank:["Virement bancaire"],card:["Carte bancaire"]};
+const ICON={bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></svg>'};
+const CK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>';
+const LK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="9" width="11" height="8" rx="2"/><path d="M7 9V6.5a3 3 0 016 0V9"/></svg>';
+const num=n=>Number(n||0).toLocaleString("fr-FR");
+const money=(n,c)=>num(n)+(c==="XOF"||c==="XAF"?" F":c==="NGN"?" ₦":" "+c);
+const usd=v=>v.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" $";
+const dt=s=>s?new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}):"";
+const dtt=s=>new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+const BD={pending:["in","En attente"],paid:["ok","Payé"],failed:["ko","Échoué"]};
+let PR=[],ME=null,PAYS=[],CTRY="BJ",NAME="",CUR=null,busy=false,MM=[];
+
+// Appel de la fonction serveur « subscribe » avec le jeton de connexion
+async function call(body){
+  const{data,error}=await sb.functions.invoke("subscribe",{body});
+  if(error){let m="Service indisponible pour le moment. Réessaie dans un instant.";
+    try{const j=await error.context.json();if(j&&j.message)m=j.message}catch(e){}
+    return{ok:false,message:m}}
+  return data||{ok:false,message:"Réponse vide du serveur."}}
+
+const country=()=>PR.find(x=>x.country_code===CTRY)||PR[0];
+
+async function load(){
+  const[p,m,h]=await Promise.all([
+    sb.from("plan_prices").select("*").order("sort"),
+    sb.rpc("my_plan"),
+    sb.from("payments").select("id,plan,currency,amount,operator,status,created_at").order("created_at",{ascending:false}).limit(8)]);
+  if(p.error||m.error||!(p.data||[]).length){$("app").innerHTML='<div class="card">Impossible de charger les abonnements pour le moment. Réessaie dans un instant.</div>';return false}
+  PR=p.data;ME=m.data;PAYS=h.data||[];
+  if(!PR.some(x=>x.country_code===CTRY))CTRY=PR[0].country_code;
+  return true}
+
+// ---------- Bandeau « mon plan » ----------
+function meBox(){
+  const pl=ME.plan,u=ME.solid,v=ME.uncertain;
+  const q=(t,o)=>{const lim=o.limit;
+    return '<div class="q"><b><span>'+t+'</span><span>'+(lim==null?"Illimité":o.used+" / "+lim)+'</span></b><div class="pb" role="progressbar" aria-label="'+t+'" aria-valuemin="0" aria-valuemax="'+(lim==null?1:lim)+'" aria-valuenow="'+(lim==null?1:Math.min(o.used,lim))+'"><i style="width:'+(lim==null?100:Math.min(100,Math.round(o.used/lim*100)))+'%"></i></div></div>'};
+  const left=d=>{const n=Math.max(1,Math.ceil((new Date(d)-Date.now())/864e5));return n+" jour"+(n>1?"s":"")};
+  const ex=ME.trial?"Ensuite, le plan Gratuit s’applique.":pl==="free"?"Aucun abonnement actif.":ME.ends_at?"":"Accès sans limite de durée.";
+  const act=ME.trial?'<div class="ab-act tr">⏳ Essai gratuit en cours : accès Gold complet jusqu’au <b>'+dt(ME.trial_ends_at)+'</b> · encore '+left(ME.trial_ends_at)+'</div>'
+    :(pl!=="free"&&ME.ends_at?'<div class="ab-act">✅ Tu as un abonnement <b>'+PN[pl]+'</b> actif jusqu’au <b>'+dt(ME.ends_at)+'</b> · encore '+left(ME.ends_at)+'</div>':"");
+  return '<section class="ab-me" aria-label="Mon abonnement"><div><h2>Ton plan actuel</h2><div class="pl">'+(ME.trial?"Essai gratuit":PN[pl])+'</div>'+act+(ex?'<div class="ex">'+ex+'</div>':"")+'</div>'
+    +'<div class="qs">'+q("Pronostics solides débloqués aujourd’hui",u)+q("Matchs incertains débloqués aujourd’hui",v)+'</div></section>'}
+
+// ---------- Cartes des plans ----------
+const li=(t,ok)=>'<li'+(ok===false?' class="no"':"")+'>'+(ok===false?LK:CK)+'<span>'+t+'</span></li>';
+function plansBox(){
+  const c=country(),pl=ME.plan,none=!c.operators.length;
+  const act=(plan)=>{
+    if(none)return'<button class="btn" type="button" disabled>Bientôt disponible dans ton pays</button>';
+    if(plan==="basic"){
+      if(pl==="gold")return'<button class="btn" type="button" disabled>Inclus dans ton plan Gold</button>';
+      return'<button class="btn" type="button" data-p="basic">'+(pl==="basic"?"Prolonger de 30 jours":"Choisir Basic")+'</button>'}
+    return'<button class="btn" type="button" data-p="gold">'+(pl==="gold"?"Prolonger de 30 jours":pl==="basic"?"Passer à Gold":"Choisir Gold")+'</button>'};
+  return '<div class="plans">'
+   +'<article class="plan free"><h3>Gratuit</h3><p class="tl">Pour découvrir</p><div class="pr">0 <small>F</small></div><p class="usd">Sans abonnement</p><ul>'
+     +li("Tous les matchs, les lives et les statistiques")+li("<b>2</b> pronostics solides par jour")+li("<b>3</b> matchs incertains par jour")+li("Les autres pronostics restent floutés",false)+'</ul>'
+     +'<button class="btn" type="button" disabled>'+(ME.trial?"Après ton essai":pl==="free"?"Ton plan actuel":"Plan de départ")+'</button></article>'
+   +'<article class="plan basic"><h3>Basic</h3><p class="tl">Pour suivre plus de matchs</p><div class="pr">'+money(c.basic,c.currency)+' <small>/ mois</small></div><ul>'
+     +li("Tous les matchs, les lives et les statistiques")+li("<b>10</b> pronostics solides par jour")+li("<b>5</b> matchs incertains par jour")+li("Pronostics débloqués, plus de flou dans ton quota")+'</ul>'+act("basic")+'</article>'
+   +'<article class="plan gold"><span class="tag">Le plus complet</span><h3>Gold</h3><p class="tl">Sans aucune limite</p><div class="pr">'+money(c.gold,c.currency)+' <small>/ mois</small></div><ul>'
+     +li("Tous les pronostics solides, en illimité")+li("Tous les matchs incertains, en illimité")+li("Tous les matchs, lives et stats, sans flou")+li("Aucun quota à surveiller au quotidien")+'</ul>'+act("gold")+'</article></div>'}
+
+function pickBox(){
+  const c=country();
+  return '<div class="ab-pick"><div><label for="cs">Ton pays</label><select id="cs">'+PR.map(x=>'<option value="'+esc(x.country_code)+'"'+(x.country_code===c.country_code?" selected":"")+'>'+esc(x.flag)+" "+esc(x.country_name)+" · "+esc(x.currency)+'</option>').join("")+'</select></div>'
+    +'<p>Les prix s’affichent dans la monnaie de ton pays.</p></div>'}
+
+function extra(){
+  const rows=PR.map(x=>'<tr><td>'+esc(x.flag)+" "+esc(x.country_name)+'</td><td>'+esc(x.currency)+'</td><td>'+money(x.basic,x.currency)+'</td><td>'+money(x.gold,x.currency)+'</td><td>'+(x.operators.length?x.operators.map(o=>esc((OPS[o]||[o])[0])).join(", "):"Bientôt disponible")+'</td></tr>').join("");
+  return '<section class="ab-sec"><h2>Comment ça marche</h2><ol class="steps"><li>Tu choisis ton pays.</li><li>Le prix s’affiche dans ta monnaie.</li><li>Tu choisis ton moyen de paiement (Mobile Money ou carte).</li><li>Tu paies dans la fenêtre sécurisée iKeePay.</li><li>Ton plan s’active tout seul.</li></ol>'
+   +'<p class="note">L’abonnement dure 30 jours et ne se renouvelle pas automatiquement : tu choisis quand le prolonger.</p></section>'
+   +'<section class="ab-sec"><h2>Solide ou incertain ?</h2><div class="kind"><div><b>Pronostic solide</b>Une issue du match dépasse 55 % de probabilité : le favori est net.</div><div><b>Match incertain</b>Aucune issue n’atteint 55 % : le résultat est plus difficile à prévoir.</div></div>'
+   +'<p class="note">Les quotas se renouvellent chaque jour. Un pronostic déjà débloqué reste visible, et les matchs commencés ne comptent pas dans ton quota.</p></section>'
+   +'<section class="ab-sec"><h2>Prix par pays</h2><details class="dt"><summary>Afficher le détail des tarifs et des moyens de paiement</summary><div class="tbw"><table class="pt2"><thead><tr><th>Pays</th><th>Devise</th><th>Basic</th><th>Gold</th><th>Moyens de paiement</th></tr></thead><tbody>'+rows+'</tbody></table></div></details></section>'}
+
+function histBox(){
+  if(!PAYS.length)return"";
+  const now=Date.now();
+  return '<section class="ab-sec"><h2>Mes paiements</h2>'+PAYS.map(x=>{const b=BD[x.status]||["mu",x.status],recent=x.status==="pending"&&now-new Date(x.created_at).getTime()<36e5*3;
+    return '<div class="pay"><div><b>Plan '+esc(PN[x.plan]||x.plan)+'</b> · '+money(x.amount,x.currency)+'<small>'+dtt(x.created_at)+(x.operator?" · "+esc((OPS[x.operator]||[x.operator])[0]):"")+'</small></div><div class="rt"><span class="bd '+b[0]+'">'+b[1]+'</span>'+(recent?'<button class="lk2" type="button" data-chk="'+esc(x.id)+'">Vérifier</button>':"")+'</div></div>'}).join("")+'</section>'}
+
+function draw(){
+  $("app").innerHTML=meBox()+pickBox()+plansBox()+extra()+histBox();
+  $("cs").onchange=e=>{CTRY=e.target.value;try{localStorage.setItem("pb_country",CTRY)}catch(x){}draw()};
+  document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>openCk(b.dataset.p));
+  document.querySelectorAll("[data-chk]").forEach(b=>b.onclick=()=>verify(b.dataset.chk,true))}
+
+// ---------- Fenêtre de paiement ----------
+const ck=$("ck");
+function opTile(o){
+  const d=OPS[o]||[o],img=d[1],col=d[2]||"#5A6B61";
+  let logo=ICON[o]||"";
+  if(!logo&&!img)logo='<span class="lgx" style="background:'+col+'">'+esc(d[0].charAt(0).toUpperCase())+'</span>';
+  if(!logo)logo='<img src="'+img+'" alt="" width="44" height="44" onerror="this.outerHTML=\'<span class=&quot;lgx&quot; style=&quot;background:'+col+'&quot;>'+esc(d[0].charAt(0))+'</span>\'">';
+  return '<label class="op"><input type="radio" name="op" value="'+esc(o)+'"><span class="opb">'+logo+'<span>'+esc(d[0])+'</span></span></label>'}
+function openCk(plan){
+  const c=country(),amt=plan==="gold"?c.gold:c.basic;CUR={plan,c,amt};
+  $("ckT").textContent="Abonnement "+PN[plan];
+  $("ckA").textContent=money(amt,c.currency);
+  $("ckS").textContent="30 jours · "+c.country_name;
+  MM=c.operators.filter(o=>o!=="bank"&&o!=="card"); // opérateurs Mobile Money : demande de paiement envoyée sur le téléphone (iKeePay H2H)
+  $("ckH").hidden=!MM.length;
+  $("ckO").innerHTML=MM.map(o=>'<option value="'+esc(o)+'">'+esc((OPS[o]||[o])[0])+'</option>').join("");
+  $("ckP").value="";$("ckOt").value="";ckOtp();
+  $("ckU").textContent=MM.length?"Tu recevras une demande de paiement sur ton téléphone : valide-la avec ton code secret.":"Tu choisis ton moyen de paiement dans la fenêtre suivante.";
+  $("ckN").value=NAME;$("ckM").textContent="";
+  $("ckG").disabled=false;$("ckG").textContent="Payer "+money(amt,c.currency);
+  busy=false;
+  if(typeof ck.showModal==="function")ck.showModal();else ck.setAttribute("open","")}
+const closeCk=()=>{if(busy)return;ck.close?ck.close():ck.removeAttribute("open")};
+$("ckX").onclick=closeCk;$("ckC").onclick=closeCk;
+ck.addEventListener("click",e=>{if(e.target===ck)closeCk()});
+ck.addEventListener("cancel",e=>{if(busy)e.preventDefault()});
+const ckOtp=()=>{$("ckOW").hidden=!(MM.length&&CUR&&CUR.c.country_code==="BF"&&$("ckO").value==="orange")};
+$("ckO").onchange=ckOtp;
+$("ckF").onsubmit=async e=>{
+  e.preventDefault();if(busy||!CUR)return;
+  const say=t=>{$("ckM").textContent=t||""};say("");
+  const name=$("ckN").value.trim();
+  if(name.length<2)return say("Saisis ton nom complet.");
+  const h2h=MM.length>0,idle=()=>{busy=false;$("ckG").disabled=false;$("ckG").textContent="Payer "+money(CUR.amt,CUR.c.currency)};
+  const msg={plan:CUR.plan,country:CUR.c.country_code,name};
+  if(h2h){
+    const op=$("ckO").value,ph=$("ckP").value.replace(/\D/g,""),otp=$("ckOt").value.replace(/\D/g,"");
+    if(!op)return say("Choisis ton opérateur Mobile Money.");
+    if(ph.length<8)return say("Saisis ton numéro Mobile Money.");
+    if(!$("ckOW").hidden&&otp.length<4)return say("Saisis le code de validation Orange (OTP).");
+    Object.assign(msg,{provider:"ikeepay_h2h",operator:op,phone:$("ckP").value.trim(),otp:otp||undefined})}
+  else msg.provider="ikeepay";
+  busy=true;$("ckG").disabled=true;$("ckG").textContent=h2h?"Envoi de la demande…":"Ouverture du paiement…";
+  const r=await call({action:"create",...msg});
+  if(r.ok&&r.provider==="ikeepay_h2h"&&r.id){
+    busy=false;ck.close?ck.close():ck.removeAttribute("open");
+    if(typeof r.payment_link==="string"&&/^https:\/\//.test(r.payment_link)){if(!window.open(r.payment_link,"_blank","noopener"))location.href=r.payment_link}
+    verify(r.id,false);return}
+  if(r.ok&&r.provider==="ikeepay"&&r.pk&&r.order_id){busy=false;ck.close?ck.close():ck.removeAttribute("open");openIke(r);return}
+  if(r.ok&&typeof r.url==="string"&&/^https:\/\//.test(r.url)){location.href=r.url;return}
+  idle();
+  say(r.message||"Impossible de démarrer le paiement. Réessaie dans un instant.")};
+
+// ---------- Fenêtre iKeePay ----------
+// Le message « succès » vient du navigateur : il sert seulement à lancer la vérification. Le plan s'active uniquement
+// quand le serveur a confirmé le paiement auprès d'iKeePay (montant et devise contrôlés).
+const IKO=["https://ikeepay.com","https://www.ikeepay.com"];let IKP=null,IKOK=false;
+function ikClose(){$("ikO").style.display="none";$("ikF").src="about:blank";window.removeEventListener("message",ikMsg)}
+function ikMsg(e){
+  if(!IKP||IKO.indexOf(e.origin)<0||e.source!==$("ikF").contentWindow)return;
+  if(e.data==="ikeepay-ready")$("ikO").style.display="flex";
+  else if(e.data==="ikeepay-close"){ikClose();if(!IKOK)load().then(o=>{if(o)draw()})}
+  else if(e.data==="ikeepay-success"&&!IKOK){IKOK=true;const id=IKP.id;setTimeout(()=>{ikClose();verify(id,false)},1500)}
+  else if(e.data&&e.data.type==="ikeepay-error"){ikClose();showSt("ko","Paiement impossible",e.data.message||"Erreur iKeePay. Réessaie dans un instant.")}}
+function openIke(r){
+  IKP=r;IKOK=false;
+  const p=new URLSearchParams({pk:r.pk,amount:r.amount,currency:r.currency,order_id:r.order_id});if(r.email)p.set("email",r.email);
+  window.addEventListener("message",ikMsg);
+  $("ikF").src="https://ikeepay.com/checkout/v1/inline?"+p.toString()}
+$("ikX").onclick=ikClose;
+
+// ---------- Retour du paiement / vérification ----------
+function showSt(kind,title,msg){
+  const s=$("st");s.hidden=false;s.className="ab-st"+(kind==="ok"||kind==="ko"?" "+kind:"");
+  s.innerHTML=(kind==="wait"?'<div class="spin" aria-hidden="true"></div>':"")+'<div><b>'+esc(title)+'</b><span>'+esc(msg)+'</span></div>'}
+async function verify(id,manual){
+  showSt("wait","Vérification du paiement…","Si une demande de paiement est arrivée sur ton téléphone, valide-la avec ton code secret. Cela prend quelques secondes.");
+  window.scrollTo({top:0,behavior:"smooth"});
+  for(let i=0;i<(manual?3:30);i++){
+    const r=await call({action:"check",id});
+    if(r.ok&&r.status==="paid"){
+      showSt("ok","Paiement confirmé","Ton plan "+(PN[r.plan]||"")+" est actif. Merci !");
+      try{history.replaceState(null,"",location.pathname)}catch(e){}
+      if(await load())draw();return}
+    if(r.ok&&r.status==="failed"){
+      showSt("ko","Le paiement n’a pas abouti","Tu peux réessayer avec un autre moyen de paiement.");
+      try{history.replaceState(null,"",location.pathname)}catch(e){}
+      if(await load())draw();return}
+    if(!r.ok&&r.message&&!/instant/i.test(r.message)){showSt("ko","Vérification impossible",r.message);return}
+    await new Promise(k=>setTimeout(k,4000))}
+  showSt("wait","Paiement en attente de confirmation","Ton plan s’activera automatiquement dès que l’opérateur confirme. Tu peux fermer cette page.");
+  if(await load())draw()}
+
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
+  try{CTRY=localStorage.getItem("pb_country")||CTRY}catch(e){}
+  const pf=await sb.from("profiles").select("full_name").eq("id",session.user.id).maybeSingle();NAME=(pf.data&&pf.data.full_name)||"";
+  if(!await load())return;
+  draw();
+  const pid=new URLSearchParams(location.search).get("pid");
+  if(pid)verify(pid,false)})();
+</script><script src="pwa.js" defer></script></body></html>
