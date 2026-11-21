@@ -57,7 +57,6 @@ function codeCard(){
     +'<p class="note">Active un abonnement pour débloquer ton code et gagner 500 F (Basic) ou 1 500 F (Gold) par filleul.</p><a class="btn" href="abonnement.html" style="margin-top:12px">Voir les abonnements</a></div>'}
 
 function statCard(){return '<div class="sec"><h2>Mon solde</h2><div class="bal">'+F(R.balance)+'</div>'
-  +'<p class="note" style="margin-top:0">Retrait minimum : '+F(R.min_withdrawal)+'</p>'
   +'<div class="stats" style="margin-top:12px"><div><b>'+R.referred+'</b>filleuls inscrits</div><div><b>'+R.rewarded+'</b>filleuls abonnés</div><div><b>'+F(R.earned)+'</b>gagnés au total</div></div></div>'}
 
 function formCard(){
@@ -104,7 +103,7 @@ function draw(){
 const say=(t,ok)=>{const m=$("wm");if(m){m.textContent=t||"";m.className=t?(ok?"ok":"ko"):""}};
 async function submit(e){e.preventDefault();if(busy)return;say("");
   const amount=parseInt($("wa").value.replace(/\D/g,""),10),phone=$("wp").value.replace(/\D/g,"");
-  if(!amount||amount<R.min_withdrawal)return say("Le retrait minimum est de "+F(R.min_withdrawal)+".");
+  if(!amount||amount<1)return say("Saisis un montant valide.");
   if(amount>R.balance)return say("Solde insuffisant.");
   if(phone.length<8)return say("Numéro de téléphone invalide.");
   busy=true;$("wb").disabled=true;$("wb").textContent="Envoi en cours…";
