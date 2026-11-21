@@ -5,6 +5,11 @@
 <div id="kpi" class="kpi"><p class="sub">Chargement…</p></div>
 <div id="bil"></div>
 <div id="chart"></div>
+<h2 class="ah">Images du carrousel</h2><p class="sub" style="text-transform:none">Ces images s’affichent en haut du dashboard, sous l’en-tête. Une seule image reste fixe ; à partir de 2 images, elles défilent toutes les 5 secondes. Format large conseillé (1200 × 525). 10 images maximum.</p>
+<div class="card pz" id="bnf"><div><label for="bnfile">Image</label><input id="bnfile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" style="width:100%;font:inherit"></div>
+<div><label for="bnlink">Lien au clic (facultatif)</label><input id="bnlink" type="url" maxlength="500" inputmode="url" autocomplete="off" placeholder="https://…" style="width:100%;font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit"></div>
+<button class="more sv" type="button" id="bns">Ajouter l’image</button><p class="ms" id="bnm" role="status"></p></div>
+<div id="bnlist"></div>
 <h2 class="ah">Code du jour</h2><p class="sub" style="text-transform:none">Choisis la plateforme (1Win, 1xBet, Melbet…) puis colle le code que tu as préparé sur son site. Il s’affiche sur le dashboard, juste après les bonus partenaires, pendant 24 h. Un nouveau code pour la même plateforme remplace l’ancien.</p>
 <div class="card pz" id="dcf"><div><label for="dcp">Plateforme</label><input id="dcp" list="dcl" type="text" maxlength="40" autocomplete="off" placeholder="Ex. : 1Win" style="width:100%;font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit"><datalist id="dcl"><option value="1Win"><option value="1xBet"><option value="Melbet"></datalist></div>
 <div><label for="dcc">Code du jour</label><input id="dcc" type="text" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Colle ici le code" style="width:100%;font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit"></div>
@@ -123,6 +128,48 @@ async function loadUsers(reset){if(reset){tok++;off=0;rows=[]}const my=tok;
  $("dclist").addEventListener("click",async function(e){var b=e.target.closest("[data-del]");if(!b)return;
   if(!confirm("Supprimer ce code du dashboard ?"))return;b.disabled=true;
   var r=await sb.rpc("admin_delete_daily_code",{p_id:b.dataset.del});if(r.error){alert(r.error.message||"Échec.");b.disabled=false;return}load()});
+ (async function(){var s=await sb.auth.getSession();if(!s.data.session)return;var a=await sb.rpc("is_admin");if(a.data)load()})();
+})();
+</script>
+<script>
+// Carrousel : ajout et suppression des images (stockage public « banners »)
+(function(){
+ var L=[],MAXW=1200;
+ var url=function(p){return sb.storage.from("banners").getPublicUrl(p).data.publicUrl};
+ function draw(){
+  $("bnlist").innerHTML=L.length?L.map(function(b,k){
+   return '<div class="card" style="margin:0 0 10px"><img src="'+esc(url(b.path))+'" alt="" style="width:100%;border-radius:10px;display:block;aspect-ratio:16/7;object-fit:cover">'
+    +'<div class="note" style="margin:8px 0">Image '+(k+1)+(b.link?' · lien : '+esc(b.link):' · sans lien')+'</div>'
+    +'<button type="button" class="more" data-bd="'+esc(b.id)+'" style="margin:0">Supprimer</button></div>'}).join(""):'<p class="note">Aucune image : le carrousel est masqué sur le dashboard.</p>'}
+ async function load(){var r=await sb.from("banners").select("id,path,link,created_at").order("created_at",{ascending:true});
+  if(r.error){$("bnlist").innerHTML='<div class="card">Images indisponibles : '+esc(r.error.message)+'</div>';return}L=r.data||[];draw()}
+ // réduit l'image (largeur max 1200 px) pour qu'elle charge vite sur mobile
+ function shrink(f){return new Promise(function(ok,ko){
+  if(f.type==="image/gif"){f.size<=3145728?ok({blob:f,ext:"gif",type:"image/gif"}):ko(new Error("GIF trop lourd (3 Mo maximum)."));return}
+  var im=new Image(),u=URL.createObjectURL(f);
+  im.onload=function(){URL.revokeObjectURL(u);var w=Math.min(MAXW,im.naturalWidth),h=Math.round(im.naturalHeight*w/im.naturalWidth),c=document.createElement("canvas");c.width=w;c.height=h;
+   var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);
+   c.toBlob(function(b){b?ok({blob:b,ext:"jpg",type:"image/jpeg"}):ko(new Error("Image illisible."))},"image/jpeg",.85)};
+  im.onerror=function(){URL.revokeObjectURL(u);ko(new Error("Image illisible."))};im.src=u})}
+ $("bns").onclick=async function(){
+  var f=$("bnfile").files[0],lk=$("bnlink").value.trim(),ms=$("bnm");ms.className="ms";
+  if(!f){ms.className="ms er";ms.textContent="Choisis une image.";return}
+  if(lk&&!/^https:\/\//i.test(lk)){ms.className="ms er";ms.textContent="Le lien doit commencer par https://";return}
+  if(L.length>=10){ms.className="ms er";ms.textContent="10 images maximum : supprime-en une d’abord.";return}
+  this.disabled=true;ms.textContent="Envoi de l’image…";var name=null;
+  try{
+   var o=await shrink(f);name=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(36).slice(2)).replace(/[^a-z0-9-]/gi,"").toLowerCase()+"."+o.ext;
+   var up=await sb.storage.from("banners").upload(name,o.blob,{contentType:o.type,cacheControl:"31536000",upsert:false});
+   if(up.error)throw up.error;
+   var r=await sb.rpc("admin_add_banner",{p_path:name,p_link:lk||null});
+   if(r.error){await sb.storage.from("banners").remove([name]);throw r.error}
+   ms.className="ms ok";ms.textContent="Image ajoutée : elle s’affiche en haut du dashboard.";$("bnfile").value="";$("bnlink").value="";load()
+  }catch(e){ms.className="ms er";ms.textContent=(e&&e.message)||"Échec de l’envoi."}
+  this.disabled=false};
+ $("bnlist").addEventListener("click",async function(e){var b=e.target.closest("[data-bd]");if(!b)return;
+  var it=L.find(function(x){return x.id===b.dataset.bd});if(!it||!confirm("Supprimer cette image du carrousel ?"))return;b.disabled=true;
+  var rm=await sb.storage.from("banners").remove([it.path]);if(rm.error){alert(rm.error.message||"Échec.");b.disabled=false;return}
+  var r=await sb.rpc("admin_delete_banner",{p_id:it.id});if(r.error){alert(r.error.message||"Échec.");b.disabled=false;return}load()});
  (async function(){var s=await sb.auth.getSession();if(!s.data.session)return;var a=await sb.rpc("is_admin");if(a.data)load()})();
 })();
 </script>
