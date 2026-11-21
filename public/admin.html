@@ -5,9 +5,6 @@
 <div id="kpi" class="kpi"><p class="sub">Chargement…</p></div>
 <div id="bil"></div>
 <div id="chart"></div>
-<h2 class="ah">Top du week-end</h2><p class="sub" id="topinfo" style="text-transform:none">Chargement…</p>
-<div id="toplist"></div>
-<p class="note" id="topnote" style="display:none">Classement par confiance du modèle, grands championnats uniquement (Premier League, La Liga, Serie A, Bundesliga, Ligue 1). La colonne « Historique » montre la réussite réelle de nos pronostics passés avec une confiance comparable. Aucun résultat n’est garanti.</p>
 <h2 class="ah">Prix des abonnements</h2><p class="sub" style="text-transform:none">Prix d’un abonnement de 30 jours, dans la monnaie de chaque pays. Le changement s’applique tout de suite aux nouveaux paiements. Les paiements déjà faits ne changent pas.</p>
 <div id="prices"><p class="sub">Chargement…</p></div>
 <h2 class="ah">Utilisateurs</h2>
@@ -63,37 +60,6 @@ async function loadUsers(reset){if(reset){tok++;off=0;rows=[]}const my=tok;
   $("umore").onclick=()=>loadUsers(false);
 })();
 </script><script>
-// Top du week-end : samedi + dimanche, grands championnats, jusqu'à 15 matchs, classés par confiance
-(function(){
- const now=new Date(),dow=now.getDay();
- let from=new Date(now.getFullYear(),now.getMonth(),now.getDate());
- if(dow>=1&&dow<=5)from.setDate(from.getDate()+(6-dow));
- const to=new Date(from);to.setDate(to.getDate()+(dow===0?1:2));
- const dayTxt=d=>d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
- const last=new Date(to);last.setDate(last.getDate()-1);
- const pickTxt=m=>m.pick==="home"?"Victoire "+m.home:m.pick==="away"?"Victoire "+m.away:"Match nul";
- async function load(){
-  const{data,error}=await sb.rpc("admin_top_picks",{p_from:from.toISOString(),p_to:to.toISOString(),p_limit:15});
-  const info=$("topinfo"),box=$("toplist");
-  if(error){info.textContent="Impossible de charger le top du week-end.";return}
-  const rows=data||[];
-  info.textContent=(from.getTime()===last.getTime()?dayTxt(from):dayTxt(from)+" et "+dayTxt(last))+" · "+rows.length+" match"+(rows.length>1?"s":"");
-  $("topnote").style.display="block";
-  if(!rows.length){box.innerHTML='<div class="card"><p class="sub" style="margin:0;text-transform:none">Aucun match des grands championnats n’est encore calculé pour ce week-end. Ils apparaissent automatiquement à l’approche des matchs (calcul toutes les 5 minutes).</p></div>';return}
-  box.innerHTML=rows.map(function(m,i){
-   const prob=m.result&&m.result[m.pick]!=null?m.result[m.pick]:m.conf;
-   const small=m.hist_n<30;
-   const k=new Date(m.kickoff).toLocaleString("fr-FR",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
-   return '<div class="card"><p class="sub" style="margin:0 0 4px;text-transform:none">#'+(i+1)+' · '+esc(m.league)+' · '+esc(k)+'</p>'
-    +'<h3 style="margin:0 0 6px;font:800 19px/1.2 \'Bricolage Grotesque\',sans-serif">'+esc(m.home)+' – '+esc(m.away)+'</h3>'
-    +'<p style="margin:0 0 6px"><b>'+esc(pickTxt(m))+'</b> · probabilité du modèle <b>'+prob+' %</b>'+(m.likely_score?' · score probable '+esc(m.likely_score):'')+'</p>'
-    +'<p class="note" style="margin:0">Historique : '+m.hist_ok+' justes sur '+m.hist_n+' ('+pc(m.hist_ok,m.hist_n)+' %) pour une confiance comparable'+(small?' · échantillon petit, à prendre avec prudence':'')+'</p></div>';
-  }).join("");
- }
- load();
-})();
-</script>
-<script>
 // Prix des abonnements (modifiables par l'administrateur)
 (function(){
  let PX=[];
