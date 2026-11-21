@@ -1,6 +1,7 @@
 // Bande « matchs en direct » : lit SportScore (ssLive) toutes les 60 s et fait défiler les scores. Nécessite sportscore.js.
-// v2 : si la lecture est vide ou refusée (SportScore limite le débit pendant le chargement de la page), nouvelle tentative
-//   après 22 s, 45 s et 70 s au lieu d'attendre le cycle suivant. Ajoute ?debug=1 à l'adresse du dashboard pour afficher un diagnostic dans la bande.
+// v3 : l'adresse « status=live » de SportScore peut renvoyer 0 match alors que les listes par date contiennent des matchs en cours.
+//   Quand la lecture directe est vide, la bande utilise donc les matchs « en direct » de la liste du jour déjà chargée par la page
+//   (aucune requête de plus). Nouvelles tentatives après 6 s, 15 s, 30 s et 60 s. Ajoute ?debug=1 à l'adresse du dashboard pour afficher un diagnostic.
 (function(){
   var bar=document.getElementById("tick");if(!bar)return;
   var DEBUG=/[?&]debug=1/.test(location.search);
@@ -17,17 +18,21 @@
   function diag(txt){if(!DEBUG)return;var l=(typeof SS!=="undefined"&&SS.last)||{};
     bar.hidden=false;bar.innerHTML='<div class="tk-b">DIAG</div><div class="tk-w" style="padding:0 10px;line-height:38px;overflow:auto">'+E(txt+" | SportScore : HTTP "+(l.status==null?"?":l.status)+" "+String(l.body||"").slice(0,80))+'</div>'}
   async function load(){
-    var a=[],err="";
+    var a=[],err="",src="direct";
     try{a=await ssLive()}catch(e){err=String((e&&e.message)||e)}
     var recus=a.length;
-    a=a.filter(function(x){return x.live}).slice(0,60);
+    a=a.filter(function(x){return x.live});
+    if(!a.length){ // repli : matchs en cours de la liste du jour (gardée 5 min par sportscore.js, remplie par le dashboard)
+      try{var today=new Date().toISOString().slice(0,10);
+        if(typeof _ssDay!=="undefined"&&_ssDay&&_ssDay.d===today&&_ssDay.v){a=_ssDay.v.filter(function(x){return x.live&&!x.done});src="liste du jour"}}catch(e){}}
+    a=a.slice(0,60);
     if(!a.length){
       bar.hidden=DEBUG?false:true;sig="";
-      diag("0 match en direct (reçus : "+recus+(err?", erreur : "+err:"")+", tentative "+(tries+1)+")");
-      var d=[22000,45000,70000][tries++];  // sportscore.js garde le résultat 20 s : on attend davantage avant de redemander
+      diag("0 match en direct (lecture directe : "+recus+(err?", erreur : "+err:"")+", liste du jour : "+(typeof _ssDay!=="undefined"&&_ssDay&&_ssDay.v?_ssDay.v.length+" matchs":"pas encore chargée")+", tentative "+(tries+1)+")");
+      var d=[6000,15000,30000,60000][tries++];
       if(d){clearTimeout(retry);retry=setTimeout(load,d)}
       return}
-    tries=0;
+    tries=0;if(DEBUG)diag(a.length+" match(s) en direct, source : "+src);
     var s=JSON.stringify(a.map(function(x){return[x.id,x.hs,x.as,x.status]}));
     if(s===sig)return;sig=s;
     var h=a.map(item).join("");
