@@ -1,6 +1,8 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="ticker.css"><title>Matchs du jour – Pronos-bet</title><style>
 .bonus{margin:14px 0}.bonus .btn{background:var(--navy);}
 #bonusList{margin-top:10px}
+.dc{margin:0 0 14px}.dc-card{background:var(--surface);border:1px solid var(--brand);border-radius:12px;padding:14px;margin:10px 0}
+.dc-card h3{margin:0 0 4px;font:800 18px/1.2 "Bricolage Grotesque",sans-serif}.dc-card p{margin:4px 0 10px;color:var(--muted);font-size:15px}
 .pt-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
 .pt-item h3{margin:0 0 4px;font:800 19px/1.2 "Bricolage Grotesque",sans-serif}
 .pt-item p{margin:4px 0 10px;color:var(--muted);font-size:15px}
@@ -25,6 +27,7 @@
 <div id="install" class="inst" hidden><img src="icon.svg" alt="" width="44" height="44"><div><b>Pronos-bet sur ton téléphone</b><span>Installe l’app pour y accéder en un geste.</span></div><button type="button" id="installBtn" class="btn">Installer l’app</button><p id="installHelp" class="note" hidden></p></div>
 <section class="bonus" id="bonus"><button type="button" class="btn" id="bonusBtn" aria-expanded="false" aria-controls="bonusList">🎁 Bonus partenaires</button>
 <div id="bonusList" hidden></div></section>
+<section class="dc" id="dcode" hidden aria-live="polite"></section>
 <div class="srch"><input id="q" type="search" placeholder="Rechercher une équipe ou une compétition…" autocomplete="off"><input id="qd" type="date" aria-label="Date du match"></div>
 <h2 class="pc-h">Prédictions</h2><p class="pc-sub" id="pcn"></p>
 <div class="pc-flt" id="pf"><button type="button" data-pf="all" class="on">Tous</button><button type="button" data-pf="live">En direct</button><button type="button" data-pf="next">À venir</button><button type="button" data-pf="done">Terminés</button><button type="button" data-pf="top">80 %+</button></div>
@@ -155,6 +158,33 @@ const PARTNERS=[
   var done=function(){b.textContent="Copié ✓";setTimeout(function(){b.textContent="Copier"},1800)};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c).then(done,function(){});
   else{var t=document.createElement("textarea");t.value=c;document.body.appendChild(t);t.select();try{document.execCommand("copy");done()}catch(x){}t.remove()}});
+})();
+</script>
+<script>
+// ---- Code du jour : publié par l'administrateur (plateforme + code), visible 24 h ----
+(function(){
+ var box=document.getElementById("dcode");if(!box||typeof sb==="undefined")return;
+ var esc=function(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+ var key=function(n){return String(n||"").toLowerCase().replace(/[^a-z0-9]/g,"")};
+ var CODES=[];
+ function link(pf){var k=key(pf);for(var i=0;i<PARTNERS.length;i++){if(key(PARTNERS[i].name)===k&&PARTNERS[i].link)return PARTNERS[i].link}return""}
+ function draw(){
+  if(!CODES.length){box.hidden=true;box.innerHTML="";return}
+  box.innerHTML=CODES.map(function(c,i){var l=link(c.platform);
+   return '<div class="dc-card"><h3>🎟️ Code du jour · '+esc(c.platform)+'</h3>'
+    +'<p>C’est le code d’aujourd’hui pour <b>'+esc(c.platform)+'</b>. Copie-le, puis colle-le sur le site.</p>'
+    +'<div class="pt-code"><code>'+esc(c.code)+'</code><button type="button" data-dcopy="'+i+'">Copier</button></div>'
+    +(l?'<a class="pt-go" href="'+esc(l)+'" target="_blank" rel="noopener sponsored nofollow">Aller sur '+esc(c.platform)+'</a>':'')+'</div>'}).join("");
+  box.hidden=false}
+ async function load(){
+  try{var r=await sb.from("daily_codes").select("id,platform,code,created_at").order("created_at",{ascending:false}).limit(6);
+   if(r.error)return;CODES=r.data||[];draw()}catch(x){}}
+ box.addEventListener("click",function(e){var b=e.target.closest("[data-dcopy]");if(!b)return;var c=CODES[+b.dataset.dcopy];if(!c)return;
+  var done=function(){b.textContent="Copié ✓";setTimeout(function(){b.textContent="Copier"},1800)};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c.code).then(done,function(){});
+  else{var t=document.createElement("textarea");t.value=c.code;document.body.appendChild(t);t.select();try{document.execCommand("copy");done()}catch(x){}t.remove()}});
+ sb.auth.getSession().then(function(r){if(r&&r.data&&r.data.session)load()});
+ setInterval(function(){if(!document.hidden)load()},120000);
 })();
 </script>
 </body></html>
