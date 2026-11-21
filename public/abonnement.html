@@ -1,5 +1,18 @@
 <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}</style><link rel="stylesheet" href="theme.css"><title>Abonnement – Pronos-bet</title><style>.ab-act{display:block;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(34,197,94,.16);border:1px solid rgba(34,197,94,.55);color:#fff;font-size:15px;line-height:1.4}.ab-act.tr{background:rgba(255,201,51,.14);border-color:rgba(255,201,51,.6)}.ab-act b{font-weight:800}
-.ck select{width:100%;padding:12px 14px;border-radius:8px;border:1px solid #3A2F9A;background:#1C1555;color:#fff;font:inherit}.ck select:focus{outline:2px solid var(--brand,#6C5CFF)}</style>
+.ck select{width:100%;padding:12px 14px;border-radius:8px;border:1px solid #3A2F9A;background:#1C1555;color:#fff;font:inherit}.ck select:focus{outline:2px solid var(--brand,#6C5CFF)}
+.ck .mt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 6px}
+.ck .mt button{padding:13px 8px;border-radius:12px;border:1.5px solid #3A2F9A;background:#1C1555;color:#fff;font-weight:700;font-size:15px;font-family:inherit;cursor:pointer}
+.ck .mt button[aria-pressed="true"]{background:var(--brand,#6C5CFF);border-color:var(--brand,#6C5CFF)}
+.ck .ops{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:8px 0 14px}
+.ck .op{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:84px;padding:12px 8px;border-radius:14px;border:2px solid #3A2F9A;background:#fff;color:#1b1b3a;cursor:pointer;font-weight:700;font-size:14px;line-height:1.2;font-family:inherit;text-align:center}
+.ck .op img{height:36px;max-width:100%;object-fit:contain}
+.ck .op[aria-checked="true"]{border-color:var(--brand,#6C5CFF);box-shadow:0 0 0 3px rgba(108,92,255,.5)}
+.ck .op[aria-checked="true"]::after{content:"\2713";position:absolute;top:6px;right:9px;color:var(--brand,#6C5CFF);font-weight:800}
+.ck .ph2{display:flex;gap:8px;align-items:stretch}
+.ck .ph2 span{display:grid;place-items:center;padding:0 14px;border-radius:12px;border:1.5px solid #3A2F9A;background:#1C1555;color:#fff;font-weight:700;font-size:18px}
+.ck #ckP,.ck #ckOt{flex:1;width:100%;min-width:0;box-sizing:border-box;min-height:58px;padding:16px 14px;border-radius:12px;border:1.5px solid #3A2F9A;background:#1C1555;color:#fff;font-size:22px;font-weight:600;letter-spacing:.5px;font-family:inherit}
+.ck #ckP:focus,.ck #ckOt:focus{outline:2px solid var(--brand,#6C5CFF)}
+.ck #ckP::placeholder{font-size:17px;font-weight:400;letter-spacing:0;opacity:.6}</style>
 </head><body><div class="wrap wide ab">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
 <h1 class="pt">Abonnement</h1><p class="sub" style="text-transform:none">Choisis le plan qui te convient. Paiement par Mobile Money, activation automatique.</p>
@@ -12,14 +25,16 @@
 <div class="sum"><span id="ckS">30 jours</span><b id="ckA"></b></div>
 <p class="note" id="ckU" style="margin:4px 0 0"></p>
 <label for="ckN">Nom complet</label><div class="ab-f"><input id="ckN" type="text" autocomplete="name" maxlength="60"></div>
-<div id="ckH" hidden><label for="ckO">Opérateur Mobile Money</label><div class="ab-f"><select id="ckO"></select></div>
-<label for="ckP">Numéro Mobile Money</label><div class="ab-f"><input id="ckP" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="Ex. : 07 00 00 00 00"></div>
-<p class="note" style="margin:4px 0 8px">Avec ou sans l’indicatif du pays.</p>
+<div class="mt" id="ckTabs" role="group" aria-label="Moyen de paiement" hidden><button type="button" data-m="mm" aria-pressed="true">📱 Mobile Money</button><button type="button" data-m="card" aria-pressed="false">💳 Carte ou virement</button></div>
+<div id="ckH" hidden><label>Choisis ton réseau</label><div class="ops" id="ckOps" role="radiogroup" aria-label="Opérateur Mobile Money"></div><input type="hidden" id="ckO">
+<label for="ckP">Numéro Mobile Money</label><div class="ph2"><span id="ckDial">+</span><input id="ckP" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="Ton numéro"></div>
+<p class="note" style="margin:6px 0 10px">Avec ou sans l’indicatif du pays.</p>
 <div id="ckOW" hidden><label for="ckOt">Code de validation Orange (OTP)</label><div class="ab-f"><input id="ckOt" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></div></div></div>
+<p class="note" id="ckCardNote" hidden style="margin:10px 0">Une fenêtre sécurisée iKeePay s’ouvre : tu y paies par carte bancaire, virement ou autre moyen proposé dans ton pays.</p>
 <div class="fm" id="ckM" role="alert"></div>
 <button class="btn go" id="ckG" type="submit">Payer</button>
 <button class="btn ghost cx" id="ckC" type="button">Annuler</button>
-<p class="sec2">Une fenêtre sécurisée iKeePay s’ouvre pour choisir ton moyen de paiement (Mobile Money ou carte) et valider.</p>
+<p class="sec2">Paiement sécurisé par iKeePay. Les moyens proposés dépendent de ton pays.</p>
 </form></dialog>
 
 <div id="ikO" style="display:none;position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.6);align-items:center;justify-content:center"><div style="position:relative;width:100%;max-width:450px;height:90vh;padding:0 8px"><button id="ikX" type="button" aria-label="Fermer" style="position:absolute;top:-2.6rem;right:.5rem;background:none;border:0;color:#fff;font-size:28px;line-height:1;cursor:pointer">✕</button><iframe id="ikF" title="Paiement iKeePay" allow="payment" style="border:0;width:100%;height:100%;background:transparent;border-radius:24px"></iframe></div></div>
@@ -30,7 +45,7 @@ const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const USD={basic:5.33,gold:17.5};
 const PN={free:"Gratuit",basic:"Basic",gold:"Gold"};
-const OPS={mtn:["MTN MoMo","mtn.png"],moov:["Moov Money","moov.png"],orange:["Orange Money","orange.png","#FF7900"],celtiis:["Celtiis Cash","celtiis.png","#0B7A3E"],africell:["Africell Money","africell.png","#8E24AA"],telecel:["Telecel Cash","telecel.png","#E60000"],kulu:["Kulu","kulu.png","#6C3FC5"],soutra:["Soutra Money","soutra.png","#F28C00"],amana:["Amana","amana.png","#1B75BC"],zamanicash:["Zamani Cash","zamanicash.png","#0E8A5F"],nita:["NITA","nita.png","#B5121B"],tmoney:["T-Money","tmoney.png","#E4002B"],wave:["Wave","wave.png"],free:["Free Money","free.png"],airtel:["Airtel Money","airtel.png"],airteltigo:["AirtelTigo","airteltigo.png"],mpesa:["M-Pesa","mpesa.png"],bank:["Virement bancaire"],card:["Carte bancaire"]};
+const OPS={mtn:["MTN MoMo","mtn.png"],moov:["Moov Money","moov.png"],orange:["Orange Money","orange.png","#FF7900"],africell:["Africell Money","africell.png","#8E24AA"],telecel:["Telecel Cash","telecel.png","#E60000"],kulu:["Kulu","kulu.png","#6C3FC5"],soutra:["Soutra Money","soutra.png","#F28C00"],amana:["Amana","amana.png","#1B75BC"],zamanicash:["Zamani Cash","zamanicash.png","#0E8A5F"],nita:["NITA","nita.png","#B5121B"],tmoney:["T-Money","tmoney.png","#E4002B"],wave:["Wave","wave.png"],free:["Free Money","free.png"],airtel:["Airtel Money","airtel.png"],airteltigo:["AirtelTigo","airteltigo.png"],mpesa:["M-Pesa","mpesa.png"],bank:["Virement bancaire"],card:["Carte bancaire"]};
 const ICON={bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></svg>'};
 const CK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>';
 const LK='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="9" width="11" height="8" rx="2"/><path d="M7 9V6.5a3 3 0 016 0V9"/></svg>';
@@ -126,32 +141,48 @@ function opTile(o){
   if(!logo&&!img)logo='<span class="lgx" style="background:'+col+'">'+esc(d[0].charAt(0).toUpperCase())+'</span>';
   if(!logo)logo='<img src="'+img+'" alt="" width="44" height="44" onerror="this.outerHTML=\'<span class=&quot;lgx&quot; style=&quot;background:'+col+'&quot;>'+esc(d[0].charAt(0))+'</span>\'">';
   return '<label class="op"><input type="radio" name="op" value="'+esc(o)+'"><span class="opb">'+logo+'<span>'+esc(d[0])+'</span></span></label>'}
+const DIAL={BF:"226",BJ:"229",CD:"243",CF:"236",CG:"242",CI:"225",CM:"237",GA:"241",GH:"233",GN:"224",GQ:"240",GW:"245",ML:"223",NE:"227",NG:"234",SN:"221",TD:"235",TG:"228"};
+let MODE="mm";
+function ckOps(){
+  $("ckOps").innerHTML=MM.map(o=>{const d=OPS[o]||[o];
+    return '<button type="button" class="op" role="radio" aria-checked="'+(o===$("ckO").value)+'" data-o="'+esc(o)+'">'+(d[1]?'<img src="'+esc(d[1])+'" alt="" loading="lazy">':'')+'<span>'+esc(d[0])+'</span></button>'}).join("")}
+function ckMode(){
+  const has=MM.length>0;
+  if(!has)MODE="card";
+  $("ckTabs").hidden=!has;
+  document.querySelectorAll("#ckTabs button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.m===MODE)));
+  $("ckH").hidden=!(has&&MODE==="mm");
+  $("ckCardNote").hidden=MODE!=="card";
+  $("ckU").textContent=MODE==="mm"?"Tu recevras une demande de paiement sur ton téléphone : valide-la avec ton code secret.":"Tu paies dans une fenêtre sécurisée iKeePay.";
+  if(CUR)$("ckG").textContent="Payer "+money(CUR.amt,CUR.c.currency)+(MODE==="card"?" par carte ou virement":"");
+  ckOtp()}
 function openCk(plan){
   const c=country(),amt=plan==="gold"?c.gold:c.basic;CUR={plan,c,amt};
   $("ckT").textContent="Abonnement "+PN[plan];
   $("ckA").textContent=money(amt,c.currency);
   $("ckS").textContent="30 jours · "+c.country_name;
   MM=c.operators.filter(o=>o!=="bank"&&o!=="card"); // opérateurs Mobile Money : demande de paiement envoyée sur le téléphone (iKeePay H2H)
-  $("ckH").hidden=!MM.length;
-  $("ckO").innerHTML=MM.map(o=>'<option value="'+esc(o)+'">'+esc((OPS[o]||[o])[0])+'</option>').join("");
-  $("ckP").value="";$("ckOt").value="";ckOtp();
-  $("ckU").textContent=MM.length?"Tu recevras une demande de paiement sur ton téléphone : valide-la avec ton code secret.":"Tu choisis ton moyen de paiement dans la fenêtre suivante.";
+  MODE="mm";
+  $("ckO").value=MM[0]||"";ckOps();
+  $("ckDial").textContent="+"+(DIAL[c.country_code]||"");
+  $("ckP").value="";$("ckOt").value="";
   $("ckN").value=NAME;$("ckM").textContent="";
-  $("ckG").disabled=false;$("ckG").textContent="Payer "+money(amt,c.currency);
-  busy=false;
+  $("ckG").disabled=false;
+  busy=false;ckMode();
   if(typeof ck.showModal==="function")ck.showModal();else ck.setAttribute("open","")}
 const closeCk=()=>{if(busy)return;ck.close?ck.close():ck.removeAttribute("open")};
 $("ckX").onclick=closeCk;$("ckC").onclick=closeCk;
 ck.addEventListener("click",e=>{if(e.target===ck)closeCk()});
 ck.addEventListener("cancel",e=>{if(busy)e.preventDefault()});
-const ckOtp=()=>{$("ckOW").hidden=!(MM.length&&CUR&&CUR.c.country_code==="BF"&&$("ckO").value==="orange")};
-$("ckO").onchange=ckOtp;
+const ckOtp=()=>{$("ckOW").hidden=!(MM.length&&MODE==="mm"&&CUR&&CUR.c.country_code==="BF"&&$("ckO").value==="orange")};
+$("ckOps").onclick=e=>{const b=e.target.closest(".op");if(!b)return;$("ckO").value=b.dataset.o;ckOps();ckOtp()};
+document.querySelectorAll("#ckTabs button").forEach(b=>b.onclick=()=>{MODE=b.dataset.m;ckMode()});
 $("ckF").onsubmit=async e=>{
   e.preventDefault();if(busy||!CUR)return;
   const say=t=>{$("ckM").textContent=t||""};say("");
   const name=$("ckN").value.trim();
   if(name.length<2)return say("Saisis ton nom complet.");
-  const h2h=MM.length>0,idle=()=>{busy=false;$("ckG").disabled=false;$("ckG").textContent="Payer "+money(CUR.amt,CUR.c.currency)};
+  const h2h=MM.length>0&&MODE==="mm",idle=()=>{busy=false;$("ckG").disabled=false;ckMode()};
   const msg={plan:CUR.plan,country:CUR.c.country_code,name};
   if(h2h){
     const op=$("ckO").value,ph=$("ckP").value.replace(/\D/g,""),otp=$("ckOt").value.replace(/\D/g,"");
