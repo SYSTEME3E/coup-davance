@@ -5,6 +5,11 @@
 <div id="kpi" class="kpi"><p class="sub">Chargement…</p></div>
 <div id="bil"></div>
 <div id="chart"></div>
+<h2 class="ah">Code du jour</h2><p class="sub" style="text-transform:none">Choisis la plateforme (1Win, 1xBet, Melbet…) puis colle le code que tu as préparé sur son site. Il s’affiche sur le dashboard, juste après les bonus partenaires, pendant 24 h. Un nouveau code pour la même plateforme remplace l’ancien.</p>
+<div class="card pz" id="dcf"><div><label for="dcp">Plateforme</label><input id="dcp" list="dcl" type="text" maxlength="40" autocomplete="off" placeholder="Ex. : 1Win" style="width:100%;font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit"><datalist id="dcl"><option value="1Win"><option value="1xBet"><option value="Melbet"></datalist></div>
+<div><label for="dcc">Code du jour</label><input id="dcc" type="text" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Colle ici le code" style="width:100%;font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit"></div>
+<button class="more sv" type="button" id="dcs">Publier le code</button><p class="ms" id="dcm" role="status"></p></div>
+<div id="dclist"></div>
 <h2 class="ah">Prix des abonnements</h2><p class="sub" style="text-transform:none">Prix d’un abonnement de 30 jours, dans la monnaie de chaque pays. Le changement s’applique tout de suite aux nouveaux paiements. Les paiements déjà faits ne changent pas.</p>
 <div id="prices"><p class="sub">Chargement…</p></div>
 <h2 class="ah">Utilisateurs</h2>
@@ -94,6 +99,31 @@ async function loadUsers(reset){if(reset){tok++;off=0;rows=[]}const my=tok;
   if(all)draw();else{ms.className="ms ok";ms.textContent="Enregistré : Basic "+fmt(b)+" · Gold "+fmt(g)+" "+cur}
   if(all){const m=$("prices").querySelector('[data-c="'+c+'"] .ms');if(m){m.className="ms ok";m.textContent="Enregistré pour "+data+" pays en "+cur}}});
  (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return;const{data:adm}=await sb.rpc("is_admin");if(adm)load()})();
+})();
+</script>
+<script>
+// Code du jour (plateforme + code), publié par l'administrateur
+(function(){
+ var L=[];
+ function draw(){
+  $("dclist").innerHTML=L.length?L.map(function(c){
+   return '<div class="card" style="margin:0 0 10px"><div class="un">'+esc(c.platform)+'</div><div class="ue" style="font-family:ui-monospace,monospace;word-break:break-all">'+esc(c.code)+'</div>'
+    +'<div class="note" style="margin:6px 0 8px">Publié le '+new Date(c.created_at).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+' · visible 24 h</div>'
+    +'<button type="button" class="more" data-del="'+esc(c.id)+'" style="margin:0">Supprimer</button></div>'}).join(""):'<p class="note">Aucun code affiché pour le moment.</p>'}
+ async function load(){var r=await sb.from("daily_codes").select("id,platform,code,created_at").order("created_at",{ascending:false});
+  if(r.error){$("dclist").innerHTML='<div class="card">Codes indisponibles : '+esc(r.error.message)+'</div>';return}L=r.data||[];draw()}
+ $("dcs").onclick=async function(){
+  var pf=$("dcp").value.trim(),cd=$("dcc").value.trim(),ms=$("dcm");ms.className="ms";
+  if(pf.length<2){ms.className="ms er";ms.textContent="Indique la plateforme (ex. 1Win).";return}
+  if(cd.length<2){ms.className="ms er";ms.textContent="Colle le code du jour.";return}
+  this.disabled=true;ms.textContent="Publication…";
+  var r=await sb.rpc("admin_add_daily_code",{p_platform:pf,p_code:cd});this.disabled=false;
+  if(r.error){ms.className="ms er";ms.textContent=r.error.message||"Échec de la publication.";return}
+  ms.className="ms ok";ms.textContent="Code publié : il s’affiche maintenant sur le dashboard.";$("dcc").value="";load()};
+ $("dclist").addEventListener("click",async function(e){var b=e.target.closest("[data-del]");if(!b)return;
+  if(!confirm("Supprimer ce code du dashboard ?"))return;b.disabled=true;
+  var r=await sb.rpc("admin_delete_daily_code",{p_id:b.dataset.del});if(r.error){alert(r.error.message||"Échec.");b.disabled=false;return}load()});
+ (async function(){var s=await sb.auth.getSession();if(!s.data.session)return;var a=await sb.rpc("is_admin");if(a.data)load()})();
 })();
 </script>
 <script src="admin-nav.js"></script></body></html>
