@@ -22,6 +22,7 @@
     <div><label for="rfp">Prénom</label><input id="rfp" type="text" autocomplete="given-name" maxlength="50"></div>
     <div><label for="rfn">Nom</label><input id="rfn" type="text" autocomplete="family-name" maxlength="50"></div>
   </div>
+  <label for="rfco">Mon pays (langue et devise)</label><select id="rfco" style="width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--line,#ccc);font:inherit"></select><p class="hint">La langue et la devise du site dépendent de ton pays.</p>
   <label for="rfe">Adresse e-mail</label><input id="rfe" type="email" autocomplete="email">
   <label for="rfw">Nouveau mot de passe</label>
   <div class="pwrap"><input id="rfw" type="password" autocomplete="new-password" placeholder="Laisse vide si inchangé"><button type="button" data-eye="rfw">Afficher</button></div>
@@ -32,7 +33,7 @@
 </form>
 <button type="button" class="out2" id="rOut">Quitter</button>
 <p class="note" style="text-align:center;margin:28px 0 8px"><a href="legal.html">Informations légales</a></p></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="menu.js"></script><script>
 (async()=>{
@@ -44,6 +45,9 @@ const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
   const split=n=>{n=(n||"").trim();const i=n.indexOf(" ");return i<0?[n,""]:[n.slice(0,i),n.slice(i+1).trim()]};
   const{data}=await sb.from("profiles").select("full_name").eq("id",session.user.id).maybeSingle();
   if(data){curName=(data.full_name||"").trim();const[p,n]=split(curName);$("rfp").value=p;$("rfn").value=n}
+  const myC=(session.user.user_metadata&&session.user.user_metadata.country)||PB.country();
+  const fillCo=()=>{const cur=$("rfco").value||myC;$("rfco").innerHTML='<option value="">'+PB.t("Sélectionne ton pays")+'</option>'+PB.countries().map(c=>'<option value="'+c[0]+'">'+c[1]+'</option>').join("");$("rfco").value=cur||""};
+  fillCo();document.addEventListener("pb-country",fillCo);
   ready=true;
 
   const say=(t,ok)=>{const m=$("rgm");m.textContent=t||"";m.className=t?(ok?"ok":"ko"):""};
@@ -65,11 +69,12 @@ const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
     if(!/^\S+@\S+\.\S+$/.test(mail))return say("Adresse e-mail invalide.");
     if(pw&&pw.length<8)return say("Le mot de passe doit contenir au moins 8 caractères.");
     if(pw!==pc)return say("Les deux mots de passe ne sont pas identiques.");
-    const nameChanged=name!==curName,mailChanged=mail!==curEmail;
-    if(!nameChanged&&!mailChanged&&!pw)return say("Rien à enregistrer : tu n’as modifié aucune information.");
+    const nameChanged=name!==curName,mailChanged=mail!==curEmail,newC=$("rfco").value,countryChanged=!!newC&&newC!==((session.user.user_metadata&&session.user.user_metadata.country)||"");
+    if(!nameChanged&&!mailChanged&&!pw&&!countryChanged)return say("Rien à enregistrer : tu n’as modifié aucune information.");
     const s=$("rfs");s.disabled=true;
     const notes=[];let fail="";
     if(nameChanged){const{error}=await sb.rpc("set_my_name",{n:name});if(error)fail="Nom non enregistré : "+error.message;else{curName=name;notes.push("Nom enregistré.")}}
+    if(!fail&&countryChanged){const{error}=await sb.auth.updateUser({data:{country:newC}});if(error)fail=frErr(error.message);else{session.user.user_metadata=Object.assign({},session.user.user_metadata,{country:newC});PB.setCountry(newC);notes.push("Pays enregistré. La langue et la devise ont été mises à jour.")}}
     if(!fail&&mailChanged){const{error}=await sb.auth.updateUser({email:mail},{emailRedirectTo:location.origin+"/dashboard.html"});
       if(error)fail=frErr(error.message);else notes.push("Un e-mail de confirmation a été envoyé : ton adresse changera après avoir cliqué sur le lien.")}
     if(!fail&&pw){const{error}=await sb.auth.updateUser({password:pw});
