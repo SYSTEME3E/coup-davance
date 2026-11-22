@@ -21,7 +21,7 @@ function walletBox(){
   const tx=(W.tx||[]).map(x=>'<div class="kv"><span>'+esc(KD[x.kind]||x.kind)+' · '+dt(x.created_at)+(x.note?'<br><small>'+esc(x.note)+'</small>':"")+'</span><b class="'+(x.amount>=0?"pos":"neg")+'">'+(x.amount>=0?"+":"−")+F(Math.abs(x.amount))+'</b></div>').join("");
   return '<div class="sec"><h2>Parrainage et solde</h2>'
     +line("Code de parrainage",esc(W.code||"—"))+line("Parrainé par",W.referrer?esc(W.referrer):"—")
-    +line("Filleuls inscrits",W.referred)+line("Filleuls abonnés (500 F)",W.rewarded)
+    +line("Filleuls inscrits",W.referred)+line("Filleuls VIP (500 F)",W.rewarded)
     +line("Total gagné",F(W.earned))+line("Total retiré (payé)",F(W.withdrawn))+line("Retraits en cours",F(W.in_progress))
     +'<div class="kv"><span>Solde actuel</span><b class="bigv">'+F(W.balance)+'</b></div>'
     +'<h3 class="hh">Ajouter ou retirer de l’argent</h3>'
@@ -36,29 +36,29 @@ function draw(){
   $("box").innerHTML=''
   +'<div class="sec"><h2>'+(u.full_name?esc(u.full_name):esc(u.email))+'</h2><div class="ub" style="margin:6px 0 4px">'
     +(u.is_admin?'<span class="bd in">Administrateur</span>':"")+(u.blocked?'<span class="bd ko">Bloqué</span>':'<span class="bd ok">Compte actif</span>')
-    +(act||u.is_admin?'<span class="bd ok">Abonné</span>':'<span class="bd mu">Sans abonnement</span>')+'</div>'
+    +(act||u.is_admin?'<span class="bd ok">VIP</span>':'<span class="bd mu">Sans VIP</span>')+'</div>'
     +line("Nom complet",name)+line("Adresse e-mail",esc(u.email))
     +line("E-mail confirmé",u.email_confirmed?"Oui":"Non")
     +line("Inscrit le",dt(u.created_at))+line("Dernière connexion",dtm(u.last_sign_in_at))
     +line("Conditions acceptées le",dt(u.accepted_terms_at))
     +(u.blocked?line("Bloqué depuis le",dt(u.blocked_at)):"")+'</div>'
-  +'<div class="sec"><h2>Abonnement</h2>'
+  +'<div class="sec"><h2>VIP</h2>'
     +(u.is_admin?'<p class="note">Administrateur : accès toujours actif.</p>':"")
-    +(act?line("Formule",esc(act.plan))+line("Depuis le",dt(act.started_at))+line("Fin prévue",act.ends_at?dt(act.ends_at):"Sans date de fin"):(u.is_admin?"":'<p class="note">Aucun abonnement actif.</p>'))
+    +(act?line("Formule",esc(act.plan))+line("Depuis le",dt(act.started_at))+line("Fin prévue",act.ends_at?dt(act.ends_at):"Sans date de fin"):(u.is_admin?"":'<p class="note">Aucun VIP actif.</p>'))
     +(subs.length?'<h3 class="hh">Historique</h3>'+subs.map(s=>'<div class="kv"><span>'+esc(s.plan)+' · depuis le '+dt(s.started_at)+(s.canceled_at?' · annulé le '+dt(s.canceled_at):"")+'</span><b>'+esc(ST[s.status]||s.status)+'</b></div>').join(""):"")
     +'</div>'
-  +'<div class="sec"><h2>Donner un abonnement</h2>'
+  +'<div class="sec"><h2>Donner un VIP</h2>'
     +(u.is_admin?'<p class="note">Administrateur : accès Gold déjà actif, rien à donner.</p>'
-    :'<p class="note">Sans paiement. Si la personne a déjà cette formule, la durée s’ajoute à la fin de l’abonnement en cours.</p>'
+    :'<p class="note">Sans paiement. Si la personne a déjà cette formule, la durée s’ajoute à la fin de le VIP en cours.</p>'
     +'<label for="gp">Formule</label><select class="fld" id="gp"><option value="gold">Gold – tous les pronostics</option><option value="basic">Basic – 10 solides et 5 incertains par jour</option></select>'
     +'<label for="gd">Durée (jours)</label><input class="fld" id="gd" type="text" inputmode="numeric" maxlength="3" value="30">'
-    +'<div class="ab"><button type="button" class="btn" id="bGrant">Donner l’abonnement</button></div>'
+    +'<div class="ab"><button type="button" class="btn" id="bGrant">Donner le VIP</button></div>'
     +'<div id="gmsg" class="pfm" role="status"></div>')+'</div>'
   +walletBox()
   +'<div class="sec"><h2>Actions</h2>'
     +'<button type="button" class="btn danger" id="bBlock"'+(canBlock?"":" disabled")+'>'+(u.blocked?"Débloquer l’utilisateur":"Bloquer l’utilisateur")+'</button>'
     +(canBlock?"":'<p class="note">Un administrateur ne peut pas être bloqué.</p>')
-    +'<button type="button" class="btn ghost" id="bSub"'+(act?"":" disabled")+'>Supprimer l’abonnement actif</button>'
+    +'<button type="button" class="btn ghost" id="bSub"'+(act?"":" disabled")+'>Supprimer le VIP actif</button>'
     +'<div id="amsg" class="pfm" role="status"></div></div>';
   $("bBlock").onclick=toggleBlock;$("bSub").onclick=cancelSub;if($("bGrant"))$("bGrant").onclick=grant;
   if($("bAdd")){$("bAdd").onclick=()=>adjust(1);$("bTake").onclick=()=>adjust(-1)}}
@@ -69,11 +69,11 @@ const gsay=(t,ok)=>{const m=$("gmsg");if(m){m.textContent=t||"";m.className="pfm
 async function grant(){
   const plan=$("gp").value,label=plan==="gold"?"Gold":"Basic",days=parseInt(($("gd").value||"").replace(/\D/g,""),10);
   if(!days||days<1||days>366)return gsay("Durée : entre 1 et 366 jours.");
-  if(!confirm("Donner l’abonnement "+label+" pour "+days+" jour"+(days>1?"s":"")+" à "+who()+" ?\nAucun paiement ne sera demandé."))return;
+  if(!confirm("Donner le VIP "+label+" pour "+days+" jour"+(days>1?"s":"")+" à "+who()+" ?\nAucun paiement ne sera demandé."))return;
   $("bGrant").disabled=true;
   const{data,error}=await sb.rpc("admin_grant_subscription",{uid:id,p_plan:plan,p_days:days});
   if(error){$("bGrant").disabled=false;return gsay("Action impossible : "+error.message)}
-  await load();gsay("Abonnement "+label+" activé jusqu’au "+dt(data&&data.ends_at)+".",true)}
+  await load();gsay("VIP "+label+" activé jusqu’au "+dt(data&&data.ends_at)+".",true)}
 async function adjust(sign){
   const n=parseInt(($("aw").value||"").replace(/\D/g,""),10),note=$("an").value.trim();
   if(!n)return wsay("Saisis un montant.");
@@ -90,11 +90,11 @@ async function toggleBlock(){
   if(error){say("Action impossible : "+error.message);$("bBlock").disabled=false;return}
   await load();say(b?"Utilisateur bloqué.":"Utilisateur débloqué.",true)}
 async function cancelSub(){
-  if(!confirm("Supprimer l’abonnement actif de "+who()+" ?\nL’abonnement sera marqué comme annulé."))return;
+  if(!confirm("Supprimer le VIP actif de "+who()+" ?\nLe VIP sera marqué comme annulé."))return;
   $("bSub").disabled=true;
   const{data,error}=await sb.rpc("admin_cancel_subscription",{uid:id});
   if(error){say("Action impossible : "+error.message);$("bSub").disabled=false;return}
-  await load();say(data>0?"Abonnement actif supprimé.":"Aucun abonnement actif à supprimer.",data>0)}
+  await load();say(data>0?"VIP actif supprimé.":"Aucun VIP actif à supprimer.",data>0)}
 async function load(){
   const[a,w]=await Promise.all([sb.rpc("admin_user",{uid:id}),sb.rpc("admin_wallet",{uid:id})]);
   const{data,error}=a;
