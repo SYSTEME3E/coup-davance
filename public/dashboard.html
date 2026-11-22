@@ -42,10 +42,10 @@ a.pt-go,a.pt-go:visited{display:block;background:#FFC933;color:#1B1500;border-co
 <div class="pc-flt" id="pf"><button type="button" data-pf="all" class="on">Tous</button><button type="button" data-pf="live">En direct</button><button type="button" data-pf="next">À venir</button><button type="button" data-pf="done">Terminés</button><button type="button" data-pf="top">80 %+</button></div>
 <div id="list"><p class="sub">Chargement des matchs…</p></div>
 <p class="note" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="cards.js"></script><script src="menu.js"></script><script src="sportscore.js"></script><script src="ticker.js" defer></script><script>
-$("date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+$("date").textContent=new Date().toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"long",day:"numeric",month:"long"});
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session){let sv=null;try{sv=localStorage.getItem("pb_home_v1")}catch(x){}if(!(navigator.onLine===false&&sv))return location.href="auth.html#login"}
 let homeHTML="",tok=0,cache=null;
 const clean=()=>$("q").value.replace(/[%_,()*\\]/g," ").trim();
@@ -57,7 +57,7 @@ const PF=m=>FILT==="all"||(FILT==="live"?!!m.live_status:FILT==="next"?(!m.live_
 // ---- Autres matchs du jour (sans pronostic) : tous les championnats fournis par SportScore, comme la page « Football en direct » ----
 const PRIO=/^(english premier league|spanish la liga|italian serie a|french ligue 1|bundesliga|uefa champions league|uefa europa league|uefa conference league)$/i;
 const EURO=/premier league|la liga|serie a|serie b|ligue 1|ligue 2|bundesliga|championship|eredivisie|primeira liga|super lig|super league|premiership|pro league|segunda|league one|league two|champions league|europa|conference|cup|coupe|copa|pokal|coppa|ekstraklasa|allsvenskan|eliteserien|superliga|superettan|veikkausliiga|hnl|nb i|liga i|fortuna|a-league|euro/i;
-const hm=d=>new Date(d).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+const hm=d=>new Date(d).toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"});
 const othRow=x=>{const sc=x.hs!=null&&x.as!=null,
   t=x.live?'<span class="oth-lv"><i></i>'+(x.minute?esc(x.minute)+"’":"LIVE")+'</span>':esc(hm(x.start)),
   inner='<div class="st">'+t+'</div><div class="tm"><div>'+lgo(x.hl,"sm")+'<span>'+esc(x.home)+'</span></div><div>'+lgo(x.al,"sm")+'<span>'+esc(x.away)+'</span></div></div><div class="sc">'+(sc?'<b>'+esc(x.hs)+'</b><b>'+esc(x.as)+'</b>':'<b>–</b><b>–</b>')+'</div>';
@@ -250,7 +250,7 @@ const PARTNERS=[
    var created=new Date(p.created_at),end=new Date(m.trial_ends_at);
    if(Date.now()-created>864e5)return; // compte de plus de 24 h : ce n'est plus un nouveau compte
    var days=Math.max(1,Math.round((end-created)/864e5));
-   mark(k);show(days,end.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}));
+   mark(k);show(days,end.toLocaleDateString((window.PB?PB.loc():"fr-FR"),{day:"numeric",month:"long",year:"numeric"}));
   }catch(e){}})();
 })();
 </script>
