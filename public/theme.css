@@ -129,3 +129,13 @@ body.ss{background:#130F33;--ink:#FFFFFF;--mut:#A9A4D6}
 .hc .lockbox .lkn{background:#fff;color:#B42318}
 .hc:hover,.hc:focus-visible{border-color:#1D6FD8}
 @media (max-width:380px){.hc .tm{font-size:22px}.hc .res .sc{font-size:32px}.hc .stats b{font-size:22px}}
+
+/* ---- Menu (3 barres) : fond blanc, texte sombre, icônes violettes ---- */
+.drw{background:#fff;color:#1B1650;box-shadow:-8px 0 30px rgba(0,0,0,.25)}
+.drw .dtop{color:#1B1650}
+.drw .dx{border-color:#5A47E0;color:#5A47E0;background:#fff}
+.drw .mn a{background:#fff;border:1px solid #E4E5EE;color:#1B1650}
+.drw .mn a:hover,.drw .mn a:focus-visible{background:#F1EEFF;border-color:#6F5BFF}
+.drw .mn a .mi,.drw .out2 .mi{color:#5A47E0}
+.drw .out2{background:#fff;border:1.5px solid #5A47E0;color:#1B1650}
+.drw .out2:hover{background:#F1EEFF}
