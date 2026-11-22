@@ -162,8 +162,6 @@ function extra(){
   const rows=sortedPR().map(x=>'<tr><td>'+esc(x.flag)+" "+esc(x.country_name)+'</td><td>'+esc(x.currency)+'</td><td>'+money(x.basic,x.currency)+'</td><td>'+money(x.gold,x.currency)+'</td><td>'+(x.operators.length?x.operators.map(o=>esc((OPS[o]||[o])[0])).join(", "):"Bientôt disponible")+'</td></tr>').join("");
   return '<section class="ab-sec"><h2>Comment ça marche</h2><ol class="steps"><li>Tu choisis ton pays.</li><li>Le prix s’affiche dans ta monnaie.</li><li>Tu choisis ton moyen de paiement (Mobile Money ou carte).</li><li>Tu paies dans une fenêtre sécurisée.</li><li>Ton plan s’active tout seul.</li></ol>'
    +'<p class="note">Le VIP dure 30 jours et ne se renouvelle pas automatiquement : tu choisis quand le prolonger.</p></section>'
-   +'<section class="ab-sec"><h2>Solide ou incertain ?</h2><div class="kind"><div><b>Pronostic solide</b>Une issue du match dépasse 55 % de probabilité : le favori est net.</div><div><b>Match incertain</b>Aucune issue n’atteint 55 % : le résultat est plus difficile à prévoir.</div></div>'
-   +'<p class="note">Les quotas se renouvellent chaque jour. Un pronostic déjà débloqué reste visible, et les matchs commencés ne comptent pas dans ton quota.</p></section>'
    +'<section class="ab-sec"><h2>Prix par pays</h2><details class="dt"><summary>Afficher le détail des tarifs et des moyens de paiement</summary><div class="tbw"><table class="pt2"><thead><tr><th>Pays</th><th>Devise</th><th>Basic</th><th>Gold</th><th>Moyens de paiement</th></tr></thead><tbody>'+rows+'</tbody></table></div></details></section>'}
 
 function histBox(){
