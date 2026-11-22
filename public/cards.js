@@ -116,7 +116,7 @@ document.addEventListener("click",async e=>{
   const fail=h=>{b.disabled=false;b.textContent=t;note(h)};
   const{data,error}=await sb.rpc("unlock_pick",{p_fixture:id});
   if(error||!data||!data.ok){
-    if(data&&data.error==="quota")return fail("Quota du jour atteint ("+data.limit+" "+(data.kind==="solid"?"pronostics solides":"matchs incertains")+"). <a href=\"abonnement.html\">Voir les abonnements</a>");
+    if(data&&data.error==="quota")return fail("Quota du jour atteint ("+data.limit+" "+(data.kind==="solid"?"pronostics solides":"matchs incertains")+"). <a href=\"abonnement.html\">Voir les offres VIP</a>");
     return fail("Déblocage impossible. Réessaie dans un instant.")}
   const{data:row}=await sb.from("predictions_safe").select("*").eq("fixture_id",id).maybeSingle();
   if(!row||!isOpen(row))return fail("Déblocage impossible. Réessaie dans un instant.");
