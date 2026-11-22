@@ -35,7 +35,7 @@
 <div id="list"><p class="sub">Chargement…</p></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="menu.js"></script><script>
+</script><script src="admin-menu.js"></script><script>
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let per="today",rows=[],t0=0;
 const day0=d=>{const x=new Date(d);x.setHours(0,0,0,0);return x};
@@ -136,4 +136,4 @@ sdBuild();
  const{data:{session}}=await sb.auth.getSession();if(!session){location.replace("auth.html#login");return}
  const{data:adm}=await sb.rpc("is_admin");if(!adm){location.replace("dashboard.html");return}
  loadSel()})();
-</script><script src="admin-nav.js"></script></body></html>
+</script></body></html>
