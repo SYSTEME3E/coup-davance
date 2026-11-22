@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}</style><link rel="stylesheet" href="theme.css"><title>Abonnement – Pronos-bet</title><style>.ab-act{display:block;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(34,197,94,.16);border:1px solid rgba(34,197,94,.55);color:#fff;font-size:15px;line-height:1.4}.ab-act.tr{background:rgba(255,201,51,.14);border-color:rgba(255,201,51,.6)}.ab-act b{font-weight:800}
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pronos-bet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><style>[hidden]{display:none!important}</style><link rel="stylesheet" href="theme.css"><title>VIP – Pronos-bet</title><style>.ab-act{display:block;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(34,197,94,.16);border:1px solid rgba(34,197,94,.55);color:#fff;font-size:15px;line-height:1.4}.ab-act.tr{background:rgba(255,201,51,.14);border-color:rgba(255,201,51,.6)}.ab-act b{font-weight:800}
 .ck select{width:100%;padding:12px 14px;border-radius:8px;border:1px solid #3A2F9A;background:#1C1555;color:#fff;font:inherit}.ck select:focus{outline:2px solid var(--brand,#6C5CFF)}
 .ck .mt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 6px}
 .ck .mt button{padding:13px 8px;border-radius:12px;border:1.5px solid #3A2F9A;background:#1C1555;color:#fff;font-weight:700;font-size:15px;font-family:inherit;cursor:pointer}
@@ -28,13 +28,13 @@
 .cpk .cpl .nores{cursor:default;opacity:.7;justify-content:center}</style>
 </head><body><div class="wrap wide ab">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
-<h1 class="pt">Abonnement</h1><p class="sub" style="text-transform:none">Choisis le plan qui te convient. Paiement par Mobile Money, virement bancaire ou carte. Activation automatique.</p>
+<h1 class="pt">VIP</h1><p class="sub" style="text-transform:none">Choisis le plan qui te convient. Paiement par Mobile Money, virement bancaire ou carte. Activation automatique.</p>
 <div id="st" class="ab-st" role="status" hidden></div>
 <div id="app"><p class="sub">Chargement…</p></div>
 <div style="height:48px"></div></div>
 
 <dialog class="ck" id="ck" aria-labelledby="ckT"><form id="ckF" novalidate>
-<div class="hd"><h2 id="ckT">Abonnement</h2><button type="button" class="x" id="ckX" aria-label="Fermer">✕</button></div>
+<div class="hd"><h2 id="ckT">VIP</h2><button type="button" class="x" id="ckX" aria-label="Fermer">✕</button></div>
 <div class="sum"><span id="ckS">30 jours</span><b id="ckA"></b></div>
 <p class="note" id="ckU" style="margin:4px 0 0"></p>
 <label for="ckN">Nom complet</label><div class="ab-f"><input id="ckN" type="text" autocomplete="name" maxlength="60"></div>
@@ -89,7 +89,7 @@ async function load(){
     sb.rpc("my_plan"),
     sb.from("payments").select("id,plan,currency,amount,operator,status,created_at").order("created_at",{ascending:false}).limit(8),
     sb.from("plan_settings").select("basic_usd,gold_usd").eq("id",1).maybeSingle()]);
-  if(p.error||m.error||!(p.data||[]).length){$("app").innerHTML='<div class="card">Impossible de charger les abonnements pour le moment. Réessaie dans un instant.</div>';return false}
+  if(p.error||m.error||!(p.data||[]).length){$("app").innerHTML='<div class="card">Impossible de charger les offres VIP pour le moment. Réessaie dans un instant.</div>';return false}
   PR=p.data;ME=m.data;PAYS=h.data||[];
   if(st&&st.data){UD={basic:Number(st.data.basic_usd),gold:Number(st.data.gold_usd)};USD_ALT={CD:{basic:UD.basic,gold:UD.gold}}}
   if(!PR.some(x=>x.country_code===CTRY))CTRY=PR[0].country_code;
@@ -101,10 +101,10 @@ function meBox(){
   const q=(t,o)=>{const lim=o.limit;
     return '<div class="q"><b><span>'+t+'</span><span>'+(lim==null?"Illimité":o.used+" / "+lim)+'</span></b><div class="pb" role="progressbar" aria-label="'+t+'" aria-valuemin="0" aria-valuemax="'+(lim==null?1:lim)+'" aria-valuenow="'+(lim==null?1:Math.min(o.used,lim))+'"><i style="width:'+(lim==null?100:Math.min(100,Math.round(o.used/lim*100)))+'%"></i></div></div>'};
   const left=d=>{const n=Math.max(1,Math.ceil((new Date(d)-Date.now())/864e5));return n+" jour"+(n>1?"s":"")};
-  const ex=ME.trial?"Ensuite, le plan Gratuit s’applique.":pl==="free"?"Aucun abonnement actif.":ME.ends_at?"":"Accès sans limite de durée.";
+  const ex=ME.trial?"Ensuite, le plan Gratuit s’applique.":pl==="free"?"Aucun VIP actif.":ME.ends_at?"":"Accès sans limite de durée.";
   const act=ME.trial?'<div class="ab-act tr">⏳ Essai gratuit en cours : accès Gold complet jusqu’au <b>'+dt(ME.trial_ends_at)+'</b> · encore '+left(ME.trial_ends_at)+'</div>'
-    :(pl!=="free"&&ME.ends_at?'<div class="ab-act">✅ Tu as un abonnement <b>'+PN[pl]+'</b> actif jusqu’au <b>'+dt(ME.ends_at)+'</b> · encore '+left(ME.ends_at)+'</div>':"");
-  return '<section class="ab-me" aria-label="Mon abonnement"><div><h2>Ton plan actuel</h2><div class="pl">'+(ME.trial?"Essai gratuit":PN[pl])+'</div>'+act+(ex?'<div class="ex">'+ex+'</div>':"")+'</div>'
+    :(pl!=="free"&&ME.ends_at?'<div class="ab-act">✅ Tu as un VIP <b>'+PN[pl]+'</b> actif jusqu’au <b>'+dt(ME.ends_at)+'</b> · encore '+left(ME.ends_at)+'</div>':"");
+  return '<section class="ab-me" aria-label="Mon VIP"><div><h2>Ton plan actuel</h2><div class="pl">'+(ME.trial?"Essai gratuit":PN[pl])+'</div>'+act+(ex?'<div class="ex">'+ex+'</div>':"")+'</div>'
     +'<div class="qs">'+q("Pronostics solides débloqués aujourd’hui",u)+q("Matchs incertains débloqués aujourd’hui",v)+'</div></section>'}
 
 // ---------- Cartes des plans ----------
@@ -118,7 +118,7 @@ function plansBox(){
       return'<button class="btn" type="button" data-p="basic">'+(pl==="basic"?"Prolonger de 30 jours":"Choisir Basic")+'</button>'}
     return'<button class="btn" type="button" data-p="gold">'+(pl==="gold"?"Prolonger de 30 jours":pl==="basic"?"Passer à Gold":"Choisir Gold")+'</button>'};
   return '<div class="plans">'
-   +'<article class="plan free"><h3>Gratuit</h3><p class="tl">Pour découvrir</p><div class="pr">0 <small>F</small></div><p class="usd">Sans abonnement</p><ul>'
+   +'<article class="plan free"><h3>Gratuit</h3><p class="tl">Pour découvrir</p><div class="pr">0 <small>F</small></div><p class="usd">Sans VIP</p><ul>'
      +li("Tous les matchs, les lives et les statistiques")+li("<b>2</b> pronostics solides par jour")+li("<b>3</b> matchs incertains par jour")+li("Les autres pronostics restent floutés",false)+'</ul>'
      +'<button class="btn" type="button" disabled>'+(ME.trial?"Après ton essai":pl==="free"?"Ton plan actuel":"Plan de départ")+'</button></article>'
    +'<article class="plan basic"><h3>Basic</h3><p class="tl">Pour suivre plus de matchs</p><div class="pr">'+money(c.basic,c.currency)+' <small>/ mois</small></div>'+eq(c,"basic")+'<ul>'
@@ -161,7 +161,7 @@ function cpInit(){
 function extra(){
   const rows=sortedPR().map(x=>'<tr><td>'+esc(x.flag)+" "+esc(x.country_name)+'</td><td>'+esc(x.currency)+'</td><td>'+money(x.basic,x.currency)+'</td><td>'+money(x.gold,x.currency)+'</td><td>'+(x.operators.length?x.operators.map(o=>esc((OPS[o]||[o])[0])).join(", "):"Bientôt disponible")+'</td></tr>').join("");
   return '<section class="ab-sec"><h2>Comment ça marche</h2><ol class="steps"><li>Tu choisis ton pays.</li><li>Le prix s’affiche dans ta monnaie.</li><li>Tu choisis ton moyen de paiement (Mobile Money ou carte).</li><li>Tu paies dans une fenêtre sécurisée.</li><li>Ton plan s’active tout seul.</li></ol>'
-   +'<p class="note">L’abonnement dure 30 jours et ne se renouvelle pas automatiquement : tu choisis quand le prolonger.</p></section>'
+   +'<p class="note">Le VIP dure 30 jours et ne se renouvelle pas automatiquement : tu choisis quand le prolonger.</p></section>'
    +'<section class="ab-sec"><h2>Solide ou incertain ?</h2><div class="kind"><div><b>Pronostic solide</b>Une issue du match dépasse 55 % de probabilité : le favori est net.</div><div><b>Match incertain</b>Aucune issue n’atteint 55 % : le résultat est plus difficile à prévoir.</div></div>'
    +'<p class="note">Les quotas se renouvellent chaque jour. Un pronostic déjà débloqué reste visible, et les matchs commencés ne comptent pas dans ton quota.</p></section>'
    +'<section class="ab-sec"><h2>Prix par pays</h2><details class="dt"><summary>Afficher le détail des tarifs et des moyens de paiement</summary><div class="tbw"><table class="pt2"><thead><tr><th>Pays</th><th>Devise</th><th>Basic</th><th>Gold</th><th>Moyens de paiement</th></tr></thead><tbody>'+rows+'</tbody></table></div></details></section>'}
@@ -211,7 +211,7 @@ function ckMode(){
 function openCk(plan){
   const c=country(),amt=plan==="gold"?c.gold:c.basic;CUR={plan,c,amt,cur:c.currency};
   $("ckCW").hidden=!USD_ALT[c.country_code];
-  $("ckT").textContent="Abonnement "+PN[plan];
+  $("ckT").textContent="VIP "+PN[plan];
   $("ckA").textContent=money(amt,c.currency);
   $("ckS").textContent="30 jours · "+c.country_name;
   MM=c.operators.filter(o=>o!=="bank"&&o!=="card"); // opérateurs Mobile Money : demande de paiement envoyée sur le téléphone (iKeePay H2H)
