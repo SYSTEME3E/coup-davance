@@ -1,30 +1,15 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="theme.css"><title>Administration – Pronos-bet</title><style>.pz{display:grid;gap:10px;margin:0 0 12px}.pz h3{margin:0;font:800 17px/1.2 'Bricolage Grotesque',sans-serif}.pz .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pz label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}.pz input[type=number]{width:100%;font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit;min-width:0}.pz .ck{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:400;margin:0}.pz .ck input{width:18px;height:18px}.pz .sv{justify-self:start}.pz .ms{font-size:14px;min-height:20px;margin:0}.pz .ms.ok{color:#1a8f4f}.pz .ms.er{color:#d33}</style>
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="theme.css"><title>Accueil – Administration – Pronos-bet</title><style>.pz{display:grid;gap:10px;margin:0 0 12px}.pz h3{margin:0;font:800 17px/1.2 'Bricolage Grotesque',sans-serif}.pz .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pz label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}.pz input[type=number]{width:100%;font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit;min-width:0}.pz .ck{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:400;margin:0}.pz .ck input{width:18px;height:18px}.pz .sv{justify-self:start}.pz .ms{font-size:14px;min-height:20px;margin:0}.pz .ms.ok{color:#1a8f4f}.pz .ms.er{color:#d33}</style>
 </head><body><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
 <h1 class="pt">Espace administrateur</h1><p class="sub" style="text-transform:none">Vue d’ensemble de Pronos-bet</p>
 <div id="kpi" class="kpi"><p class="sub">Chargement…</p></div>
 <div id="bil"></div>
 <div id="chart"></div>
-<h2 class="ah">Images du carrousel</h2><p class="sub" style="text-transform:none">Ces images s’affichent en haut du dashboard, sous l’en-tête. Une seule image reste fixe ; à partir de 2 images, elles défilent toutes les 5 secondes. Format large conseillé (1200 × 525). 10 images maximum.</p>
-<div class="card pz" id="bnf"><div><label for="bnfile">Image</label><input id="bnfile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" style="width:100%;font:inherit"></div>
-<div><label for="bnlink">Lien au clic (facultatif)</label><input id="bnlink" type="url" maxlength="500" inputmode="url" autocomplete="off" placeholder="https://…" style="width:100%;font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit"></div>
-<button class="more sv" type="button" id="bns">Ajouter l’image</button><p class="ms" id="bnm" role="status"></p></div>
-<div id="bnlist"></div>
-<h2 class="ah">Code du jour</h2><p class="sub" style="text-transform:none">Choisis la plateforme (1Win, 1xBet, Melbet…) puis colle le code que tu as préparé sur son site. Il s’affiche sur le dashboard, juste après les bonus partenaires, pendant 24 h. Un nouveau code pour la même plateforme remplace l’ancien.</p>
-<div class="card pz" id="dcf"><div><label for="dcp">Plateforme</label><input id="dcp" list="dcl" type="text" maxlength="40" autocomplete="off" placeholder="Ex. : 1Win" style="width:100%;font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit"><datalist id="dcl"><option value="1Win"><option value="1xBet"><option value="Melbet"></datalist></div>
-<div><label for="dcc">Code du jour</label><input id="dcc" type="text" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Colle ici le code" style="width:100%;font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit"></div>
-<button class="more sv" type="button" id="dcs">Publier le code</button><p class="ms" id="dcm" role="status"></p></div>
-<div id="dclist"></div>
-<h2 class="ah">Prix des abonnements</h2><p class="sub" style="text-transform:none">Fixe le prix Basic et Gold <b>en dollars</b> : la page Abonnement affiche automatiquement la conversion dans la monnaie de chaque pays, et c’est ce montant qui est facturé. Le changement s’applique tout de suite aux nouveaux paiements ; les paiements déjà faits ne changent pas.</p>
-<div id="prices"><p class="sub">Chargement…</p></div>
-<h2 class="ah">Utilisateurs</h2>
-<div class="srch"><input id="uq" type="search" placeholder="Rechercher un nom ou un e-mail…" autocomplete="off"></div>
-<div id="ulist"><p class="sub">Chargement…</p></div>
-<button id="umore" class="more" style="display:none">Voir plus d’utilisateurs</button>
 <div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="menu.js"></script><script>
+</script><script src="admin-menu.js"></script>
+<script>
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dt=s=>s?new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"}):"—";
 const pc=(a,b)=>b?Math.round(100*a/b):0;
@@ -51,145 +36,9 @@ function drawStats(s){
 async function loadStats(){const{data,error}=await sb.rpc("admin_stats");
   if(error){if(error.code==="42501"){location.href="dashboard.html";return}$("kpi").innerHTML='<div class="card">Statistiques indisponibles : '+esc(error.message)+'</div>';return}
   drawStats(data)}
-// Liste des utilisateurs
-const PG=30;let off=0,rows=[],tok=0,total=0;
-const badges=u=>(u.is_admin?'<span class="bd in">Admin</span>':"")+(u.blocked?'<span class="bd ko">Bloqué</span>':"")+(u.sub_status==="active"?'<span class="bd ok">Abonné'+(u.sub_plan?" · "+esc(u.sub_plan):"")+'</span>':'<span class="bd mu">Sans abonnement</span>');
-const row=u=>'<a class="card ur" href="admin-user.html?id='+encodeURIComponent(u.id)+'"><div class="un">'+(u.full_name?esc(u.full_name):'<i class="nn">Nom non renseigné</i>')+'</div><div class="ue">'+esc(u.email)+'</div><div class="ub">'+badges(u)+'</div><div class="note" style="margin:6px 0 0">Inscrit le '+dt(u.created_at)+' · Dernière connexion : '+dt(u.last_sign_in_at)+'</div></a>';
-function drawUsers(){$("ulist").innerHTML=rows.length?rows.map(row).join(""):'<div class="card"><p class="sub" style="margin:0">Aucun utilisateur trouvé.</p></div>';
-  $("umore").style.display=rows.length<total?"block":"none"}
-async function loadUsers(reset){if(reset){tok++;off=0;rows=[]}const my=tok;
-  const{data,error}=await sb.rpc("admin_users",{q:$("uq").value.trim(),lim:PG,off:off});
-  if(my!==tok)return;
-  if(error){$("ulist").innerHTML='<div class="card">Liste indisponible : '+esc(error.message)+'</div>';return}
-  rows=rows.concat(data||[]);off+=PG;total=data&&data.length?Number(data[0].total):rows.length;drawUsers()}
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
   const{data:adm}=await sb.rpc("is_admin");if(!adm)return location.href="dashboard.html";
-  loadStats();loadUsers(true);
-  setInterval(()=>{if(!document.hidden)loadStats()},30000);
-  let t_;$("uq").oninput=()=>{clearTimeout(t_);t_=setTimeout(()=>loadUsers(true),300)};
-  $("umore").onclick=()=>loadUsers(false);
-})();
-</script><script>
-// Prix des abonnements : fixés en dollars, convertis dans la monnaie de chaque pays
-(function(){
- let ST=null,RT=[],PX=[];
- const fmt=n=>Number(n).toLocaleString("fr-FR",{maximumFractionDigits:2});
- const say=(id,t,cls)=>{const m=$(id);if(!m)return;m.className="ms"+(cls?" "+cls:"");m.textContent=t||""};
- function draw(){
-  if(!ST){return}
-  const rates=RT.filter(r=>r.currency!=="USD");
-  $("prices").innerHTML=
-   '<div class="card pz"><h3>Prix en dollars</h3><div class="g2">'
-   +'<div><label for="ubas">Basic ($)</label><input id="ubas" type="number" inputmode="decimal" min="0.01" step="0.01" value="'+ST.basic_usd+'"></div>'
-   +'<div><label for="ugol">Gold ($)</label><input id="ugol" type="number" inputmode="decimal" min="0.01" step="0.01" value="'+ST.gold_usd+'"></div></div>'
-   +'<button class="more" id="usv" type="button">Enregistrer les prix</button><p class="ms" id="ums" role="status"></p></div>'
-   +'<div class="card pz"><h3>Taux de change</h3><p class="note" style="margin:0 0 8px">1 $ = … dans chaque monnaie. Clique « Actualiser les taux » pour les remplir avec les taux du jour, puis enregistre.</p><div class="g2">'
-   +rates.map(r=>'<div><label for="r'+esc(r.currency)+'">1 $ en '+esc(r.currency)+'</label><input id="r'+esc(r.currency)+'" class="rt_" data-cur="'+esc(r.currency)+'" type="number" inputmode="decimal" min="0.000001" step="any" value="'+r.per_usd+'"></div>').join("")
-   +'</div><button class="more" id="rlive" type="button">Actualiser les taux</button><button class="more" id="rsv" type="button">Enregistrer les taux</button><p class="ms" id="rms" role="status"></p></div>'
-   +'<div class="card pz"><h3>Prix affichés dans chaque pays</h3><div style="overflow-x:auto"><table class="pt2" style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left">Pays</th><th style="text-align:right">Basic</th><th style="text-align:right">Gold</th></tr></thead><tbody>'
-   +PX.map(p=>'<tr><td>'+esc(p.flag)+' '+esc(p.country_name)+'</td><td style="text-align:right;white-space:nowrap">'+fmt(p.basic)+' '+esc(p.currency)+'</td><td style="text-align:right;white-space:nowrap">'+fmt(p.gold)+' '+esc(p.currency)+'</td></tr>').join("")
-   +'</tbody></table></div><p class="note" style="margin:8px 0 0">Arrondi vers le haut (ex. 100 F pour le franc CFA). Une monnaie sans taux ci-dessus garde son prix actuel.</p></div>'}
- async function load(){
-  const[a,b,c]=await Promise.all([sb.from("plan_settings").select("basic_usd,gold_usd").eq("id",1).maybeSingle(),sb.from("usd_rates").select("currency,per_usd").order("currency"),sb.from("plan_prices").select("country_code,country_name,flag,currency,basic,gold,sort").order("sort")]);
-  if(a.error||b.error||c.error||!a.data){$("prices").innerHTML='<div class="card">Prix indisponibles : '+esc((a.error||b.error||c.error||{message:"lance d’abord le fichier SQL 003"}).message)+'</div>';return}
-  ST=a.data;RT=b.data||[];PX=c.data||[];draw()}
- async function refreshPrices(){const{data}=await sb.from("plan_prices").select("country_code,country_name,flag,currency,basic,gold,sort").order("sort");PX=data||PX}
- $("prices").addEventListener("click",async e=>{
-  const t=e.target.closest("button");if(!t)return;
-  if(t.id==="usv"){
-   const b=parseFloat($("ubas").value),g=parseFloat($("ugol").value);
-   if(!(b>0)||!(g>0))return say("ums","Saisis deux montants valides.","er");
-   if(g<b)return say("ums","Le prix Gold doit être supérieur ou égal au prix Basic.","er");
-   if(!confirm("Basic "+fmt(b)+" $ et Gold "+fmt(g)+" $ : les prix de tous les pays seront recalculés. Continuer ?"))return;
-   t.disabled=true;say("ums","Enregistrement…");
-   const{data,error}=await sb.rpc("admin_set_usd_prices",{p_basic:b,p_gold:g});t.disabled=false;
-   if(error)return say("ums",error.message||"Échec de l’enregistrement.","er");
-   ST={basic_usd:b,gold_usd:g};await refreshPrices();draw();say("ums","Enregistré : "+data+" pays mis à jour.","ok")}
-  if(t.id==="rlive"){
-   t.disabled=true;say("rms","Récupération des taux…");
-   try{const r=await fetch("https://open.er-api.com/v6/latest/USD",{cache:"no-store"}),j=await r.json();
-    if(!(j&&j.rates))throw 0;let n=0;
-    document.querySelectorAll(".rt_").forEach(i=>{const v=j.rates[i.dataset.cur];if(v>0){i.value=v;n++}});
-    say("rms",n+" taux récupérés. Vérifie-les puis clique « Enregistrer les taux ».","ok")}
-   catch(_){say("rms","Impossible de récupérer les taux. Saisis-les à la main.","er")}
-   t.disabled=false}
-  if(t.id==="rsv"){
-   const o={};let bad=false;
-   document.querySelectorAll(".rt_").forEach(i=>{const v=parseFloat(i.value);if(!(v>0))bad=true;else o[i.dataset.cur]=v});
-   if(bad)return say("rms","Chaque taux doit être un nombre positif.","er");
-   if(!confirm("Enregistrer ces taux ? Les prix de tous les pays seront recalculés."))return;
-   t.disabled=true;say("rms","Enregistrement…");
-   const{data,error}=await sb.rpc("admin_set_usd_rates",{p_rates:o});t.disabled=false;
-   if(error)return say("rms",error.message||"Échec de l’enregistrement.","er");
-   RT.forEach(r=>{if(o[r.currency])r.per_usd=o[r.currency]});await refreshPrices();draw();say("rms","Taux enregistrés : "+data+" pays mis à jour.","ok")}});
- (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return;const{data:adm}=await sb.rpc("is_admin");if(adm)load()})();
+  loadStats();setInterval(()=>{if(!document.hidden)loadStats()},30000);
 })();
 </script>
-<script>
-// Code du jour (plateforme + code), publié par l'administrateur
-(function(){
- var L=[];
- function draw(){
-  $("dclist").innerHTML=L.length?L.map(function(c){
-   return '<div class="card" style="margin:0 0 10px"><div class="un">'+esc(c.platform)+'</div><div class="ue" style="font-family:ui-monospace,monospace;word-break:break-all">'+esc(c.code)+'</div>'
-    +'<div class="note" style="margin:6px 0 8px">Publié le '+new Date(c.created_at).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+' · visible 24 h</div>'
-    +'<button type="button" class="more" data-del="'+esc(c.id)+'" style="margin:0">Supprimer</button></div>'}).join(""):'<p class="note">Aucun code affiché pour le moment.</p>'}
- async function load(){var r=await sb.from("daily_codes").select("id,platform,code,created_at").order("created_at",{ascending:false});
-  if(r.error){$("dclist").innerHTML='<div class="card">Codes indisponibles : '+esc(r.error.message)+'</div>';return}L=r.data||[];draw()}
- $("dcs").onclick=async function(){
-  var pf=$("dcp").value.trim(),cd=$("dcc").value.trim(),ms=$("dcm");ms.className="ms";
-  if(pf.length<2){ms.className="ms er";ms.textContent="Indique la plateforme (ex. 1Win).";return}
-  if(cd.length<2){ms.className="ms er";ms.textContent="Colle le code du jour.";return}
-  this.disabled=true;ms.textContent="Publication…";
-  var r=await sb.rpc("admin_add_daily_code",{p_platform:pf,p_code:cd});this.disabled=false;
-  if(r.error){ms.className="ms er";ms.textContent=r.error.message||"Échec de la publication.";return}
-  ms.className="ms ok";ms.textContent="Code publié : il s’affiche maintenant sur le dashboard.";$("dcc").value="";load()};
- $("dclist").addEventListener("click",async function(e){var b=e.target.closest("[data-del]");if(!b)return;
-  if(!confirm("Supprimer ce code du dashboard ?"))return;b.disabled=true;
-  var r=await sb.rpc("admin_delete_daily_code",{p_id:b.dataset.del});if(r.error){alert(r.error.message||"Échec.");b.disabled=false;return}load()});
- (async function(){var s=await sb.auth.getSession();if(!s.data.session)return;var a=await sb.rpc("is_admin");if(a.data)load()})();
-})();
-</script>
-<script>
-// Carrousel : ajout et suppression des images (stockage public « banners »)
-(function(){
- var L=[],MAXW=1200;
- var url=function(p){return sb.storage.from("banners").getPublicUrl(p).data.publicUrl};
- function draw(){
-  $("bnlist").innerHTML=L.length?L.map(function(b,k){
-   return '<div class="card" style="margin:0 0 10px"><img src="'+esc(url(b.path))+'" alt="" style="width:100%;border-radius:10px;display:block;aspect-ratio:16/7;object-fit:cover">'
-    +'<div class="note" style="margin:8px 0">Image '+(k+1)+(b.link?' · lien : '+esc(b.link):' · sans lien')+'</div>'
-    +'<button type="button" class="more" data-bd="'+esc(b.id)+'" style="margin:0">Supprimer</button></div>'}).join(""):'<p class="note">Aucune image : le carrousel est masqué sur le dashboard.</p>'}
- async function load(){var r=await sb.from("banners").select("id,path,link,created_at").order("created_at",{ascending:true});
-  if(r.error){$("bnlist").innerHTML='<div class="card">Images indisponibles : '+esc(r.error.message)+'</div>';return}L=r.data||[];draw()}
- // réduit l'image (largeur max 1200 px) pour qu'elle charge vite sur mobile
- function shrink(f){return new Promise(function(ok,ko){
-  if(f.type==="image/gif"){f.size<=3145728?ok({blob:f,ext:"gif",type:"image/gif"}):ko(new Error("GIF trop lourd (3 Mo maximum)."));return}
-  var im=new Image(),u=URL.createObjectURL(f);
-  im.onload=function(){URL.revokeObjectURL(u);var w=Math.min(MAXW,im.naturalWidth),h=Math.round(im.naturalHeight*w/im.naturalWidth),c=document.createElement("canvas");c.width=w;c.height=h;
-   var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);
-   c.toBlob(function(b){b?ok({blob:b,ext:"jpg",type:"image/jpeg"}):ko(new Error("Image illisible."))},"image/jpeg",.85)};
-  im.onerror=function(){URL.revokeObjectURL(u);ko(new Error("Image illisible."))};im.src=u})}
- $("bns").onclick=async function(){
-  var f=$("bnfile").files[0],lk=$("bnlink").value.trim(),ms=$("bnm");ms.className="ms";
-  if(!f){ms.className="ms er";ms.textContent="Choisis une image.";return}
-  if(lk&&!/^https:\/\//i.test(lk)){ms.className="ms er";ms.textContent="Le lien doit commencer par https://";return}
-  if(L.length>=10){ms.className="ms er";ms.textContent="10 images maximum : supprime-en une d’abord.";return}
-  this.disabled=true;ms.textContent="Envoi de l’image…";var name=null;
-  try{
-   var o=await shrink(f);name=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(36).slice(2)).replace(/[^a-z0-9-]/gi,"").toLowerCase()+"."+o.ext;
-   var up=await sb.storage.from("banners").upload(name,o.blob,{contentType:o.type,cacheControl:"31536000",upsert:false});
-   if(up.error)throw up.error;
-   var r=await sb.rpc("admin_add_banner",{p_path:name,p_link:lk||null});
-   if(r.error){await sb.storage.from("banners").remove([name]);throw r.error}
-   ms.className="ms ok";ms.textContent="Image ajoutée : elle s’affiche en haut du dashboard.";$("bnfile").value="";$("bnlink").value="";load()
-  }catch(e){ms.className="ms er";ms.textContent=(e&&e.message)||"Échec de l’envoi."}
-  this.disabled=false};
- $("bnlist").addEventListener("click",async function(e){var b=e.target.closest("[data-bd]");if(!b)return;
-  var it=L.find(function(x){return x.id===b.dataset.bd});if(!it||!confirm("Supprimer cette image du carrousel ?"))return;b.disabled=true;
-  var rm=await sb.storage.from("banners").remove([it.path]);if(rm.error){alert(rm.error.message||"Échec.");b.disabled=false;return}
-  var r=await sb.rpc("admin_delete_banner",{p_id:it.id});if(r.error){alert(r.error.message||"Échec.");b.disabled=false;return}load()});
- (async function(){var s=await sb.auth.getSession();if(!s.data.session)return;var a=await sb.rpc("is_admin");if(a.data)load()})();
-})();
-</script>
-<script src="admin-nav.js"></script></body></html>
+</body></html>
