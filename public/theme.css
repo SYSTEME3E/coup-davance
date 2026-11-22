@@ -139,3 +139,15 @@ body.ss{background:#130F33;--ink:#FFFFFF;--mut:#A9A4D6}
 .drw .mn a .mi,.drw .out2 .mi{color:#5A47E0}
 .drw .out2{background:#fff;border:1.5px solid #5A47E0;color:#1B1650}
 .drw .out2:hover{background:#F1EEFF}
+
+/* ---- Plans VIP : cartes blanches ---- */
+.plan,.plan.free,.plan.basic,.plan.gold{background:#fff;color:#1B1650;--ink:#1B1650;--muted:#6B6890}
+.plan,.plan.free{border:1px solid #E4E5EE}
+.plan.basic{border:2px solid #6F5BFF}
+.plan.gold{border:2px solid #F5B301}
+.plan h3,.plan .pr{color:#1B1650}
+.plan .tl,.plan.gold .tl,.plan .pr small,.plan .usd,.plan.gold .pr small,.plan.gold .usd{color:#6B6890}
+.plan li svg{color:#6F5BFF}.plan.gold li svg{color:#D98400}
+.plan li.no,.plan.gold li.no{color:#6B6890}.plan li.no svg{color:#9A97BD}
+.plan.gold .tag{background:#F5B301;color:#1B1650}
+.plan .btn[disabled],.plan.gold .btn[disabled]{background:#EEF0F6;color:#6B6890}
