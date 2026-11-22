@@ -126,6 +126,9 @@ body{overflow-x:clip}
 .drw .mn{display:grid;gap:8px;margin:6px 0 18px}
 .drw .mn a{display:block;padding:12px 14px;border:1px solid var(--line);border-radius:10px;text-decoration:none;font-weight:700;color:var(--ink)}
 .drw .mn a[hidden]{display:none}
+.drw .mn a{display:flex;align-items:center;gap:12px}
+.drw .mi{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.drw .out2{display:flex;align-items:center;justify-content:center;gap:10px}
 .drw h3{font-size:17px;margin:4px 0 0}
 .drw input[type=text],.drw input[type=email],.drw input[type=password]{width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
 .drw .btn{margin-top:14px}
@@ -182,7 +185,7 @@ body{overflow-x:clip}
 .inst .btn{background:var(--accent)}
 .logo img{box-shadow:0 1px 3px rgba(14,39,72,.18)}
 
-/* ===== Page Abonnement ===== */
+/* ===== Page VIP ===== */
 .wrap.wide{max-width:1000px}
 .ab h1.pt{font-size:34px}
 .ab-st{display:flex;gap:12px;align-items:flex-start;border-radius:12px;padding:14px 16px;margin:6px 0 14px;border:1px solid rgba(29,111,216,.3);background:var(--blue-bg)}
