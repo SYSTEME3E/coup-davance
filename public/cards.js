@@ -32,7 +32,7 @@ const xt=d=>{const e=d.extra;if(!e)return"";let a="";
 // Forme des 5 derniers matchs (V = victoire, N = nul, D = défaite), du plus récent au plus ancien
 const FM=s=>String(s||"").split("").map(x=>'<i class="f'+x+'">'+x+'</i>').join("");
 const frm=d=>d.form&&(d.form.home||d.form.away)?'<div class="frm"><span>Forme domicile '+FM(d.form.home)+'</span><span>Forme extérieur '+FM(d.form.away)+'</span></div>':"";
-const when=m=>new Date(m.kickoff).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+" · "+new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+const when=m=>new Date(m.kickoff).toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"short",day:"numeric",month:"short"})+" · "+new Date(m.kickoff).toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"});
 const isOpen=m=>!!(m.data&&m.data.result);
 const tagOf=m=>{const solid=m.kind?m.kind==="solid":(()=>{const p=m.data.result;return Math.max(p.home,p.draw,p.away)>=55})();
   return /friendl/i.test(m.league||"")?'<span class="cf lo">Match amical · très imprévisible</span>':solid?'<span class="cf hi">Favori probable</span>':'<span class="cf lo">Match incertain</span>'};
