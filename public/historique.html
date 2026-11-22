@@ -7,7 +7,7 @@
 <div id="list"><p class="sub">Chargement…</p></div>
 <button id="more" class="more" style="display:none">Voir plus de matchs</button>
 <p class="note" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="cards.js"></script><script src="menu.js"></script><script>
 const PAGE=40,HASH={ok:"gagnes",ko:"rates",other:"autres"};
@@ -15,7 +15,7 @@ const fromHash=()=>({"#gagnes":"ok","#rates":"ko","#autres":"other"})[location.h
 const INFO={ok:"Pronostics justes : bon résultat (1X2) ou score exact trouvé.",ko:"Pronostics ratés : ni le bon résultat, ni le score exact.",other:"Matchs annulés ou dont le résultat n’est pas encore arrivé."};
 const EMPTY={ok:"Aucun pronostic gagné pour le moment.",ko:"Aucun pronostic raté pour le moment.",other:"Aucun match annulé ou en attente de résultat."};
 let rows=[],filter=fromHash(),from=0,more=true;
-const dayLabel=k=>new Date(k+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+const dayLabel=k=>new Date(k+"T12:00:00").toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"long",day:"numeric",month:"long"});
 const keyOf=m=>{const x=new Date(m.kickoff);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
 function draw(){
   if(!rows.length){$("list").innerHTML='<div class="card"><p class="sub" style="margin:0">'+(searching()?"Aucun match trouvé pour cette recherche.":EMPTY[filter])+'</p></div>';$("more").style.display=more?"block":"none";return}
