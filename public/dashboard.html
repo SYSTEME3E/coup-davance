@@ -234,9 +234,9 @@ const PARTNERS=[
  function show(days,end){
   var d=document.createElement("dialog");d.className="wl";d.setAttribute("aria-labelledby","wlT");
   d.innerHTML='<div class="wl-e" aria-hidden="true">🎉</div><h2 id="wlT">Félicitations !</h2>'
-   +'<p>Ton compte est créé. Tu as accès à <b>'+days+' jour'+(days>1?'s':'')+' d’essai gratuit</b> avant de choisir un abonnement.</p>'
+   +'<p>Ton compte est créé. Tu as accès à <b>'+days+' jour'+(days>1?'s':'')+' d’essai gratuit</b> avant de passer VIP.</p>'
    +'<p class="wl-s">Essai jusqu’au '+esc(end)+'.</p>'
-   +'<button type="button" class="wl-b" id="wlOk">C’est parti</button><a class="wl-a" href="abonnement.html">Voir les abonnements</a>';
+   +'<button type="button" class="wl-b" id="wlOk">C’est parti</button><a class="wl-a" href="abonnement.html">Voir les offres VIP</a>';
   document.body.appendChild(d);
   var close=function(){try{d.close()}catch(e){d.removeAttribute("open")}d.remove()};
   d.querySelector("#wlOk").onclick=close;d.addEventListener("cancel",function(e){e.preventDefault();close()});
