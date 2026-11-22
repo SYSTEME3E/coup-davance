@@ -17,7 +17,7 @@ const kp=(label,val,cls,sub)=>'<div class="kp"><span>'+label+'</span><b class="'
 const bar=(label,a,b)=>'<div class="sr"><div class="sv2"><span>'+label+'</span><b>'+pc(a,b)+' %</b></div><div class="pb"><i style="width:'+pc(a,b)+'%"></i></div><div class="note" style="margin:4px 0 0">'+a+' sur '+b+'</div></div>';
 function drawStats(s){
   $("kpi").innerHTML=kp("Utilisateurs",s.users,"","+"+s.users_7d+" cette semaine")
-    +kp("Abonnements actifs",s.subs_active,"")
+    +kp("VIP actifs",s.subs_active,"")
     +kp("Matchs en cours",s.live,s.live>0?"rd":"")
     +kp("Matchs à venir",s.upcoming,"")
     +kp("Victoires validées",s.won,"gn","pronostics justes")
