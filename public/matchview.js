@@ -17,7 +17,7 @@ const mvCorner='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v2A1
 
 function mvHero(m,r){
   const sc=m.hs!=null&&m.as!=null,when=m.start?new Date(typeof m.start==="number"&&m.start<1e12?m.start*1000:m.start):null;
-  const ds=when&&!isNaN(when)?when.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"})+" · "+when.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):"";
+  const ds=when&&!isNaN(when)?when.toLocaleDateString((window.PB?PB.loc():"fr-FR"),{day:"2-digit",month:"2-digit",year:"numeric"})+" · "+when.toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"}):"";
   const sub=m.live?'<small><i></i>'+(m.minute?esc(m.minute)+"’":"EN DIRECT")+'</small>':m.done?'<small>Terminé</small>':'<small>À venir</small>';
   const mid=sc?'<div class="sc">'+esc(m.hs)+'<em>–</em>'+esc(m.as)+sub+'</div>':'<div class="sc" style="font-size:30px">'+esc(hm(m.start)||"vs")+sub+'</div>';
   const tid=ssPick(r,["tracker.id"])||m.mid;
@@ -97,7 +97,7 @@ async function mvH2H(box,m){
     const res=x=>{const hh=H.includes(x.home_key),gf=hh?x.home_goals:x.away_goals,ga=hh?x.away_goals:x.home_goals;return gf>ga?"V":gf<ga?"D":"N"};
     rows.forEach(x=>{const k=res(x);if(k==="V")w++;else if(k==="D")l++;else d++});
     const t=rows.length,p=n=>Math.round(n/t*100);
-    const li=rows.slice(0,5).map(x=>{const hh=H.includes(x.home_key),dt=new Date(x.kickoff).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"});
+    const li=rows.slice(0,5).map(x=>{const hh=H.includes(x.home_key),dt=new Date(x.kickoff).toLocaleDateString((window.PB?PB.loc():"fr-FR"),{day:"2-digit",month:"short",year:"numeric"});
       return'<div class="ms-hr"><span>'+esc(dt)+'</span><span class="lw">'+lg(hh?m.hl:m.al)+'</span><span class="s">'+x.home_goals+' - '+x.away_goals+'</span><span class="lw">'+lg(hh?m.al:m.hl)+'</span><span class="w '+res(x)+'">'+res(x)+'</span></div>'}).join("");
     box.innerHTML='<div class="ms-hh"><div>'+lg(m.hl)+'<div class="n l">'+w+'</div><small>Victoires<br>'+esc(m.home)+'</small></div><div class="c"><b>'+t+'</b><small>Rencontres</small></div><div>'+lg(m.al)+'<div class="n r">'+l+'</div><small>Victoires<br>'+esc(m.away)+'</small></div></div>'
      +'<div class="ms-hb"><i class="l" style="width:'+p(w)+'%"></i><i class="d" style="width:'+p(d)+'%"></i><i class="r" style="width:'+p(l)+'%"></i></div><div class="ms-hp"><span>'+p(w)+'%</span><span>'+d+' nul'+(d>1?"s":"")+'</span><span>'+p(l)+'%</span></div><div class="ms-hl">'+li+'</div>'}
