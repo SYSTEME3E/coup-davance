@@ -57,7 +57,8 @@
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="menu.js"></script><script>
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const USD={basic:5.33,gold:17.5};
+// Prix en dollars (fixés dans l'admin) : sert à l'équivalent « ≈ x $ » et au paiement en dollars en RDC. Remplacé par plan_settings au chargement.
+let UD=null,USD_ALT={CD:{basic:5,gold:18}};
 const PN={free:"Gratuit",basic:"Basic",gold:"Gold"};
 const OPS={mtn:["MTN MoMo","mtn.png"],moov:["Moov Money","moov.png"],orange:["Orange Money","orange.png","#FF7900"],africell:["Africell Money","africell.png","#8E24AA"],telecel:["Telecel Cash","telecel.png","#E60000"],kulu:["Kulu","kulu.png","#6C3FC5"],soutra:["Soutra Money","soutra.png","#F28C00"],amana:["Amana","amana.png","#1B75BC"],zamanicash:["Zamani Cash","zamanicash.png","#0E8A5F"],nita:["NITA","nita.png","#B5121B"],celtiis:["Celtiis Cash","celtiis.png","#00A651"],tmoney:["T-Money","tmoney.png","#E4002B"],wave:["Wave","wave.png"],free:["Free Money","free.png"],airtel:["Airtel Money","airtel.png"],airteltigo:["AirtelTigo","airteltigo.png"],mpesa:["M-Pesa","mpesa.png"],vodacom:["Vodacom M-Pesa","mpesa.png"],halopesa:["HaloPesa",null,"#E4002B"],tigo:["Tigo Pesa",null,"#0057B8"],zamtel:["Zamtel Kwacha",null,"#1B9E3E"],qmoney:["QMoney",null,"#6C3FC5"],afrimoney:["Afrimoney",null,"#E60000"],opay:["OPay",null,"#00B876"],moniepoint:["Moniepoint",null,"#0A4DFF"],bank:["Virement bancaire"],card:["Carte bancaire"]};
 const ICON={bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></svg>'};
@@ -79,15 +80,18 @@ async function call(body){
     return{ok:false,message:m}}
   return data||{ok:false,message:"Réponse vide du serveur."}}
 
+const eq=(c,k)=>UD&&c.currency!=="USD"?'<p class="usd">≈ '+usd(UD[k])+'</p>':"";
 const country=()=>PR.find(x=>x.country_code===CTRY)||PR[0];
 
 async function load(){
-  const[p,m,h]=await Promise.all([
+  const[p,m,h,st]=await Promise.all([
     sb.from("plan_prices").select("*").order("sort"),
     sb.rpc("my_plan"),
-    sb.from("payments").select("id,plan,currency,amount,operator,status,created_at").order("created_at",{ascending:false}).limit(8)]);
+    sb.from("payments").select("id,plan,currency,amount,operator,status,created_at").order("created_at",{ascending:false}).limit(8),
+    sb.from("plan_settings").select("basic_usd,gold_usd").eq("id",1).maybeSingle()]);
   if(p.error||m.error||!(p.data||[]).length){$("app").innerHTML='<div class="card">Impossible de charger les abonnements pour le moment. Réessaie dans un instant.</div>';return false}
   PR=p.data;ME=m.data;PAYS=h.data||[];
+  if(st&&st.data){UD={basic:Number(st.data.basic_usd),gold:Number(st.data.gold_usd)};USD_ALT={CD:{basic:UD.basic,gold:UD.gold}}}
   if(!PR.some(x=>x.country_code===CTRY))CTRY=PR[0].country_code;
   return true}
 
@@ -117,9 +121,9 @@ function plansBox(){
    +'<article class="plan free"><h3>Gratuit</h3><p class="tl">Pour découvrir</p><div class="pr">0 <small>F</small></div><p class="usd">Sans abonnement</p><ul>'
      +li("Tous les matchs, les lives et les statistiques")+li("<b>2</b> pronostics solides par jour")+li("<b>3</b> matchs incertains par jour")+li("Les autres pronostics restent floutés",false)+'</ul>'
      +'<button class="btn" type="button" disabled>'+(ME.trial?"Après ton essai":pl==="free"?"Ton plan actuel":"Plan de départ")+'</button></article>'
-   +'<article class="plan basic"><h3>Basic</h3><p class="tl">Pour suivre plus de matchs</p><div class="pr">'+money(c.basic,c.currency)+' <small>/ mois</small></div><ul>'
+   +'<article class="plan basic"><h3>Basic</h3><p class="tl">Pour suivre plus de matchs</p><div class="pr">'+money(c.basic,c.currency)+' <small>/ mois</small></div>'+eq(c,"basic")+'<ul>'
      +li("Tous les matchs, les lives et les statistiques")+li("<b>10</b> pronostics solides par jour")+li("<b>5</b> matchs incertains par jour")+li("Pronostics débloqués, plus de flou dans ton quota")+'</ul>'+act("basic")+'</article>'
-   +'<article class="plan gold"><span class="tag">Le plus complet</span><h3>Gold</h3><p class="tl">Sans aucune limite</p><div class="pr">'+money(c.gold,c.currency)+' <small>/ mois</small></div><ul>'
+   +'<article class="plan gold"><span class="tag">Le plus complet</span><h3>Gold</h3><p class="tl">Sans aucune limite</p><div class="pr">'+money(c.gold,c.currency)+' <small>/ mois</small></div>'+eq(c,"gold")+'<ul>'
      +li("Tous les pronostics solides, en illimité")+li("Tous les matchs incertains, en illimité")+li("Tous les matchs, lives et stats, sans flou")+li("Aucun quota à surveiller au quotidien")+'</ul>'+act("gold")+'</article></div>'}
 
 const fold=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[’'`-]/g," ").toLowerCase().trim();
@@ -185,7 +189,6 @@ function opTile(o){
 const DIAL={BF:"226",BJ:"229",CD:"243",CF:"236",CG:"242",CI:"225",CM:"237",GA:"241",GH:"233",GN:"224",GQ:"240",GW:"245",ML:"223",NE:"227",NG:"234",SN:"221",TD:"235",TG:"228"};
 let MODE="mm";
 // RDC : paiement en CDF (prix du pays) ou en dollars (5 $ / 18 $, comme les pays payant en USD)
-const USD_ALT={CD:{basic:5,gold:18}};
 function curSet(code){
   if(!CUR)return;const alt=USD_ALT[CUR.c.country_code],usd=!!alt&&code==="USD";
   CUR.cur=usd?"USD":CUR.c.currency;CUR.amt=usd?alt[CUR.plan]:(CUR.plan==="gold"?CUR.c.gold:CUR.c.basic);
