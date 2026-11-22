@@ -7,7 +7,7 @@
 <div id="v"><p class="sub">Chargement…</p></div>
 <details class="note" id="dbg" hidden style="margin-top:22px"><summary>Diagnostic</summary><pre id="dbgp" class="sx-dbg"></pre></details>
 <p class="note sx-credit">Données : <a href="https://sportscore.com" target="_blank" rel="noopener">Powered by SportScore</a></p><div style="height:40px"></div></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="cards.js"></script><script src="sportscore.js"></script><script src="matchview.js"></script><script src="menu.js"></script><script>
 let COMP=null,TIMER=null,COMPS=[],MODE="goals",FILTER="all",QUERY="",LIM=50,MATCHES=[],DAY="";
@@ -21,7 +21,7 @@ const POP=[["Premier League","english-premier-league"],["Champions League","uefa
 const trkBox=id=>'<div class="sx-trk"><div class="v"><iframe src="'+esc("https://sportscore.com/api/widget/tracker/?sport=football&id="+encodeURIComponent(id)+"&src="+encodeURIComponent((window.CFG||{}).src||""))+'" title="Suivi du match en direct" loading="lazy" allow="fullscreen" sandbox="allow-same-origin allow-scripts allow-popups"></iframe></div><button type="button" class="sx-trk-b" data-trk>Agrandir</button></div>';
 const lg=(u,c)=>u&&!window.LITE?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" loading="lazy" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
 const err=e=>'<div class="card sx-err"><b>Données indisponibles pour le moment</b><span>'+esc(ssErr(e))+'</span></div>';
-const hm=s=>{const d=new Date(typeof s==="number"&&s<1e12?s*1000:s);return isNaN(d)?"":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})};
+const hm=s=>{const d=new Date(typeof s==="number"&&s<1e12?s*1000:s);return isNaN(d)?"":d.toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"})};
 const mgo=x=>"match/"+esc(x.id)+(x.mid?"/"+esc(x.mid):"");
 
 // Ligne de match : état à gauche, équipes empilées, scores à droite.
@@ -72,7 +72,7 @@ const P={
   const n={all:all.length,live:all.filter(m=>m.live).length,done:all.filter(m=>m.done).length,next:all.filter(m=>!m.live&&!m.done).length};
   const fl=[["all","Tous"],["live","En direct"],["done","Terminés"],["next","À venir"]].map(([k,l])=>'<button type="button" data-f="'+k+'" class="'+(FILTER===k?"on":"")+'">'+l+' <small>'+n[k]+'</small></button>').join("");
   const T0=new Date().toISOString().slice(0,10),cur=DAY||T0,days=[-3,-2,-1,0,1,2,3].map(o=>{const x=new Date(Date.now()+o*864e5),k=x.toISOString().slice(0,10);
-    return'<button type="button" data-d="'+(o===0?"":k)+'" class="'+(k===cur?"on":"")+'"><b>'+(o===0?"AUJ.":x.toLocaleDateString("fr-FR",{weekday:"short",timeZone:"UTC"}).replace(".","").toUpperCase())+'</b><span>'+x.toLocaleDateString("fr-FR",{day:"numeric",month:"short",timeZone:"UTC"})+'</span></button>'}).join("");
+    return'<button type="button" data-d="'+(o===0?"":k)+'" class="'+(k===cur?"on":"")+'"><b>'+(o===0?"AUJ.":x.toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"short",timeZone:"UTC"}).replace(".","").toUpperCase())+'</b><span>'+x.toLocaleDateString((window.PB?PB.loc():"fr-FR"),{day:"numeric",month:"short",timeZone:"UTC"})+'</span></button>'}).join("");
   return'<div class="sx-days">'+days+'</div><div class="srch"><input id="sq" type="search" placeholder="Rechercher une équipe ou une compétition…" autocomplete="off" value="'+esc(QUERY)+'" aria-label="Rechercher un match"></div><div class="sx-chips sx-flt">'+fl+'</div><div id="mlist">'+mlist()+'</div>'},
 
  async match(slug,mid){let d;
