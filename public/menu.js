@@ -17,7 +17,7 @@
   const dr=document.createElement("aside");dr.className="drw";dr.setAttribute("role","dialog");dr.setAttribute("aria-modal","true");dr.setAttribute("aria-label","Menu");
   dr.innerHTML=''
     +'<div class="dtop"><b>Menu</b><button type="button" class="dx" aria-label="Fermer le menu">✕</button></div>'
-    +'<nav class="mn"><a href="dashboard.html">Matchs du jour</a><a href="sport.html">Football en direct</a><a href="historique.html">Historique</a><a href="abonnement.html">Abonnement</a><a href="balance.html">Parrainage et gains</a><a href="reglages.html">Réglages</a><a href="admin.html" id="mAdmin" hidden>Espace administrateur</a></nav>'
+    +'<nav class="mn"><a href="dashboard.html">Matchs du jour</a><a href="sport.html">Football en direct</a><a href="historique.html">Historique</a><a href="abonnement.html">Abonnement</a><a href="balance.html">Mon solde</a><a href="retrait.html">Retrait</a><a href="reglages.html">Réglages</a><a href="admin.html" id="mAdmin" hidden>Espace administrateur</a></nav>'
     +'<button type="button" class="out2" id="mLite" style="margin-bottom:10px">'+(window.LITE?'Mode Lite activé · sans images (touche pour désactiver)':'Activer le mode Lite (sans images, plus léger)')+'</button>'
     +'<button type="button" class="out2" id="mOut">Quitter</button>';
   document.body.appendChild(ov);document.body.appendChild(dr);
@@ -30,6 +30,7 @@
   g("mLite").onclick=()=>{try{localStorage.setItem("pb_lite",window.LITE?"0":"1")}catch(e){}location.reload()};
   g("mOut").onclick=async()=>{await sb.auth.signOut();location.href="index.html"};
 
+  if(window.PB)PB.sync(sb);
   // Chargement du compte : blocage et liens administrateur
   (async()=>{
     const{data:{session}}=await sb.auth.getSession();
