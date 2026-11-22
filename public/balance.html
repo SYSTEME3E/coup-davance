@@ -15,6 +15,14 @@ select,input.fld{width:100%;padding:12px 14px;border-radius:8px;border:1px solid
 .hr:first-of-type{border-top:0}.hr small{display:block;color:var(--muted);font-size:13px}
 .hr b{white-space:nowrap}.hr .pos{color:#0B6B33}.hr .neg{color:#B42318}
 .lk2{border:1px solid var(--line);background:transparent;border-radius:8px;padding:6px 10px;font:700 13px "Hanken Grotesk",sans-serif;cursor:pointer;color:var(--ink);margin-top:6px}
+/* Cartes de la page en blanc */
+#app .sec{background:#fff;border-color:#E4E5EE;color:#1B1650;--ink:#1B1650;--muted:#6B6890;--line:#E4E5EE;--bg:#F1F2F7;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+#app .sec h2{color:#1B1650}
+#app .ref div{background:#F1EEFF;border-color:#D5CCFF}
+#app .btn.ghost,#app .more{background:#fff;border:1.5px solid #6F5BFF;color:#5A47E0}
+#app .btn.ghost:hover,#app .more:hover{background:#F1EEFF}
+#app .btn.danger{background:#D93B3B;color:#fff}
+#app .btn.danger:hover{background:#B42318}
 </style><link rel="stylesheet" href="theme.css"><title>Mon solde – Pronos-bet</title></head><body><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
 <h1 class="pt">Parrainage et gains</h1><p class="sub" style="text-transform:none">Ton code, tes filleuls et tes gains.</p>
@@ -54,13 +62,13 @@ function codeCard(){
     +'<p class="note">'+t("Active le VIP pour débloquer ton code et gagner {0} (Basic) ou {1} (Gold) par filleul.",F(500),F(1500))+'</p><a class="btn" href="abonnement.html" style="margin-top:12px">Voir les offres VIP</a></div>'}
 function statCard(){return '<div class="sec"><h2>Mon solde</h2><div class="bal">'+F(R.balance)+'</div>'
   +'<div class="stats" style="margin-top:12px"><div><b>'+R.referred+'</b>filleuls inscrits</div><div><b>'+R.rewarded+'</b>filleuls VIP</div><div><b>'+F(R.earned)+'</b>gagnés au total</div></div>'
-  +'<a class="btn" href="retrait.html" style="margin-top:14px">Retirer mes gains</a></div>'}
+  +'<a class="btn danger" href="retrait.html" style="margin-top:14px">Retirer mes gains</a></div>'}
 function refBox(){return '<div class="sec"><h2>Parraine et gagne</h2><p class="note" style="margin:0">Quand ton filleul active un plan, tu touches une récompense créditée automatiquement sur ton solde.</p><div class="ref"><div><b>'+F(500)+'</b><span>quand ton filleul active Basic</span></div><div><b>'+F(1500)+'</b><span>quand ton filleul active Gold</span></div></div><p class="note">Ton code de parrainage est disponible dès que ton VIP est actif. Les gains se retirent par Mobile Money, virement bancaire ou USDT (TRC20).</p></div>'}
 function txCard(){
   const l=TX.slice(0,stx),body=l.length?l.map(x=>'<div class="hr"><div>'+esc(t(KD[x.kind]||x.kind))+'<small>'+dt(x.created_at)+'</small></div><b class="'+(x.amount>=0?"pos":"neg")+'">'+(x.amount>=0?"+":"−")+F(Math.abs(x.amount))+'</b></div>').join(""):'<p class="note">Aucun mouvement pour le moment.</p>';
   return '<div class="sec"><h2>Mouvements du solde</h2>'+body+moreBtn("mtx",stx,TX.length)+'</div>'}
 function draw(){
-  $("app").innerHTML=refBox()+codeCard()+statCard()+txCard();
+  $("app").innerHTML=statCard()+refBox()+codeCard()+txCard();
   if($("cp")){const link=location.origin+"/auth.html?ref="+encodeURIComponent(R.code)+"#signup";
     $("cp").onclick=async()=>{try{await navigator.clipboard.writeText(link);$("cp").textContent=t("Lien copié ✓")}catch(e){prompt("Copie ce lien :",link)}};
     $("sh").onclick=()=>{const txt=(PB.lang()==="en"?"Join Pronos-bet with my code ":"Rejoins Pronos-bet avec mon code ")+R.code+" : "+link;
