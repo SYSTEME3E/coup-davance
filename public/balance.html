@@ -130,7 +130,7 @@ function histCard(){
     :'<p class="note">Aucun mouvement pour le moment.</p>';
   return '<div class="sec"><h2>Mes retraits</h2>'+w+'</div><div class="sec"><h2>Mouvements du solde</h2>'+t+'</div>'}
 
-function refBox(){return '<div class="sec"><h2>Parraine et gagne</h2><p class="note" style="margin-top:0">Quand ton filleul active un plan, tu touches une récompense créditée automatiquement sur ton solde.</p><div class="ref"><div><b>500 F</b><span>quand ton filleul active Basic</span></div><div><b>1 500 F</b><span>quand ton filleul active Gold</span></div></div><p class="note">Ton code de parrainage est disponible dès que ton abonnement est actif. Les gains se retirent par Mobile Money, virement bancaire, PayPal ou USDT (TRC20).</p></div>'}
+function refBox(){return '<div class="sec"><h2>Parraine et gagne</h2><p class="note" style="margin-top:0">Quand ton filleul active un plan, tu touches une récompense créditée automatiquement sur ton solde.</p><div class="ref"><div><b>500 F</b><span>quand ton filleul active Basic</span></div><div><b>1 500 F</b><span>quand ton filleul active Gold</span></div></div><p class="note">Ton code de parrainage est disponible dès que ton abonnement est actif. Les gains se retirent par Mobile Money, virement bancaire ou USDT (TRC20).</p></div>'}
 function draw(){
   $("app").innerHTML=refBox()+codeCard()+statCard()+formCard()+histCard();
   if($("cp")){const link=location.origin+"/auth.html?ref="+encodeURIComponent(R.code)+"#signup";
