@@ -15,7 +15,7 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;"
 const dt=s=>s?new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"}):"—";
 // Liste des utilisateurs
 const PG=30;let off=0,rows=[],tok=0,total=0;
-const badges=u=>(u.is_admin?'<span class="bd in">Admin</span>':"")+(u.blocked?'<span class="bd ko">Bloqué</span>':"")+(u.sub_status==="active"?'<span class="bd ok">Abonné'+(u.sub_plan?" · "+esc(u.sub_plan):"")+'</span>':'<span class="bd mu">Sans abonnement</span>');
+const badges=u=>(u.is_admin?'<span class="bd in">Admin</span>':"")+(u.blocked?'<span class="bd ko">Bloqué</span>':"")+(u.sub_status==="active"?'<span class="bd ok">VIP'+(u.sub_plan?" · "+esc(u.sub_plan):"")+'</span>':'<span class="bd mu">Sans VIP</span>');
 const row=u=>'<a class="card ur" href="admin-user.html?id='+encodeURIComponent(u.id)+'"><div class="un">'+(u.full_name?esc(u.full_name):'<i class="nn">Nom non renseigné</i>')+'</div><div class="ue">'+esc(u.email)+'</div><div class="ub">'+badges(u)+'</div><div class="note" style="margin:6px 0 0">Inscrit le '+dt(u.created_at)+' · Dernière connexion : '+dt(u.last_sign_in_at)+'</div></a>';
 function drawUsers(){$("ulist").innerHTML=rows.length?rows.map(row).join(""):'<div class="card"><p class="sub" style="margin:0">Aucun utilisateur trouvé.</p></div>';
   $("umore").style.display=rows.length<total?"block":"none"}
