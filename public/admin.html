@@ -15,7 +15,7 @@
 <div><label for="dcc">Code du jour</label><input id="dcc" type="text" maxlength="80" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Colle ici le code" style="width:100%;font:inherit;padding:11px 12px;border:1px solid rgba(128,128,128,.35);border-radius:10px;background:transparent;color:inherit"></div>
 <button class="more sv" type="button" id="dcs">Publier le code</button><p class="ms" id="dcm" role="status"></p></div>
 <div id="dclist"></div>
-<h2 class="ah">Prix des abonnements</h2><p class="sub" style="text-transform:none">Prix d’un abonnement de 30 jours, dans la monnaie de chaque pays. Le changement s’applique tout de suite aux nouveaux paiements. Les paiements déjà faits ne changent pas.</p>
+<h2 class="ah">Prix des abonnements</h2><p class="sub" style="text-transform:none">Fixe le prix Basic et Gold <b>en dollars</b> : la page Abonnement affiche automatiquement la conversion dans la monnaie de chaque pays, et c’est ce montant qui est facturé. Le changement s’applique tout de suite aux nouveaux paiements ; les paiements déjà faits ne changent pas.</p>
 <div id="prices"><p class="sub">Chargement…</p></div>
 <h2 class="ah">Utilisateurs</h2>
 <div class="srch"><input id="uq" type="search" placeholder="Rechercher un nom ou un e-mail…" autocomplete="off"></div>
@@ -70,39 +70,58 @@ async function loadUsers(reset){if(reset){tok++;off=0;rows=[]}const my=tok;
   $("umore").onclick=()=>loadUsers(false);
 })();
 </script><script>
-// Prix des abonnements (modifiables par l'administrateur)
+// Prix des abonnements : fixés en dollars, convertis dans la monnaie de chaque pays
 (function(){
- let PX=[];
- const fmt=n=>Number(n).toLocaleString("fr-FR");
+ let ST=null,RT=[],PX=[];
+ const fmt=n=>Number(n).toLocaleString("fr-FR",{maximumFractionDigits:2});
+ const say=(id,t,cls)=>{const m=$(id);if(!m)return;m.className="ms"+(cls?" "+cls:"");m.textContent=t||""};
  function draw(){
-  $("prices").innerHTML=PX.map(p=>{
-   const same=PX.filter(x=>x.currency===p.currency).length>1;
-   return '<div class="card pz" data-c="'+esc(p.country_code)+'"><h3>'+esc(p.flag)+' '+esc(p.country_name)+' · '+esc(p.currency)+'</h3>'
-    +'<div class="g2"><div><label for="b'+esc(p.country_code)+'">Basic ('+esc(p.currency)+')</label><input id="b'+esc(p.country_code)+'" class="pb_" type="number" inputmode="numeric" min="1" step="1" value="'+p.basic+'"></div>'
-    +'<div><label for="g'+esc(p.country_code)+'">Gold ('+esc(p.currency)+')</label><input id="g'+esc(p.country_code)+'" class="pg_" type="number" inputmode="numeric" min="1" step="1" value="'+p.gold+'"></div></div>'
-    +(same?'<label class="ck"><input type="checkbox" class="ps_"> Appliquer à tous les pays en '+esc(p.currency)+'</label>':'')
-    +'<button class="more sv" type="button">Enregistrer</button><p class="ms" role="status"></p></div>'}).join("")}
+  if(!ST){return}
+  const rates=RT.filter(r=>r.currency!=="USD");
+  $("prices").innerHTML=
+   '<div class="card pz"><h3>Prix en dollars</h3><div class="g2">'
+   +'<div><label for="ubas">Basic ($)</label><input id="ubas" type="number" inputmode="decimal" min="0.01" step="0.01" value="'+ST.basic_usd+'"></div>'
+   +'<div><label for="ugol">Gold ($)</label><input id="ugol" type="number" inputmode="decimal" min="0.01" step="0.01" value="'+ST.gold_usd+'"></div></div>'
+   +'<button class="more" id="usv" type="button">Enregistrer les prix</button><p class="ms" id="ums" role="status"></p></div>'
+   +'<div class="card pz"><h3>Taux de change</h3><p class="note" style="margin:0 0 8px">1 $ = … dans chaque monnaie. Clique « Actualiser les taux » pour les remplir avec les taux du jour, puis enregistre.</p><div class="g2">'
+   +rates.map(r=>'<div><label for="r'+esc(r.currency)+'">1 $ en '+esc(r.currency)+'</label><input id="r'+esc(r.currency)+'" class="rt_" data-cur="'+esc(r.currency)+'" type="number" inputmode="decimal" min="0.000001" step="any" value="'+r.per_usd+'"></div>').join("")
+   +'</div><button class="more" id="rlive" type="button">Actualiser les taux</button><button class="more" id="rsv" type="button">Enregistrer les taux</button><p class="ms" id="rms" role="status"></p></div>'
+   +'<div class="card pz"><h3>Prix affichés dans chaque pays</h3><div style="overflow-x:auto"><table class="pt2" style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left">Pays</th><th style="text-align:right">Basic</th><th style="text-align:right">Gold</th></tr></thead><tbody>'
+   +PX.map(p=>'<tr><td>'+esc(p.flag)+' '+esc(p.country_name)+'</td><td style="text-align:right;white-space:nowrap">'+fmt(p.basic)+' '+esc(p.currency)+'</td><td style="text-align:right;white-space:nowrap">'+fmt(p.gold)+' '+esc(p.currency)+'</td></tr>').join("")
+   +'</tbody></table></div><p class="note" style="margin:8px 0 0">Arrondi vers le haut (ex. 100 F pour le franc CFA). Une monnaie sans taux ci-dessus garde son prix actuel.</p></div>'}
  async function load(){
-  const{data,error}=await sb.from("plan_prices").select("country_code,country_name,flag,currency,basic,gold,sort").order("sort");
-  if(error){$("prices").innerHTML='<div class="card">Prix indisponibles : '+esc(error.message)+'</div>';return}
-  PX=data||[];draw()}
+  const[a,b,c]=await Promise.all([sb.from("plan_settings").select("basic_usd,gold_usd").eq("id",1).maybeSingle(),sb.from("usd_rates").select("currency,per_usd").order("currency"),sb.from("plan_prices").select("country_code,country_name,flag,currency,basic,gold,sort").order("sort")]);
+  if(a.error||b.error||c.error||!a.data){$("prices").innerHTML='<div class="card">Prix indisponibles : '+esc((a.error||b.error||c.error||{message:"lance d’abord le fichier SQL 003"}).message)+'</div>';return}
+  ST=a.data;RT=b.data||[];PX=c.data||[];draw()}
+ async function refreshPrices(){const{data}=await sb.from("plan_prices").select("country_code,country_name,flag,currency,basic,gold,sort").order("sort");PX=data||PX}
  $("prices").addEventListener("click",async e=>{
-  const bt=e.target.closest(".sv");if(!bt)return;
-  const card=bt.closest(".pz"),c=card.dataset.c,ms=card.querySelector(".ms");
-  const b=parseInt(card.querySelector(".pb_").value,10),g=parseInt(card.querySelector(".pg_").value,10);
-  const all=!!(card.querySelector(".ps_")&&card.querySelector(".ps_").checked);
-  ms.className="ms";
-  if(!(b>0)||!(g>0)){ms.className="ms er";ms.textContent="Saisis deux montants valides.";return}
-  if(g<b){ms.className="ms er";ms.textContent="Le prix Gold doit être supérieur ou égal au prix Basic.";return}
-  const cur=(PX.find(x=>x.country_code===c)||{}).currency;
-  if(all&&!confirm("Appliquer Basic "+fmt(b)+" et Gold "+fmt(g)+" "+cur+" à tous les pays en "+cur+" ?"))return;
-  bt.disabled=true;ms.textContent="Enregistrement…";
-  const{data,error}=await sb.rpc("admin_set_plan_price",{p_country:c,p_basic:b,p_gold:g,p_same_currency:all});
-  bt.disabled=false;
-  if(error){ms.className="ms er";ms.textContent=error.message||"Échec de l’enregistrement.";return}
-  PX.forEach(x=>{if(x.country_code===c||(all&&x.currency===cur)){x.basic=b;x.gold=g}});
-  if(all)draw();else{ms.className="ms ok";ms.textContent="Enregistré : Basic "+fmt(b)+" · Gold "+fmt(g)+" "+cur}
-  if(all){const m=$("prices").querySelector('[data-c="'+c+'"] .ms');if(m){m.className="ms ok";m.textContent="Enregistré pour "+data+" pays en "+cur}}});
+  const t=e.target.closest("button");if(!t)return;
+  if(t.id==="usv"){
+   const b=parseFloat($("ubas").value),g=parseFloat($("ugol").value);
+   if(!(b>0)||!(g>0))return say("ums","Saisis deux montants valides.","er");
+   if(g<b)return say("ums","Le prix Gold doit être supérieur ou égal au prix Basic.","er");
+   if(!confirm("Basic "+fmt(b)+" $ et Gold "+fmt(g)+" $ : les prix de tous les pays seront recalculés. Continuer ?"))return;
+   t.disabled=true;say("ums","Enregistrement…");
+   const{data,error}=await sb.rpc("admin_set_usd_prices",{p_basic:b,p_gold:g});t.disabled=false;
+   if(error)return say("ums",error.message||"Échec de l’enregistrement.","er");
+   ST={basic_usd:b,gold_usd:g};await refreshPrices();draw();say("ums","Enregistré : "+data+" pays mis à jour.","ok")}
+  if(t.id==="rlive"){
+   t.disabled=true;say("rms","Récupération des taux…");
+   try{const r=await fetch("https://open.er-api.com/v6/latest/USD",{cache:"no-store"}),j=await r.json();
+    if(!(j&&j.rates))throw 0;let n=0;
+    document.querySelectorAll(".rt_").forEach(i=>{const v=j.rates[i.dataset.cur];if(v>0){i.value=v;n++}});
+    say("rms",n+" taux récupérés. Vérifie-les puis clique « Enregistrer les taux ».","ok")}
+   catch(_){say("rms","Impossible de récupérer les taux. Saisis-les à la main.","er")}
+   t.disabled=false}
+  if(t.id==="rsv"){
+   const o={};let bad=false;
+   document.querySelectorAll(".rt_").forEach(i=>{const v=parseFloat(i.value);if(!(v>0))bad=true;else o[i.dataset.cur]=v});
+   if(bad)return say("rms","Chaque taux doit être un nombre positif.","er");
+   if(!confirm("Enregistrer ces taux ? Les prix de tous les pays seront recalculés."))return;
+   t.disabled=true;say("rms","Enregistrement…");
+   const{data,error}=await sb.rpc("admin_set_usd_rates",{p_rates:o});t.disabled=false;
+   if(error)return say("rms",error.message||"Échec de l’enregistrement.","er");
+   RT.forEach(r=>{if(o[r.currency])r.per_usd=o[r.currency]});await refreshPrices();draw();say("rms","Taux enregistrés : "+data+" pays mis à jour.","ok")}});
  (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return;const{data:adm}=await sb.rpc("is_admin");if(adm)load()})();
 })();
 </script>
