@@ -119,12 +119,12 @@ function plansBox(){
     return'<button class="btn" type="button" data-p="gold">'+(pl==="gold"?"Prolonger de 30 jours":pl==="basic"?"Passer à Gold":"Choisir Gold")+'</button>'};
   return '<div class="plans">'
    +'<article class="plan free"><h3>Gratuit</h3><p class="tl">Pour découvrir</p><div class="pr">0 <small>F</small></div><p class="usd">Sans VIP</p><ul>'
-     +li("Tous les matchs, les lives et les statistiques")+li("<b>2</b> pronostics solides par jour")+li("<b>3</b> matchs incertains par jour")+li("Les autres pronostics restent floutés",false)+'</ul>'
+     +li("Tous les matchs, les lives et les statistiques")+li("<b>2</b> pronostics solides par jour")+li("<b>3</b> matchs incertains par jour")+li("Bonus partenaires et codes promo")+li("Les autres pronostics restent floutés",false)+li("Code de parrainage et gains réservés aux VIP",false)+'</ul>'
      +'<button class="btn" type="button" disabled>'+(ME.trial?"Après ton essai":pl==="free"?"Ton plan actuel":"Plan de départ")+'</button></article>'
    +'<article class="plan basic"><h3>Basic</h3><p class="tl">Pour suivre plus de matchs</p><div class="pr">'+money(c.basic,c.currency)+' <small>/ mois</small></div>'+eq(c,"basic")+'<ul>'
-     +li("Tous les matchs, les lives et les statistiques")+li("<b>10</b> pronostics solides par jour")+li("<b>5</b> matchs incertains par jour")+li("Pronostics débloqués, plus de flou dans ton quota")+'</ul>'+act("basic")+'</article>'
+     +li("Tous les matchs, les lives et les statistiques")+li("<b>10</b> pronostics solides par jour")+li("<b>5</b> matchs incertains par jour")+li("Pronostics débloqués, plus de flou dans ton quota")+li("Analyse détaillée : corners, forme, statistiques")+li("Code de parrainage : gagne de l’argent à chaque filleul VIP")+li("Retrait de tes gains par Mobile Money, virement ou USDT")+'</ul>'+act("basic")+'</article>'
    +'<article class="plan gold"><span class="tag">Le plus complet</span><h3>Gold</h3><p class="tl">Sans aucune limite</p><div class="pr">'+money(c.gold,c.currency)+' <small>/ mois</small></div>'+eq(c,"gold")+'<ul>'
-     +li("Tous les pronostics solides, en illimité")+li("Tous les matchs incertains, en illimité")+li("Tous les matchs, lives et stats, sans flou")+li("Aucun quota à surveiller au quotidien")+'</ul>'+act("gold")+'</article></div>'}
+     +li("Tous les pronostics solides, en illimité")+li("Tous les matchs incertains, en illimité")+li("Tous les matchs, lives et stats, sans flou")+li("Aucun quota à surveiller au quotidien")+li("Analyse détaillée sur chaque pronostic")+li("Tous les avantages de Basic : parrainage et retraits")+li("Le meilleur choix pour gagner plus avec tes filleuls")+'</ul>'+act("gold")+'</article></div>'}
 
 const fold=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[’'`-]/g," ").toLowerCase().trim();
 const ALIAS={CD:"republique democratique du congo rdc drc congo kinshasa",CG:"congo brazzaville republique du congo",CI:"cote d ivoire ivory coast",US:"usa etats unis america",GB:"uk royaume uni angleterre england",AE:"uae emirats dubai",CZ:"tchequie republique tcheque",MM:"birmanie myanmar",SZ:"swaziland eswatini"};
