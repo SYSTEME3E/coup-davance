@@ -50,12 +50,12 @@ function codeCard(){
     return '<div class="sec"><h2>Ton code de parrainage</h2><div class="code" id="cd">'+esc(R.code)+'</div>'
       +'<div class="row2"><button class="btn" id="cp" type="button">Copier le lien</button><button class="btn ghost" id="sh" type="button">Partager</button></div>'
       +'<p class="note">Lien à envoyer : <span style="overflow-wrap:anywhere">'+esc(link)+'</span></p></div>'}
-  return '<div class="sec"><h2>Ton code de parrainage</h2><div class="lock"><div class="code blur" aria-hidden="true">A7K9M2QX</div><div class="lk">🔒 Visible avec un abonnement actif</div></div>'
-    +'<p class="note">'+t("Active un abonnement pour débloquer ton code et gagner {0} (Basic) ou {1} (Gold) par filleul.",F(500),F(1500))+'</p><a class="btn" href="abonnement.html" style="margin-top:12px">Voir les abonnements</a></div>'}
+  return '<div class="sec"><h2>Ton code de parrainage</h2><div class="lock"><div class="code blur" aria-hidden="true">A7K9M2QX</div><div class="lk">🔒 Visible avec un VIP actif</div></div>'
+    +'<p class="note">'+t("Active le VIP pour débloquer ton code et gagner {0} (Basic) ou {1} (Gold) par filleul.",F(500),F(1500))+'</p><a class="btn" href="abonnement.html" style="margin-top:12px">Voir les offres VIP</a></div>'}
 function statCard(){return '<div class="sec"><h2>Mon solde</h2><div class="bal">'+F(R.balance)+'</div>'
-  +'<div class="stats" style="margin-top:12px"><div><b>'+R.referred+'</b>filleuls inscrits</div><div><b>'+R.rewarded+'</b>filleuls abonnés</div><div><b>'+F(R.earned)+'</b>gagnés au total</div></div>'
+  +'<div class="stats" style="margin-top:12px"><div><b>'+R.referred+'</b>filleuls inscrits</div><div><b>'+R.rewarded+'</b>filleuls VIP</div><div><b>'+F(R.earned)+'</b>gagnés au total</div></div>'
   +'<a class="btn" href="retrait.html" style="margin-top:14px">Retirer mes gains</a></div>'}
-function refBox(){return '<div class="sec"><h2>Parraine et gagne</h2><p class="note" style="margin:0">Quand ton filleul active un plan, tu touches une récompense créditée automatiquement sur ton solde.</p><div class="ref"><div><b>'+F(500)+'</b><span>quand ton filleul active Basic</span></div><div><b>'+F(1500)+'</b><span>quand ton filleul active Gold</span></div></div><p class="note">Ton code de parrainage est disponible dès que ton abonnement est actif. Les gains se retirent par Mobile Money, virement bancaire ou USDT (TRC20).</p></div>'}
+function refBox(){return '<div class="sec"><h2>Parraine et gagne</h2><p class="note" style="margin:0">Quand ton filleul active un plan, tu touches une récompense créditée automatiquement sur ton solde.</p><div class="ref"><div><b>'+F(500)+'</b><span>quand ton filleul active Basic</span></div><div><b>'+F(1500)+'</b><span>quand ton filleul active Gold</span></div></div><p class="note">Ton code de parrainage est disponible dès que ton VIP est actif. Les gains se retirent par Mobile Money, virement bancaire ou USDT (TRC20).</p></div>'}
 function txCard(){
   const l=TX.slice(0,stx),body=l.length?l.map(x=>'<div class="hr"><div>'+esc(t(KD[x.kind]||x.kind))+'<small>'+dt(x.created_at)+'</small></div><b class="'+(x.amount>=0?"pos":"neg")+'">'+(x.amount>=0?"+":"−")+F(Math.abs(x.amount))+'</b></div>').join(""):'<p class="note">Aucun mouvement pour le moment.</p>';
   return '<div class="sec"><h2>Mouvements du solde</h2>'+body+moreBtn("mtx",stx,TX.length)+'</div>'}
