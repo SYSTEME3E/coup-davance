@@ -29,7 +29,7 @@ const F=n=>Number(n||0).toLocaleString("fr-FR")+" F";
 const dt=s=>s?new Date(s).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
 const ST={pending:["in","En attente"],processing:["in","En cours"],manual:["in","En traitement"],paid:["ok","Payé"],failed:["ko","Échoué"],canceled:["mu","Annulé"]};
 const KD={referral_reward:"Parrainage",withdrawal:"Retrait",withdrawal_refund:"Retrait recrédité",adjustment:"Ajustement"};
-let NETS=[],NMAP={},R=null,WD=[],TX=[],busy=false;
+let NETS=[],NMAP={},R=null,WD=[],TX=[],busy=false,RATE=0;
 
 // Appel des fonctions serveur (/api/...) avec le jeton de connexion
 async function api(path,body){const{data:{session}}=await sb.auth.getSession();if(!session)throw new Error("session");
@@ -38,11 +38,13 @@ async function api(path,body){const{data:{session}}=await sb.auth.getSession();i
   return r.json().catch(()=>({ok:false}))}
 
 async function load(){
-  const [a,n,w,t]=await Promise.all([
+  const [a,n,w,t,fx]=await Promise.all([
     sb.rpc("my_referral"),
     sb.from("payout_networks").select("country_code,country_name,dial,network,label,manual").eq("enabled",true),
     sb.from("withdrawals").select("*").order("created_at",{ascending:false}).limit(15),
-    sb.from("wallet_transactions").select("kind,amount,note,created_at").order("created_at",{ascending:false}).limit(30)]);
+    sb.from("wallet_transactions").select("kind,amount,note,created_at").order("created_at",{ascending:false}).limit(30),
+    sb.from("usd_rates").select("per_usd").eq("currency","XOF").maybeSingle()]);
+  RATE=fx&&fx.data?Number(fx.data.per_usd)||0:0;
   if(a.error){$("app").innerHTML='<div class="card">Impossible de charger tes gains pour le moment. Réessaie dans un instant.</div>';return false}
   R=a.data;NETS=n.data||[];WD=w.data||[];TX=t.data||[];
   NMAP={};NETS.forEach(x=>NMAP[x.country_code+"|"+x.network]=x);
@@ -60,10 +62,12 @@ function statCard(){return '<div class="sec"><h2>Mon solde</h2><div class="bal">
   +'<div class="stats" style="margin-top:12px"><div><b>'+R.referred+'</b>filleuls inscrits</div><div><b>'+R.rewarded+'</b>filleuls abonnés</div><div><b>'+F(R.earned)+'</b>gagnés au total</div></div></div>'}
 
 // ----- Retrait : Mobile Money (automatique ou manuel), virement bancaire, USDT TRC20, PayPal -----
-const METHODS=[["mobile","Mobile Money"],["bank","Virement bancaire"],["usdt","USDT (TRC20)"],["paypal","PayPal"]];
+const METHODS=[["mobile","Mobile Money"],["usdt","USDT (TRC20)"],["bank","Virement bancaire"]];
 const ISO="AD AE AF AG AI AL AM AO AR AT AU AW AZ BA BB BD BE BF BG BH BI BJ BM BN BO BR BS BT BW BY BZ CA CD CF CG CH CI CK CL CM CN CO CR CU CV CW CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FO FR GA GB GD GE GF GH GI GL GM GN GP GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IN IQ IR IS IT JM JO JP KE KG KH KM KN KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MG MK ML MM MN MO MQ MR MS MT MU MV MW MX MY MZ NA NC NE NG NI NL NO NP NZ OM PA PE PF PG PH PK PL PR PS PT PY QA RE RO RS RU RW SA SB SC SD SE SG SI SK SL SM SN SO SR SS ST SV SY SZ TC TD TG TH TJ TL TM TN TO TR TT TW TZ UA UG US UY UZ VA VC VE VG VN VU WS YE YT ZA ZM ZW".split(" ");
 const regionName=(()=>{try{const d=new Intl.DisplayNames(["fr"],{type:"region"});return c=>d.of(c)||c}catch(e){return c=>c}})();
-const FEEP=0.10,MINM=1000;
+const FEEP=0.10,MINM=1000,MINUSD={usdt:10,bank:20};
+const minF=m=>MINUSD[m]&&RATE?Math.max(MINM,Math.ceil(MINUSD[m]*RATE)):MINM;
+const minTxt=m=>MINUSD[m]?"Minimum : "+MINUSD[m]+" $"+(RATE?" (environ "+F(minF(m))+")":""):"Minimum : "+F(MINM);
 const sortFr=(a,b)=>a[1].localeCompare(b[1],"fr",{sensitivity:"base"});
 function formCard(){
   const active=WD.find(w=>w.status==="pending"||w.status==="processing"||w.status==="manual");
@@ -78,7 +82,7 @@ function formCard(){
    +'<label for="wm2">Moyen de retrait</label><select id="wm2">'+METHODS.map(m=>'<option value="'+m[0]+'">'+m[1]+'</option>').join("")+'</select>'
    +'<div id="g-mobile"><label for="wc">Pays</label><select id="wc">'+mc.map(c=>'<option value="'+esc(c[0])+'">'+esc(c[1])+'</option>').join("")+'</select>'
    +'<label for="wn">Réseau</label><select id="wn"></select>'
-   +'<label for="wp">Numéro Mobile Money</label><div class="ph"><span id="wd"></span><input class="fld" id="wp" type="text" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="Numéro sans l’indicatif"></div></div>'
+   +'<label for="wp">Numéro Mobile Money</label><div class="ph"><span id="wd"></span><input class="fld" id="wp" type="text" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="Numéro sans l’indicatif"></div><p class="note">Ton pays n’est pas dans la liste ? Retire par USDT (TRC20) ou par virement bancaire.</p></div>'
    +'<div id="g-bank" hidden><label for="bk-c">Pays de la banque</label><select id="bk-c">'+bc.map(c=>'<option value="'+esc(c[0])+'">'+esc(c[1])+'</option>').join("")+'</select>'
    +inp("bk-n","Nom de la banque","Ex : Ecobank",'maxlength="80"')
    +inp("bk-h","Nom du destinataire","Ex : Jean Dupont",'maxlength="80" autocomplete="name"')
@@ -91,7 +95,6 @@ function formCard(){
    +inp("bk-po","Code postal","Ex : 00225",'maxlength="12"')+'</div>'
    +'<div id="g-usdt" hidden>'+inp("us-a","Adresse USDT (réseau TRC20 uniquement)","Adresse commençant par T",'maxlength="40" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"')
    +'<p class="note">Réseau TRC20 uniquement : un envoi sur un autre réseau ferait perdre les fonds.</p></div>'
-   +'<div id="g-paypal" hidden>'+inp("pp-e","E-mail du compte PayPal","exemple@mail.com",'maxlength="120" inputmode="email" autocomplete="email" autocapitalize="off"')+'</div>'
    +'<label for="wa">Montant (F CFA)</label><input class="fld" id="wa" type="text" inputmode="numeric" maxlength="9" value="'+R.balance+'">'
    +'<p class="note" id="fee"></p>'
    +'<p class="note">Solde disponible : '+F(R.balance)+' · <button type="button" class="alln" id="all">Tout retirer</button></p>'
@@ -104,10 +107,10 @@ function wireForm(){
     $("wn").innerHTML=l.map(x=>'<option value="'+esc(x.network)+'">'+esc(x.label)+'</option>').join("");
     $("wd").textContent="+"+(l[0]?l[0].dial:"")};
   const upd=()=>{const m=$("wm2").value;
-    ["mobile","bank","usdt","paypal"].forEach(k=>{$("g-"+k).hidden=k!==m});
+    ["mobile","bank","usdt"].forEach(k=>{$("g-"+k).hidden=k!==m});
     const man=isManual(),a=parseInt($("wa").value.replace(/\D/g,""),10)||0;
     if(man){const fee=Math.ceil(a*FEEP);
-      $("fee").textContent=a?"Frais de 10 % : − "+F(fee)+" · Tu reçois : "+F(Math.max(0,a-fee))+" (minimum "+F(MINM)+")":"Frais de 10 % sur ce type de retrait · minimum "+F(MINM)}
+      $("fee").textContent=(a?"Frais de 10 % : − "+F(fee)+" · Tu reçois : "+F(Math.max(0,a-fee))+" · ":"Frais de 10 % sur ce type de retrait · ")+minTxt(m)}
     else $("fee").textContent="";
     $("hint").textContent=man?"Retrait traité manuellement par notre équipe : tu es payé après vérification.":"Retrait automatique : le paiement arrive sur ton Mobile Money dans quelques instants."};
   $("wc").onchange=()=>{syncNet();upd()};$("wn").onchange=upd;$("wm2").onchange=upd;$("wa").oninput=upd;
@@ -142,6 +145,7 @@ async function submit(e){e.preventDefault();if(busy)return;say("");
   const m=$("wm2").value,amount=parseInt($("wa").value.replace(/\D/g,""),10),v=id=>($(id).value||"").trim();
   if(!amount||amount<1)return say("Saisis un montant valide.");
   if(amount>R.balance)return say("Solde insuffisant.");
+  if(MINUSD[m]&&amount<minF(m))return say("Le montant minimum pour ce retrait est de "+MINUSD[m]+" $ (environ "+F(minF(m))+").");
   let rpc,args,manual=true;
   if(m==="mobile"){const c=$("wc").value,n=$("wn").value,phone=$("wp").value.replace(/\D/g,"");
     if(phone.length<8)return say("Numéro de téléphone invalide.");
@@ -152,7 +156,7 @@ async function submit(e){e.preventDefault();if(busy)return;say("");
     const base={p_amount:amount,p_method:m,p_country:null,p_network:null,p_phone:null};
     if(m==="bank")args={...base,p_country:$("bk-c").value,p_details:{bank_name:v("bk-n"),holder:v("bk-h"),account:v("bk-a"),swift:v("bk-s"),street:v("bk-st"),street_no:v("bk-no"),city:v("bk-ci"),postal:v("bk-po")}};
     else if(m==="usdt")args={...base,p_details:{address:v("us-a")}};
-    else args={...base,p_details:{email:v("pp-e")}}}
+    else return say("Moyen de retrait invalide.")}
   busy=true;$("wb").disabled=true;$("wb").textContent="Envoi en cours…";
   const{data:wid,error}=await sb.rpc(rpc,args);
   if(error){busy=false;$("wb").disabled=false;$("wb").textContent="Retirer";return say(error.message)}
