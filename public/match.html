@@ -10,7 +10,7 @@
 <div id="ev"></div>
 <p class="note" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p>
 <div style="height:40px"></div></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="cards.js"></script><script src="menu.js"></script><script>
 const LIVE=["1H","2H","ET","BT","P","LIVE","INT","SUSP","HT"],DONE=["FT","AET","PEN"];
@@ -42,7 +42,7 @@ const l10=async()=>{
     if(error)return"";
     const rows=data||[];
     const li=rows.map(r=>{const home=ks.includes(r.home_key),gf=home?r.home_goals:r.away_goals,ga=home?r.away_goals:r.home_goals,opp=home?r.away:r.home,res=gf>ga?"V":gf<ga?"D":"N",
-      dt=new Date(r.kickoff).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"}),
+      dt=new Date(r.kickoff).toLocaleDateString((window.PB?PB.loc():"fr-FR"),{day:"2-digit",month:"2-digit"}),
       sm=(a,b)=>a!=null&&b!=null?a+b:null,
       st=[["Corners",sm(r.corners_home,r.corners_away)],["Fautes",sm(r.fouls_home,r.fouls_away)],["Jaunes",sm(r.yellow_home,r.yellow_away)],["Touches",sm(r.throwins_home,r.throwins_away)]].filter(x=>x[1]!=null).map(x=>x[0]+" "+x[1]).join(" · ");
       return '<div class="lr"><span class="ld">'+dt+'</span><span class="lo">'+(home?"vs ":"à ")+esc(opp)+(st?'<small>'+st+'</small>':"")+'</span><b class="ls">'+gf+' – '+ga+'</b><span class="frm"><i class="f'+res+'">'+res+'</i></span></div>'}).join("");
@@ -66,7 +66,7 @@ const draw=()=>{
     center='<div class="scr live">'+(hasG?S(g.home,g.away):'– –')+'<small><span class="lv"><i></i>'+(ht?"MI-TEMPS":hasG?"EN COURS":"MATCH EN LIVE")+'</span>'+(!ht&&mn?' '+mn+'’':"")+'</small></div>'}
   else if(d&&DONE.includes(d.status)&&g)center='<div class="scr">'+S(g.home,g.away)+'<small>Terminé</small></div>';
   else if(new Date(pr.kickoff)<Date.now())center='<div class="scr">– –<small>Résultat en attente</small></div>';
-  else center='<div class="scr" style="font-size:30px">'+new Date(pr.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'<small>'+new Date(pr.kickoff).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})+'</small></div>';
+  else center='<div class="scr" style="font-size:30px">'+new Date(pr.kickoff).toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"})+'<small>'+new Date(pr.kickoff).toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"short",day:"numeric",month:"short"})+'</small></div>';
   const extra=[d&&d.league&&d.league.round,d&&d.venue].filter(Boolean).join(" · ");
   $("mh").innerHTML='<div class="mh"><div class="lgl">'+lg(lgLogo,"lgo sm")+'<span>'+esc(pr.league||"")+(extra?' · '+esc(extra):"")+'</span></div><div class="tt">'+team("home")+center+team("away")+'</div></div>';
   $("pred").innerHTML=pr.data?'<div class="sec"><h2>Pronostic</h2><div class="mk" style="margin-bottom:8px">'+tagOf(pr)+'</div>'+'<div class="pc-solo">'+(isOpen(pr)?probs(pr.data):lockBox(pr))+'</div>'+'</div>':"";
