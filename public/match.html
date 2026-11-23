@@ -1,9 +1,10 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="matchview.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="theme.css"><title>Match – Pronos-bet</title></head><body class="ss"><div class="wrap">
+}<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="matchview.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="theme.css"><title>Match – Pronos-bet</title></head><body class="ss"><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a><span id="who" hidden></span></header>
 <a class="back" href="dashboard.html" id="back">← Retour aux matchs</a>
 <div id="mh"><p class="sub">Chargement du match…</p></div>
 <div id="sl"></div>
 <div id="pred"></div>
+<div id="vd"></div>
 <div id="st"></div>
 <div id="hs"></div>
 <div id="l10"></div>
@@ -102,5 +103,44 @@ const refresh=async()=>{
   draw()};
 draw();await refresh();
 setInterval(()=>{if(document.hidden)return;if(pr.settled_at&&d&&d.statistics&&d.statistics.length)return;refresh()},45000);
+
+// ---- Vidéos Highlightly : clips de buts (pendant le match) et résumé officiel (après le match) ----
+const VH=["youtube.com","youtube-nocookie.com","youtu.be","streamable.com","vimeo.com","dailymotion.com","twitter.com","x.com","rumble.com"];
+const okHost=u=>{try{const x=new URL(u),h=x.hostname.toLowerCase();return x.protocol==="https:"&&VH.some(d=>h===d||h.endsWith("."+d))}catch(e){return false}};
+const vTile=(v,k)=>'<div class="vtile"><button type="button" class="vplay" data-k="'+k+'" aria-label="Lancer la vidéo : '+esc(v.title)+'">'+(!window.LITE&&v.imgUrl?'<img src="'+esc(v.imgUrl)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<i></i></button><div class="vcap">'+esc(v.title)+'<small>'+esc([v.channel||v.source].filter(Boolean).join(" · "))+'</small></div></div>';
+let vdData=null,vdSig="",vdNext=0,vdBusy=false;
+const vdDraw=d=>{
+  const el=$("vd");
+  if(!d||d.phase==="pre"){el.innerHTML="";vdSig="";return}
+  const live=d.phase==="live",clips=d.clips||[],recap=d.recap||[],hrs=(Date.now()-Date.parse(pr.kickoff))/36e5;
+  const sig=d.phase+"|"+recap.map(v=>v.id).join(",")+"|"+clips.map(v=>v.id).join(",");
+  if(sig===vdSig||el.querySelector("iframe"))return; // rien de nouveau, ou une vidéo est en cours de lecture : on ne la coupe pas
+  vdSig=sig;
+  const R=recap.length?'<div class="sec vd"><h2>Résumé du match <span class="vb ok">Officiel ✓</span></h2>'+recap.map((v,i)=>vTile(v,"r"+i)).join("")+'</div>'
+    :(!live&&hrs<60?'<div class="sec vd"><h2>Résumé du match</h2><p class="note">Le résumé officiel arrive en général entre 1 h et 48 h après la fin du match.</p></div>':"");
+  const C=clips.length?'<div class="sec vd"><h2>'+(live?"Buts en direct":"Clips de buts")+' <span class="vb un">Non vérifié</span></h2><p class="note">Ces clips viennent souvent d’internautes (Twitter, YouTube). Ils arrivent quelques minutes après le but et peuvent être retirés à tout moment.</p>'+clips.map((v,i)=>vTile(v,"c"+i)).join("")+'</div>'
+    :(live?'<div class="sec vd"><h2>Buts en direct</h2><p class="note">Les clips des buts apparaissent ici quelques minutes après chaque but.</p></div>':"");
+  el.innerHTML=live?C+R:R+C;
+};
+const vdLoad=async()=>{
+  if(vdBusy)return;vdBusy=true;
+  try{const{data,error}=await sb.functions.invoke("match-videos",{body:{id}});
+    if(!error&&data&&!data.error){vdData=data;vdDraw(data)}}catch(e){}
+  const ph=vdData&&vdData.phase;
+  vdNext=!vdData?Date.now()+300e3
+    :vdData.old?Infinity
+    :ph==="live"?Date.now()+90e3
+    :ph==="pre"?Date.now()+60e3
+    :(vdData.recap&&vdData.recap.length)?Infinity   // le résumé officiel reste en ligne : plus rien à redemander
+    :Date.now()+600e3;
+  vdBusy=false};
+$("vd").addEventListener("click",e=>{
+  const b=e.target.closest(".vplay");if(!b||!vdData)return;
+  const k=b.dataset.k,v=(k[0]==="r"?vdData.recap:vdData.clips)[+k.slice(1)];if(!v)return;
+  if(v.embedUrl&&okHost(v.embedUrl)){
+    b.parentNode.innerHTML='<iframe src="'+esc(v.embedUrl)+'" title="'+esc(v.title)+'" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe><a class="vopen" href="'+esc(v.url)+'" target="_blank" rel="noopener noreferrer">Ouvrir sur le site d’origine ↗</a>';
+  }else window.open(v.url,"_blank","noopener,noreferrer")});
+vdLoad();
+setInterval(()=>{if(document.hidden||vdBusy||Date.now()<vdNext)return;vdLoad()},15000);
 })();
 </script></body></html>
