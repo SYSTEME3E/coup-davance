@@ -204,3 +204,18 @@ body.ss{--ink:#1B1650;--mut:#6B6890;--navy:#1F1A52;--pill:#5B4BDB;--blue:#1D6FE0
 .sx-days button{flex:none;min-width:72px;border:0;border-radius:12px;background:#fff;color:#6B6890;padding:9px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:"Hanken Grotesk",sans-serif;box-shadow:0 1px 2px rgba(27,22,80,.06)}
 .sx-days button b{font-size:15px;color:#1B1650}.sx-days button span{font-size:13px}
 .sx-days button.on{background:#1F1A52;color:#C9C5F0}.sx-days button.on b{color:#fff}
+
+/* ---- Vidéos du match (Highlightly) ---- */
+.vd h2{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.vd .vb{font-size:12px;font-weight:800;padding:4px 9px;border-radius:999px;letter-spacing:.02em}
+.vd .vb.ok{background:#E8F7EE;color:#0B6B33}.vd .vb.un{background:#FFF2D6;color:#8A5A00}
+.vd .vtile{margin:12px 0}
+.vd .vplay{position:relative;display:block;width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0c0a24;color:#fff;cursor:pointer;padding:0}
+.vd .vplay img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8}
+.vd .vplay i{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:#6F5BFF;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.vd .vplay i::after{content:"";position:absolute;left:22px;top:17px;border-left:18px solid #fff;border-top:11px solid transparent;border-bottom:11px solid transparent}
+.vd .vplay:focus-visible{outline:3px solid #6F5BFF;outline-offset:2px}
+.vd .vcap{margin:8px 2px 0;font-weight:700;line-height:1.35}
+.vd .vcap small{display:block;color:var(--muted);font-weight:500;font-size:13px;margin-top:2px}
+.vd iframe{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:14px;background:#000}
+.vd .vopen{display:inline-block;margin-top:8px;font-size:14px;font-weight:700}
