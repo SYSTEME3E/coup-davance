@@ -69,7 +69,7 @@ const draw=()=>{
   else center='<div class="scr" style="font-size:30px">'+new Date(pr.kickoff).toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"})+'<small>'+new Date(pr.kickoff).toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"short",day:"numeric",month:"short"})+'</small></div>';
   const extra=[d&&d.league&&d.league.round,d&&d.venue].filter(Boolean).join(" · ");
   $("mh").innerHTML='<div class="mh"><div class="lgl">'+lg(lgLogo,"lgo sm")+'<span>'+esc(pr.league||"")+(extra?' · '+esc(extra):"")+'</span></div><div class="tt">'+team("home")+center+team("away")+'</div></div>';
-  $("pred").innerHTML=pr.data?'<div class="sec"><h2>Pronostic</h2><div class="mk" style="margin-bottom:8px">'+tagOf(pr)+'</div>'+'<div class="pc-solo">'+(isOpen(pr)?probs(pr.data):lockBox(pr))+'</div>'+'</div>':"";
+  $("pred").innerHTML=pr.data?'<div class="sec"><h2>Pronostic</h2><div class="mk" style="margin-bottom:8px">'+tagOf(pr)+'</div>'+'<div class="pc-solo">'+(isOpen(pr)?(drift(pr)?origBox(pr):probs(pr.data)):lockBox(pr))+'</div>'+'</div>':"";
   // statistiques
   let st='<div class="sec"><h2>Statistiques du match</h2>';
   const hs=d&&d.statistics&&d.statistics.find(s=>s.team===d.home.id),as=d&&d.statistics&&d.statistics.find(s=>s.team===d.away.id);
