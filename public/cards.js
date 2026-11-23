@@ -38,6 +38,18 @@ const tagOf=m=>{const solid=m.kind?m.kind==="solid":(()=>{const p=m.data.result;
   return /friendl/i.test(m.league||"")?'<span class="cf lo">Match amical · très imprévisible</span>':solid?'<span class="cf hi">Favori probable</span>':'<span class="cf lo">Match incertain</span>'};
 // ---- Cartes de pronostic (style SportScore sombre) ----
 const PCN={h:"Domicile",d:"Nul",a:"Extérieur"},PCK={h:"home",d:"draw",a:"away"};
+// Pronostic d'origine : si les chiffres stockés ont été recalculés après le match, ils ne correspondent plus au verdict enregistré.
+// On affiche alors le pronostic réellement enregistré (verdict) au lieu des pourcentages recalculés.
+const drift=m=>{const v=m&&m.verdict,d=m&&m.data;if(!m||!m.settled_at||!v||!v.predicted||!d||!d.result||!d.over)return false;
+  const p=d.result,pk=p.home>=p.draw&&p.home>=p.away?"home":p.away>=p.draw?"away":"draw";
+  return v.predicted!==pk||(v.btts&&v.btts.predicted!==(d.btts>=50))||(v.over25&&v.over25.predicted!==(d.over["2.5"]>=50))||(!!v.likelyScore&&v.likelyScore!==d.likelyScore)};
+const origBox=(m,hc)=>{const v=m.verdict,pk={home:"Domicile",draw:"Nul",away:"Extérieur"}[v.predicted]||"?",yes=b=>b?"Oui":"Non";
+  const sc=v.likelyScore?esc(v.likelyScore):"–";
+  const note='<p class="note" style="margin:8px 0 0">Pronostic enregistré avant le match. Les pourcentages détaillés ne sont plus disponibles pour ce match.</p>';
+  if(hc)return'<div class="stats"><div>Pronostic<b>'+pk+'</b></div><div>Score prévu<b>'+sc+'</b></div>'
+    +(v.btts?'<div>Les deux marquent<b>'+yes(v.btts.predicted)+'</b></div>':"")+(v.over25?'<div>Plus de 2,5 buts<b>'+yes(v.over25.predicted)+'</b></div>':"")+'</div>'+note;
+  return'<div class="pc-pills"><span class="pc-pk '+({home:"h",draw:"d",away:"a"}[v.predicted]||"d")+'">pronostic '+pk+'</span><span>score prévu <b>'+sc+'</b></span></div>'
+    +'<div class="pc-chips">'+(v.over25?'<span>Plus de 2,5 buts <b>'+yes(v.over25.predicted)+'</b></span>':"")+(v.btts?'<span>Les deux marquent <b>'+yes(v.btts.predicted)+'</b></span>':"")+'</div>'+note};
 const pcPick=p=>{const m=Math.max(p.home,p.draw,p.away);return p.home===m?"h":p.away===m?"a":"d"};
 const pcBar=p=>{const sg=(k,c)=>'<span class="'+c+'" style="flex:'+Math.max(p[k],1)+'">'+(p[k]>=10?p[k]+"%":"")+'</span>';return'<div class="pc-bar">'+sg("home","h")+sg("draw","d")+sg("away","a")+'</div>'};
 // Pronostic masqué (le serveur n'envoie pas les vraies valeurs : ce flou n'est qu'un décor)
@@ -67,7 +79,7 @@ const card=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]||{},
   +'<div class="pc-top"><span>'+when(m)+'</span><span class="pc-badge">'+badge+'</span></div>'
   +'<div class="pc-lg">'+lgo(me.league_logo,"sm")+'<span>'+esc(m.league||"")+'</span>'+tagOf(m)+'</div>'
   +'<div class="pc-teams"><div class="pc-t l'+side("h")+'">'+lgo(me.home_logo)+'<b>'+esc(m.home)+'</b></div><div class="pc-m">'+mid+tag+'</div><div class="pc-t r'+side("a")+'"><b>'+esc(m.away)+'</b>'+lgo(me.away_logo)+'</div></div>'
-  +(open?probs(d,true):lockBox(m))+vd
+  +(open?(drift(m)?origBox(m):probs(d,true)):lockBox(m))+vd
   +'<div class="pc-act">'+(why?'<button type="button" class="pc-b" data-why aria-expanded="false">pourquoi ▾</button>':'<span></span>')+'<a class="pc-b go" href="match.html?id='+m.fixture_id+'">Voir le match ↗</a></div>'
   +(why?'<div class="pc-why" hidden>'+why+'</div>':"")+'</div>'};
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-why]");if(!b)return;
@@ -75,7 +87,8 @@ document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest
 // ---- Carte « Historique » (style clair : barre bleu / gris / rouge, résultat vert ou rouge) ----
 const histCard=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]||{},open=isOpen(m);
   let body;
-  if(open){const p=d.result,sg=(k,c)=>'<span class="'+c+'" style="flex:'+Math.max(p[k],1)+'">'+(p[k]>=8?p[k]+"%":"")+'</span>';
+  if(open&&drift(m))body=origBox(m,true)+frm(d);
+  else if(open){const p=d.result,sg=(k,c)=>'<span class="'+c+'" style="flex:'+Math.max(p[k],1)+'">'+(p[k]>=8?p[k]+"%":"")+'</span>';
     body='<div class="bar">'+sg("home","h")+sg("draw","d")+sg("away","a")+'</div>'
     +'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
     +'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div></div>'
