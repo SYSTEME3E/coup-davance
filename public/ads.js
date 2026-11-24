@@ -25,15 +25,15 @@ function mount(el,opts){
     if(prog.unlocked){box.hidden=false;box.className="adg ok";
       box.innerHTML='<h2>✅ Plan '+NM()+' débloqué pour aujourd’hui</h2><p>Tu as regardé tes '+GOAL+' pubs. Tes avantages '+NM()+' sont actifs jusqu’à la fin de la journée (minuit UTC).</p>';return}
     box.hidden=false;box.className="adg";
-    box.innerHTML='<h2>Passe en '+NM()+' aujourd’hui, gratuitement</h2>'
+    box.innerHTML='<h2>'+(opts.heading?opts.heading(NM()):'Passe en '+NM()+' aujourd’hui, gratuitement')+'</h2>'
      +'<p>Regarde <b>'+GOAL+' pubs</b> dans la journée pour avoir le plan '+NM()+' jusqu’à minuit (UTC). Tu choisis de regarder chaque pub ; si tu la fermes avant la fin, elle ne compte pas.</p>'
      +dots(prog.count)+'<button type="button" class="btn" id="adgBtn" disabled>Regarder une pub ('+prog.count+' / '+GOAL+')</button><div class="msg" role="status" aria-live="polite"></div>';
     const b=box.querySelector("#adgBtn");b.onclick=play;refreshBtn()}
   function refreshBtn(){const b=box.querySelector("#adgBtn");if(!b)return;
-    b.disabled=busy||!ad;b.textContent=busy?"Chargement…":ad?"Regarder une pub ("+prog.count+" / "+GOAL+")":"Chargement de la pub…"}
+    b.disabled=busy||!ad;b.textContent=!slot?"Bientôt disponible":busy?"Chargement…":ad?"Regarder une pub ("+prog.count+" / "+GOAL+")":"Chargement de la pub…"}
   function preload(){
     ad=null;refreshBtn();
-    if(!slot){say("Les pubs ne sont pas encore activées.");return}
+    if(!slot){say("Les pubs avec récompense seront bientôt disponibles. Tu peux déjà choisir un plan payant.");return}
     try{
       window.adsbygoogle=window.adsbygoogle||[];
       window.adsbygoogle.push({params:{google_ad_slot:slot,google_ad_format:"rewarded",
@@ -58,8 +58,8 @@ function mount(el,opts){
       const{data:p}=await opts.sb.rpc("ad_progress");
       if(!p||!p.eligible)return;
       prog=p;
-      if(!prog.unlocked&&!slot)return;       // pas d'identifiant de bloc : on n'affiche rien
-      if(!prog.unlocked&&!document.querySelector('script[src*="adsbygoogle.js"]')){
+      if(!prog.unlocked&&!slot&&!opts.showIfNoSlot)return;   // pas d'identifiant de bloc : rien (sauf si on veut montrer l'option grisée)
+      if(!prog.unlocked&&slot&&!document.querySelector('script[src*="adsbygoogle.js"]')){
         const s=document.createElement("script");s.async=true;s.crossOrigin="anonymous";
         s.src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client="+CLIENT;document.head.appendChild(s)}
       draw();if(!prog.unlocked)preload();
