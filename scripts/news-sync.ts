@@ -34,18 +34,19 @@ async function main() {
   }
 
   const since = new Date(Date.now() - 7 * 864e5).toISOString();
-  const recent = must(await sb.from("news_articles").select("id,title,title_key,source_name,also_reported_by").gte("published_at", since).order("published_at", { ascending: false }).limit(2000), "articles récents") as any[];
-  const known: Known[] = recent.map(r => ({ id: r.id, title_key: r.title_key, toks: tokens(r.title), source_name: r.source_name, also: r.also_reported_by ?? [] }));
+  const recent = must(await sb.from("news_articles").select("id,title,title_key,source_name,also_reported_by,image_url").gte("published_at", since).order("published_at", { ascending: false }).limit(2000), "articles récents") as any[];
+  const known: Known[] = recent.map(r => ({ id: r.id, title_key: r.title_key, toks: tokens(r.title), source_name: r.source_name, also: r.also_reported_by ?? [], has_image: !!r.image_url }));
 
-  const { rows, merged, dups } = build(items, rules, known);
+  const { rows, merged, dups, upgrades } = build(items, rules, known);
   for (let i = 0; i < rows.length; i += 200) {
     const r = await sb.from("news_articles").upsert(rows.slice(i, i + 200), { onConflict: "url_hash", ignoreDuplicates: true });
     if (r.error) throw new Error("insertion : " + r.error.message);
   }
   for (const m of merged) await sb.from("news_articles").update({ also_reported_by: m.also }).eq("id", m.id);
+  for (const u of upgrades) { const patch: Record<string, unknown> = { url: u.url, image_url: u.image_url, enrich_status: "feed" }; if (u.snippet) patch.snippet = u.snippet; await sb.from("news_articles").update(patch).eq("id", u.id); }
 
   // Enrichissement : image + extrait depuis la page de l'éditeur (60 articles par passage, les plus récents d'abord)
-  const todo = must(await sb.from("news_articles").select("id,url").is("enriched_at", null).order("published_at", { ascending: false }).limit(60), "à enrichir") as { id: string; url: string }[];
+  const todo = must(await sb.from("news_articles").select("id,url,snippet,image_url").is("enriched_at", null).order("published_at", { ascending: false }).limit(60), "à enrichir") as { id: string; url: string; snippet: string | null; image_url: string | null }[];
   let okN = 0, failN = 0, next = 0;
   const worker = async () => {
     while (next < todo.length) {
@@ -53,9 +54,9 @@ async function main() {
       try {
         const e = await enrich(a.url);
         const patch: Record<string, unknown> = { enriched_at: new Date().toISOString(), enrich_status: e ? (e.text || e.image ? "ok" : "empty") : "no_link" };
-        if (e) { patch.url = e.url; if (e.image) patch.image_url = e.image; if (e.text) patch.snippet = e.text; }
+        if (e) { patch.url = e.url; if (e.image && !a.image_url) patch.image_url = e.image; if (e.text && e.text.length > (a.snippet?.length ?? 0)) patch.snippet = e.text; }
         await sb.from("news_articles").update(patch).eq("id", a.id);
-        e && (e.text || e.image) ? okN++ : failN++;
+        e && (e.text || e.image || a.image_url) ? okN++ : failN++;
       } catch (err: any) {
         failN++;
         await sb.from("news_articles").update({ enriched_at: new Date().toISOString(), enrich_status: "error" }).eq("id", a.id);
@@ -66,6 +67,6 @@ async function main() {
   console.log(`Enrichissement : ${okN} réussis, ${failN} sans image/texte.`);
   // Rétention : 60 jours (sauf articles mis à la une)
   await sb.from("news_articles").delete().lt("published_at", new Date(Date.now() - 60 * 864e5).toISOString()).eq("featured", false);
-  console.log(`Terminé : ${items.length} lus, ${rows.length} nouveaux, ${dups} doublons ignorés, ${rows.filter(r => r.moderation_status === "pending").length} à modérer.`);
+  console.log(`Terminé : ${items.length} lus, ${rows.length} nouveaux, ${upgrades.length} complétés avec image, ${dups} doublons ignorés, ${rows.filter(r => r.moderation_status === "pending").length} à modérer.`);
 }
 main().catch(e => { console.error(e); process.exit(1); });
