@@ -32,3 +32,6 @@
 @media(min-width:640px){.nw-bar{grid-template-columns:1fr 2fr}.nw-fl{grid-template-columns:repeat(3,1fr)}.nw-fl .full{grid-column:auto}.nw-list{grid-template-columns:1fr 1fr}.nw-card h2{font-size:19px}}
 @media(min-width:980px){.nw-list{grid-template-columns:repeat(3,1fr)}.nw-tabs{position:static;background:none;flex-wrap:wrap;overflow:visible}}
 @media(prefers-reduced-motion:no-preference){.nw-card{transition:border-color .15s}.nw-card:hover{border-color:#8F80FF}}
+/* Correctifs : l'attribut hidden doit l'emporter sur display */
+.nw-new[hidden],.nw-test[hidden]{display:none}
+.am table td:nth-child(2),.am table th:nth-child(2){white-space:nowrap}
