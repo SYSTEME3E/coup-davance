@@ -40,4 +40,21 @@ assert.ok(extract(ld, "https://a.test", 500).text!.length <= 500, "JSON-LD tronq
 assert.equal(decodeGoogleId(Buffer.from("\x08\x13\x22\x1chttps://exemple.fr/article-1\xd2\x01\x00").toString("base64url")), "https://exemple.fr/article-1");
 assert.equal(isPublicHttp("http://192.168.1.5/x"), false); assert.equal(isPublicHttp("file:///etc/passwd"), false); assert.equal(isPublicHttp("https://lequipe.fr/a"), true);
 assert.ok(cutText("Phrase une. ".repeat(100), 500).endsWith("."));
+// --- Flux direct d'éditeur : image (media:content / enclosure / <img>) + texte du flux ---
+const direct = `<?xml version="1.0"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel>
+<item><title>PSG : Doué incertain pour Lens</title><link>https://media.test/a</link><pubDate>Mon, 23 Nov 2026 10:00:00 GMT</pubDate><description>Résumé court.</description><media:content url="https://img.media.test/a.jpg" medium="image"/></item>
+<item><title>Lyon : Fonseca évite la polémique</title><link>https://media.test/b</link><pubDate>Mon, 23 Nov 2026 09:00:00 GMT</pubDate><enclosure url="https://img.media.test/b.jpg" type="image/jpeg" length="1"/><content:encoded><![CDATA[<p>Texte plus long de l'éditeur.</p>]]></content:encoded></item>
+<item><title>OM : Genesio explique la défaite</title><link>https://media.test/c</link><pubDate>Mon, 23 Nov 2026 08:00:00 GMT</pubDate><description>&lt;img src="/x/c.png"&gt; Le coach marseillais s'explique.</description></item>
+</channel></rss>`;
+const di = parseRss(direct, false, "Média Test");
+assert.equal(di[0].imageUrl, "https://img.media.test/a.jpg");
+assert.equal(di[1].imageUrl, "https://img.media.test/b.jpg");
+assert.equal(di[1].snippet, "Texte plus long de l'éditeur.", "content:encoded prioritaire");
+assert.equal(di[2].imageUrl, "https://media.test/x/c.png", "image relative dans la description");
+assert.equal(di[0].sourceName, "Média Test", "source = nom du flux");
+// Un article déjà connu (Google, sans image) est complété par la version du flux direct
+const known = [{ id: "k1", title_key: "x", toks: new Set(["psg", "doue", "incertain", "lens"]), source_name: "Google", also: [], has_image: false }];
+const up = build(di.map(a => ({ feed: { ...feed, provider: "rss", license: "commercial" }, a })), rules, known as any);
+assert.equal(up.upgrades.length, 1, "article connu complété avec image");
+assert.equal(up.upgrades[0].image_url, "https://img.media.test/a.jpg");
 console.log("Tous les tests passent.");
