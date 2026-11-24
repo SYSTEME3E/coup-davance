@@ -83,10 +83,11 @@
 
   // Pop-up d'invitation sur le tableau de bord : s'affiche tant que les notifications ne sont pas activées (rappel au plus 1 fois par jour après « Plus tard »)
   function banner(sb){
-    if(!/dashboard\.html$|\/$/.test(location.pathname)||state()!=="default")return;
+    var st0=state();
+    if(!(window.PUSH_PROMPT||/dashboard(\.html)?\/?$/.test(location.pathname))||(st0!=="default"&&st0!=="ios-install"))return;
     var last=Number(ls.g(K_NO)||0);if(Date.now()-last<864e5)return;
     setTimeout(function(){
-      if(state()!=="default"||document.getElementById("pushBn"))return;
+      var st1=state();if((st1!=="default"&&st1!=="ios-install")||document.getElementById("pushBn"))return;
       var o=document.createElement("div");o.id="pushBn";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");o.setAttribute("aria-label","Notifications");
       o.style.cssText="position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,5,40,.72);font:500 15px/1.4 'Hanken Grotesk',system-ui,sans-serif";
       o.innerHTML="<div style='width:100%;max-width:380px;background:#1E1760;color:#fff;border:1px solid #3A2F9A;border-radius:20px;padding:24px 20px 18px;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,.5)'><div style='font-size:42px;line-height:1'>🔔</div><b id='pushT' style='display:block;font-size:19px;margin:12px 0 8px'>Active les notifications</b><p id='pushP' style='margin:0 0 18px;opacity:.9'>Buts, matchs qui démarrent, actualités, pronostics du jour, retraits et bonus : reçois tout directement sur ton téléphone.</p><button type='button' id='pushY' style='width:100%;min-height:48px;border:0;border-radius:14px;background:#1D6FD8;color:#fff;font:700 16px inherit;cursor:pointer'>Activer les notifications</button><button type='button' id='pushN' style='width:100%;min-height:44px;margin-top:8px;border:0;background:transparent;color:#C9C4F5;font:600 15px inherit;cursor:pointer'>Plus tard</button></div>";
