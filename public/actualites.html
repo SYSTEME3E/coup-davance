@@ -18,6 +18,7 @@
 </div>
 <button id="nw" class="nw-new" hidden></button>
 <div class="nw-info"><span id="cnt" aria-live="polite"></span><span id="upd"></span></div>
+<div id="focus" class="nw-list" style="margin-bottom:12px"></div>
 <div id="list" class="nw-list" aria-live="polite"><p class="sub">Chargement…</p></div>
 <button id="more" class="more" style="display:none;width:100%;margin-top:14px;min-height:46px">Voir plus d’actualités</button>
 <p class="nw-legal">Les titres, images et courts extraits appartiennent à leurs éditeurs ; ils sont affichés avec le nom de la source et un lien vers l’article original, où se trouve la suite. Nous ne republions pas les articles complets. Un transfert n’est marqué « Officiel » que lorsqu’il provient d’une source officielle (club, ligue ou fédération) ; sinon il est indiqué comme rumeur ou non vérifié. Une erreur ? Utilisez « Signaler ».</p>
@@ -110,5 +111,9 @@ async function sources(){const{data}=await sb.from("news_articles").select("sour
   $("fs").insertAdjacentHTML("beforeend",Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,40).map(x=>'<option value="'+esc(x[0])+'">'+esc(x[0])+'</option>').join(""))}
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
   const{data:p}=await sb.from("profiles").select("is_admin").eq("id",session.user.id).maybeSingle();ME=p&&p.is_admin;
-  const h=location.hash.slice(1);if(CN[h])CAT=h;drawTabs();sources();load(true);flash()})();
+  const h=location.hash.slice(1);if(CN[h])CAT=h;drawTabs();sources();load(true);flash();focusArt()})();
+// Lien d'une notification : actualites.html?a=<id> → l'actualité exacte est affichée en tête de page
+async function focusArt(){const id=new URLSearchParams(location.search).get("a");if(!id||!/^[0-9a-f-]{8,40}$/i.test(id))return;
+  const{data}=await sb.from("news_articles").select(SEL).eq("id",id).eq("moderation_status","approved").maybeSingle();
+  if(!data)return;const f=$("focus");f.innerHTML=card(data).replace('class="nw-card','style="outline:2px solid #1D6FD8;outline-offset:2px" class="nw-card');f.scrollIntoView({block:"start"})}
 </script></body></html>
