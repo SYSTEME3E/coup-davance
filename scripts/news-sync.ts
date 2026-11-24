@@ -5,6 +5,7 @@ import { PROVIDERS } from "./news/providers/index.js";
 import { build, type Known, type SourceRules } from "./news/pipeline.js";
 import { tokens, norm } from "./news/text.js";
 import type { Feed, RawArticle } from "./news/types.js";
+import { enrich } from "./news/enrich.js";
 
 const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
 if (!url || !key) { console.error("SUPABASE_URL et SUPABASE_SERVICE_KEY sont requis."); process.exit(1); }
@@ -42,6 +43,27 @@ async function main() {
     if (r.error) throw new Error("insertion : " + r.error.message);
   }
   for (const m of merged) await sb.from("news_articles").update({ also_reported_by: m.also }).eq("id", m.id);
+
+  // Enrichissement : image + extrait depuis la page de l'éditeur (60 articles par passage, les plus récents d'abord)
+  const todo = must(await sb.from("news_articles").select("id,url").is("enriched_at", null).order("published_at", { ascending: false }).limit(60), "à enrichir") as { id: string; url: string }[];
+  let okN = 0, failN = 0, next = 0;
+  const worker = async () => {
+    while (next < todo.length) {
+      const a = todo[next++];
+      try {
+        const e = await enrich(a.url);
+        const patch: Record<string, unknown> = { enriched_at: new Date().toISOString(), enrich_status: e ? (e.text || e.image ? "ok" : "empty") : "no_link" };
+        if (e) { patch.url = e.url; if (e.image) patch.image_url = e.image; if (e.text) patch.snippet = e.text; }
+        await sb.from("news_articles").update(patch).eq("id", a.id);
+        e && (e.text || e.image) ? okN++ : failN++;
+      } catch (err: any) {
+        failN++;
+        await sb.from("news_articles").update({ enriched_at: new Date().toISOString(), enrich_status: "error" }).eq("id", a.id);
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: 5 }, worker));
+  console.log(`Enrichissement : ${okN} réussis, ${failN} sans image/texte.`);
   // Rétention : 60 jours (sauf articles mis à la une)
   await sb.from("news_articles").delete().lt("published_at", new Date(Date.now() - 60 * 864e5).toISOString()).eq("featured", false);
   console.log(`Terminé : ${items.length} lus, ${rows.length} nouveaux, ${dups} doublons ignorés, ${rows.filter(r => r.moderation_status === "pending").length} à modérer.`);
