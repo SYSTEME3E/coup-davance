@@ -7,11 +7,12 @@ export type License = "test_only" | "commercial";
 
 export interface Feed {
   id: string; provider: string; url: string; label: string;
-  license: License; category_hint: Category | null; enabled: boolean;
+  license: License; category_hint: Category | null; enabled: boolean; keyword_filter?: string | null;
 }
 // Ce qu'un fournisseur renvoie : uniquement des champs présents dans la source, rien d'inventé.
 export interface RawArticle {
   title: string; link: string; snippet: string | null;
   sourceName: string | null; sourceUrl: string | null; publishedAt: string; // ISO
+  imageUrl?: string | null;
 }
 export interface NewsProvider { id: string; fetchItems(feed: Feed): Promise<RawArticle[]>; }
