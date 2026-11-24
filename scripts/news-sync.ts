@@ -6,6 +6,7 @@ import { build, type Known, type SourceRules } from "./news/pipeline.js";
 import { tokens, norm } from "./news/text.js";
 import type { Feed, RawArticle } from "./news/types.js";
 import { enrich } from "./news/enrich.js";
+import { detectLeague } from "./news/league.js";
 
 const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
 if (!url || !key) { console.error("SUPABASE_URL et SUPABASE_SERVICE_KEY sont requis."); process.exit(1); }
@@ -45,8 +46,13 @@ async function main() {
   for (const m of merged) await sb.from("news_articles").update({ also_reported_by: m.also }).eq("id", m.id);
   for (const u of upgrades) { const patch: Record<string, unknown> = { url: u.url, image_url: u.image_url, enrich_status: "feed" }; if (u.snippet) patch.snippet = u.snippet; await sb.from("news_articles").update(patch).eq("id", u.id); }
 
-  // Enrichissement : image + extrait depuis la page de l'éditeur (60 articles par passage, les plus récents d'abord)
-  const todo = must(await sb.from("news_articles").select("id,url,snippet,image_url").is("enriched_at", null).order("published_at", { ascending: false }).limit(60), "à enrichir") as { id: string; url: string; snippet: string | null; image_url: string | null }[];
+  // Championnat : on complète les articles récents qui n'en ont pas encore
+  const noLeague = must(await sb.from("news_articles").select("id,title,snippet").is("league", null).gte("published_at", new Date(Date.now() - 14 * 864e5).toISOString()).limit(1000), "sans championnat") as { id: string; title: string; snippet: string | null }[];
+  const tagged = noLeague.map(r => ({ id: r.id, l: detectLeague(r.title, r.snippet) })).filter(x => x.l);
+  for (let i = 0; i < tagged.length; i += 25) await Promise.all(tagged.slice(i, i + 25).map(x => sb.from("news_articles").update({ league: x.l }).eq("id", x.id)));
+
+  // Enrichissement : image + extrait depuis la page de l'éditeur (100 articles par passage, les plus récents d'abord)
+  const todo = must(await sb.from("news_articles").select("id,url,title,snippet,image_url,author,league").is("enriched_at", null).order("published_at", { ascending: false }).limit(100), "à enrichir") as { id: string; url: string; title: string; snippet: string | null; image_url: string | null; author: string | null; league: string | null }[];
   let okN = 0, failN = 0, next = 0;
   const worker = async () => {
     while (next < todo.length) {
@@ -54,7 +60,8 @@ async function main() {
       try {
         const e = await enrich(a.url);
         const patch: Record<string, unknown> = { enriched_at: new Date().toISOString(), enrich_status: e ? (e.text || e.image ? "ok" : "empty") : "no_link" };
-        if (e) { patch.url = e.url; if (e.image && !a.image_url) patch.image_url = e.image; if (e.text && e.text.length > (a.snippet?.length ?? 0)) patch.snippet = e.text; }
+        if (e) { patch.url = e.url; if (e.image && !a.image_url) patch.image_url = e.image; if (e.text && e.text.length > (a.snippet?.length ?? 0)) patch.snippet = e.text; if (e.author && !a.author) patch.author = e.author;
+          if (!a.league) { const l = detectLeague(a.title, (patch.snippet as string) ?? a.snippet); if (l) patch.league = l; } }
         await sb.from("news_articles").update(patch).eq("id", a.id);
         e && (e.text || e.image || a.image_url) ? okN++ : failN++;
       } catch (err: any) {
