@@ -1,7 +1,7 @@
 // Fournisseur RSS générique. Google News (test) et tout futur flux RSS sous licence passent par ici.
 import { XMLParser } from "fast-xml-parser";
 import type { Feed, NewsProvider, RawArticle } from "../types.js";
-import { stripHtml, clip, decodeBytes } from "../text.js";
+import { stripHtml, clip, decodeBytes, cleanAuthor } from "../text.js";
 import { SNIPPET_MAX, absUrl } from "../enrich.js";
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_", textNodeName: "#t", processEntities: true });
@@ -38,7 +38,7 @@ export function parseRss(xml: string, google: boolean, fallbackSource: string | 
     // Flux direct : on prend le contenu le plus long fourni par l'éditeur (content:encoded sinon description)
     let snippet: string | null = stripHtml(google ? txt(it.description) : (txt(it["content:encoded"]) || txt(it.description)));
     if (google || !snippet || snippet.toLowerCase().startsWith(title.toLowerCase().slice(0, 40))) snippet = google ? null : (snippet && snippet !== title ? snippet : null);
-    out.push({ title, link, snippet: snippet ? clip(snippet, SNIPPET_MAX) : null, sourceName, sourceUrl, publishedAt: d.toISOString(), imageUrl: google ? null : feedImage(it, link) });
+    out.push({ title, link, snippet: snippet ? clip(snippet, SNIPPET_MAX) : null, sourceName, sourceUrl, publishedAt: d.toISOString(), imageUrl: google ? null : feedImage(it, link), author: google ? null : cleanAuthor(txt(it["dc:creator"]) || txt(it.author?.name ?? it.author)) });
   }
   return out;
 }
