@@ -12,6 +12,13 @@
 #rgm.ok{color:#6CCB45}#rgm.ko{color:#FF8A96}
 .rg input[type=text],.rg input[type=email],.rg input[type=password]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #3A2F9A;background:#130F33;color:#fff;font:inherit}
 .rg .btn{margin-top:16px}
+.pnr{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-top:1px solid #2A2180}
+.pnr span{min-width:0}.pnr b{display:block;font-size:16px}.pnr small{display:block;color:var(--muted);font-size:13px;line-height:1.3}
+.pnr input{appearance:none;-webkit-appearance:none;flex:none;width:50px;height:30px;border-radius:15px;background:#3A2F9A;position:relative;cursor:pointer;transition:background .2s;margin:0}
+.pnr input::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.pnr input:checked{background:#2E9E4F}.pnr input:checked::after{transform:translateX(20px)}
+#pnst{margin:6px 0 0;font-size:15px}#pnst.ok{color:#6CCB45}#pnst.ko{color:#FF8A96}
+#pnb.off{background:transparent;border:1px solid #3A2F9A}
 </style></head><body class="pd"><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
 <h1 class="pt">Réglages</h1><p class="sub" style="text-transform:none">Gère les informations de ton compte.</p>
@@ -31,6 +38,19 @@
   <div id="rgm" role="status"></div>
   <button class="btn" type="submit" id="rfs">Enregistrer</button>
 </form>
+<section class="card rg" id="pn">
+  <h2>Notifications</h2>
+  <p class="hint">Buts, matchs qui démarrent, actualités, pronostics du jour, VIP, retraits, bonus et parrainage.</p>
+  <div id="pnst" role="status"></div>
+  <button class="btn" type="button" id="pnb" hidden>Activer les notifications</button>
+  <div id="pnp" hidden>
+    <label class="pnr"><span><b>⚽ Matchs</b><small>But, but refusé, début dans 10 min, match en direct, score final</small></span><input type="checkbox" data-p="matches"></label>
+    <label class="pnr"><span><b>📰 Actualités</b><small>Les infos des championnats européens</small></span><input type="checkbox" data-p="news"></label>
+    <label class="pnr"><span><b>🎯 Pronostics</b><small>Les pronostics du jour déjà en ligne</small></span><input type="checkbox" data-p="picks"></label>
+    <label class="pnr"><span><b>💰 VIP, retraits et bonus</b><small>Activation VIP, retrait, bonus et parrainage</small></span><input type="checkbox" data-p="money"></label>
+    <button type="button" class="out2" id="pnt" style="margin-top:12px">Envoyer une notification test</button>
+  </div>
+</section>
 <button type="button" class="out2" id="rOut">Quitter</button>
 <p class="note" style="text-align:center;margin:28px 0 8px"><a href="legal.html">Informations légales</a></p></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
@@ -52,7 +72,7 @@ const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 
   const say=(t,ok)=>{const m=$("rgm");m.textContent=t||"";m.className=t?(ok?"ok":"ko"):""};
   document.querySelectorAll("[data-eye]").forEach(b=>b.onclick=()=>{const i=$(b.dataset.eye),show=i.type==="password";i.type=show?"text":"password";b.textContent=show?"Masquer":"Afficher"});
-  $("rOut").onclick=async()=>{await sb.auth.signOut();location.href="index.html"};
+  $("rOut").onclick=async()=>{await window.PUSH_READY;if(window.PUSH)await PUSH.release(sb);await sb.auth.signOut();location.href="index.html"};
 
   const frErr=m=>/different from the old|same password/i.test(m)?"Le nouveau mot de passe doit être différent de l’ancien."
     :/reauthenticat|recent login|re-authenticat/i.test(m)?"Pour des raisons de sécurité, déconnecte-toi puis reconnecte-toi avant de réessayer."
@@ -82,5 +102,28 @@ const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
     s.disabled=false;
     if(fail)say((notes.length?notes.join(" ")+" ":"")+fail);else say(notes.join(" "),true);
   };
+})();
+</script><script>
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();if(!session||!$("pn"))return;
+  await (window.PUSH_READY||Promise.resolve());
+  const st=$("pnst"),b=$("pnb"),pp=$("pnp"),say=(t,c)=>{st.textContent=t||"";st.className=c||""};
+  if(!window.PUSH){say("Notifications indisponibles pour le moment.","ko");return}
+  const MSG={unsupported:"Ce navigateur ne gère pas les notifications.","ios-install":"Sur iPhone : touche Partager puis « Sur l’écran d’accueil », ouvre l’app installée, puis reviens ici.",unconfigured:"Les notifications ne sont pas encore configurées sur ce site.",denied:"Bloquées dans le navigateur : touche le cadenas à côté de l’adresse, autorise les notifications, puis recharge la page."};
+  let busy=false;
+  async function draw(){
+    const s=PUSH.state();b.classList.remove("off");pp.hidden=true;b.hidden=true;
+    if(MSG[s]){say(MSG[s],s==="denied"?"ko":"");return}
+    if(s==="on"){say("✅ Activées sur cet appareil.","ok");b.hidden=false;b.textContent="Désactiver sur cet appareil";b.classList.add("off");pp.hidden=false;
+      const p=await PUSH.getPrefs(sb);pp.querySelectorAll("[data-p]").forEach(i=>i.checked=p[i.dataset.p]!==false);return}
+    say(s==="off"?"Désactivées sur cet appareil.":"Pas encore activées sur cet appareil.");b.hidden=false;b.textContent="Activer les notifications"}
+  b.onclick=async()=>{if(busy)return;busy=true;b.disabled=true;
+    if(PUSH.state()==="on"){await PUSH.disable(sb)}else{const r=await PUSH.enable(sb);if(!r.ok)say(r.error,"ko")}
+    b.disabled=false;busy=false;const keep=st.className==="ko"?st.textContent:null;await draw();if(keep)say(keep,"ko")};
+  pp.addEventListener("change",async e=>{const i=e.target.closest("[data-p]");if(!i)return;
+    const p={};pp.querySelectorAll("[data-p]").forEach(x=>p[x.dataset.p]=x.checked);
+    const ok=await PUSH.setPrefs(sb,p);say(ok?"Préférences enregistrées.":"Enregistrement impossible.",ok?"ok":"ko")});
+  $("pnt").onclick=async()=>{const t=$("pnt");t.disabled=true;const r=await PUSH.test(sb);say(r.ok?"Notification test envoyée : elle arrive dans quelques secondes.":(/trop|wait|limit/i.test(r.error||"")?"Patiente une minute avant un nouveau test.":"Envoi impossible : "+(r.error||"")),r.ok?"ok":"ko");setTimeout(()=>t.disabled=false,8000)};
+  await draw();
 })();
 </script><script src="pwa.js" defer></script></body></html>
