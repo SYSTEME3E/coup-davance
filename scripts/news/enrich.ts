@@ -1,9 +1,9 @@
 // Enrichissement : pour chaque article Google News, on retrouve la vraie page de l'éditeur,
-// puis on en tire une image (og:image) et un EXTRAIT de texte (500 à 1000 caractères max).
+// puis on en tire une image (og:image) et un EXTRAIT de texte (1000 caractères max).
 // Le reste de l'article n'est jamais copié : le bouton « Lire l'article original » renvoie vers le site de l'éditeur.
-import { decode, stripHtml, clip, decodeBytes } from "./text.js";
+import { decode, stripHtml, clip, decodeBytes, cleanAuthor } from "./text.js";
 
-export const SNIPPET_MAX = Math.min(1000, Math.max(300, Number(process.env.NEWS_SNIPPET_MAX) || 600));
+export const SNIPPET_MAX = Math.min(1000, Math.max(300, Number(process.env.NEWS_SNIPPET_MAX) || 1000));
 const UA = "Mozilla/5.0 (compatible; CoupDAvanceNewsBot/1.0; +contact: voir mentions légales)";
 
 // ---------- Sécurité : on ne suit que des adresses http(s) publiques ----------
@@ -106,16 +106,35 @@ export function absUrl(u: string | null, base: string): string | null {
   try { const x = new URL(u, base); return /^https?:$/.test(x.protocol) ? x.toString() : null; } catch { return null; }
 }
 
-export interface Enriched { url: string; image: string | null; text: string | null }
+// Auteur : balise meta « author » puis JSON-LD (author.name)
+export function pageAuthor(html: string): string | null {
+  const m = cleanAuthor(meta(html, ["author", "article:author", "parsely-author", "dc.creator"]));
+  if (m) return m;
+  for (const x of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+    try {
+      const walk = (n: any): string | null => {
+        if (!n || typeof n !== "object") return null;
+        if (n.author) { const a = (Array.isArray(n.author) ? n.author : [n.author]).map((y: any) => cleanAuthor(typeof y === "string" ? y : y?.name)).filter(Boolean).slice(0, 3); if (a.length) return a.join(", "); }
+        for (const v of Array.isArray(n) ? n : Object.values(n)) { const r = walk(v); if (r) return r; }
+        return null;
+      };
+      const r = walk(JSON.parse(x[1])); if (r) return r;
+    } catch { /* JSON-LD invalide */ }
+  }
+  return null;
+}
+
+export interface Enriched { url: string; image: string | null; text: string | null; author: string | null }
 
 export function extract(html: string, pageUrl: string, max = SNIPPET_MAX): Omit<Enriched, "url"> {
+  const author = pageAuthor(html);
   const image = absUrl(meta(html, ["og:image:secure_url", "og:image", "twitter:image", "twitter:image:src"]), pageUrl);
   const desc = meta(html, ["og:description", "description", "twitter:description"]);
   let body = articleText(html);
   // Si le corps est introuvable (mur payant, JavaScript), on garde au moins la description de la page.
   if (body.length < 120) body = desc ?? "";
   const text = body ? cutText(body, max) : null;
-  return { image, text: text && text.length >= 40 ? text : null };
+  return { image, text: text && text.length >= 40 ? text : null, author };
 }
 
 async function readLimited(r: Response, limit = 700_000): Promise<string> {
@@ -133,6 +152,6 @@ export async function enrich(googleOrDirectLink: string): Promise<Enriched | nul
   if (!url) return null;
   const r = await fetch(url, { headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml", "Accept-Language": "fr-FR,fr;q=0.9" }, redirect: "follow", signal: AbortSignal.timeout(15000) });
   const finalUrl = isPublicHttp(r.url) ? r.url : url;
-  if (!r.ok || !/html/i.test(r.headers.get("content-type") ?? "")) return { url: finalUrl, image: null, text: null };
+  if (!r.ok || !/html/i.test(r.headers.get("content-type") ?? "")) return { url: finalUrl, image: null, text: null, author: null };
   return { url: finalUrl, ...extract(await readLimited(r), finalUrl) };
 }
