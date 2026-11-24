@@ -36,7 +36,7 @@ function draw(){
   $("box").innerHTML=''
   +'<div class="sec"><h2>'+(u.full_name?esc(u.full_name):esc(u.email))+'</h2><div class="ub" style="margin:6px 0 4px">'
     +(u.is_admin?'<span class="bd in">Administrateur</span>':"")+(u.blocked?'<span class="bd ko">Bloqué</span>':'<span class="bd ok">Compte actif</span>')
-    +(act||u.is_admin?'<span class="bd ok">VIP</span>':'<span class="bd mu">Sans VIP</span>')+'</div>'
+    +(act||u.is_admin?'<span class="bd ok">VIP</span>':'<span class="bd mu">Sans VIP</span>')+(u.sub_suspended_at?'<span class="bd ko">VIP suspendu</span>':'')+((u.plan_cap||u.quota_solid!=null||u.quota_uncertain!=null)?'<span class="bd in">Limité</span>':'')+'</div>'
     +line("Nom complet",name)+line("Adresse e-mail",esc(u.email))
     +line("E-mail confirmé",u.email_confirmed?"Oui":"Non")
     +line("Inscrit le",dt(u.created_at))+line("Dernière connexion",dtm(u.last_sign_in_at))
@@ -47,6 +47,22 @@ function draw(){
     +(act?line("Formule",esc(act.plan))+line("Depuis le",dt(act.started_at))+line("Fin prévue",act.ends_at?dt(act.ends_at):"Sans date de fin"):(u.is_admin?"":'<p class="note">Aucun VIP actif.</p>'))
     +(subs.length?'<h3 class="hh">Historique</h3>'+subs.map(s=>'<div class="kv"><span>'+esc(s.plan)+' · depuis le '+dt(s.started_at)+(s.canceled_at?' · annulé le '+dt(s.canceled_at):"")+'</span><b>'+esc(ST[s.status]||s.status)+'</b></div>').join(""):"")
     +'</div>'
+  +'<div class="sec"><h2>Suspendre ou limiter le VIP</h2>'
+    +(u.is_admin?'<p class="note">Administrateur : ne peut être ni suspendu ni limité.</p>':
+      (u.sub_suspended_at
+        ?'<div class="ab-act tr">⏸ VIP suspendu depuis le <b>'+dt(u.sub_suspended_at)+'</b>'+(u.sub_suspend_note?'<br><small>Motif : '+esc(u.sub_suspend_note)+'</small>':"")+'</div>'
+          +'<p class="note">Le compte reste actif mais fonctionne comme un plan Gratuit (parrainage et retraits coupés aussi).</p>'
+          +'<div class="ab"><button type="button" class="btn" id="bResume">Réactiver le VIP</button></div>'
+        :'<p class="note">Le compte reste actif mais passe au plan Gratuit tant que le VIP est suspendu. La date de fin du VIP ne bouge pas, sauf si tu choisis de la rallonger à la réactivation.</p>'
+          +'<label for="sn">Motif (facultatif)</label><input class="fld" id="sn" type="text" maxlength="200" placeholder="Ex. : litige de paiement, abus…">'
+          +'<div class="ab"><button type="button" class="btn danger" id="bSusp">Suspendre le VIP</button></div>')
+      +'<h3 class="hh">Limiter</h3>'
+      +'<label for="lc">Niveau maximum</label><select class="fld" id="lc"><option value="">Aucun plafond</option><option value="basic"'+(u.plan_cap==="basic"?" selected":"")+'>Plafonner à Basic (même avec Gold)</option><option value="free"'+(u.plan_cap==="free"?" selected":"")+'>Plafonner à Gratuit</option></select>'
+      +'<label for="lqs">Pronostics solides par jour (vide = selon le plan)</label><input class="fld" id="lqs" type="text" inputmode="numeric" maxlength="3" placeholder="Par défaut" value="'+(u.quota_solid==null?"":u.quota_solid)+'">'
+      +'<label for="lqu">Matchs incertains par jour (vide = selon le plan)</label><input class="fld" id="lqu" type="text" inputmode="numeric" maxlength="3" placeholder="Par défaut" value="'+(u.quota_uncertain==null?"":u.quota_uncertain)+'">'
+      +'<div class="ab"><button type="button" class="btn" id="bLim">Enregistrer les limites</button></div>'
+      +'<p class="note">Les quotas personnalisés ne s’appliquent pas à un compte Gold (accès illimité) : utilise le plafond pour le limiter.</p>')
+    +'<div id="smsg" class="pfm" role="status"></div></div>'
   +'<div class="sec"><h2>Donner un VIP</h2>'
     +(u.is_admin?'<p class="note">Administrateur : accès Gold déjà actif, rien à donner.</p>'
     :'<p class="note">Sans paiement. Si la personne a déjà cette formule, la durée s’ajoute à la fin de le VIP en cours.</p>'
@@ -60,7 +76,7 @@ function draw(){
     +(canBlock?"":'<p class="note">Un administrateur ne peut pas être bloqué.</p>')
     +'<button type="button" class="btn ghost" id="bSub"'+(act?"":" disabled")+'>Supprimer le VIP actif</button>'
     +'<div id="amsg" class="pfm" role="status"></div></div>';
-  $("bBlock").onclick=toggleBlock;$("bSub").onclick=cancelSub;if($("bGrant"))$("bGrant").onclick=grant;
+  $("bBlock").onclick=toggleBlock;$("bSub").onclick=cancelSub;if($("bGrant"))$("bGrant").onclick=grant;if($("bSusp"))$("bSusp").onclick=suspend;if($("bResume"))$("bResume").onclick=resume;if($("bLim"))$("bLim").onclick=setLimits;
   if($("bAdd")){$("bAdd").onclick=()=>adjust(1);$("bTake").onclick=()=>adjust(-1)}}
 const say=(t,ok)=>{const m=$("amsg");if(m){m.textContent=t||"";m.className="pfm"+(t?(ok?" ok":" ko"):"")}};
 const wsay=(t,ok)=>{const m=$("wmsg");if(m){m.textContent=t||"";m.className="pfm"+(t?(ok?" ok":" ko"):"")}};
@@ -82,6 +98,30 @@ async function adjust(sign){
   const{data,error}=await sb.rpc("admin_adjust_wallet",{uid:id,p_amount:sign*n,p_note:note});
   if(error){$("bAdd").disabled=$("bTake").disabled=false;return wsay(error.message)}
   await load();wsay("Solde mis à jour : "+F(data)+".",true)}
+const ssay=(t,ok)=>{const m=$("smsg");if(m){m.textContent=t||"";m.className="pfm"+(t?(ok?" ok":" ko"):"")}};
+async function suspend(){
+  const note=($("sn").value||"").trim();
+  if(!confirm("Suspendre le VIP de "+who()+" ?\nLe compte passera au plan Gratuit jusqu'à la réactivation."))return;
+  $("bSusp").disabled=true;
+  const{error}=await sb.rpc("admin_set_sub_suspended",{uid:id,b:true,p_note:note,p_extend:false});
+  if(error){$("bSusp").disabled=false;return ssay("Action impossible : "+error.message)}
+  await load();ssay("VIP suspendu.",true)}
+async function resume(){
+  if(!confirm("Réactiver le VIP de "+who()+" ?"))return;
+  const ext=confirm("Rallonger la fin du VIP de la durée de la suspension ?\nOK = oui, Annuler = non (la date de fin reste la même).");
+  $("bResume").disabled=true;
+  const{data,error}=await sb.rpc("admin_set_sub_suspended",{uid:id,b:false,p_note:null,p_extend:ext});
+  if(error){$("bResume").disabled=false;return ssay("Action impossible : "+error.message)}
+  await load();ssay("VIP réactivé"+(ext&&data&&data.extended?" et durée rallongée.":"."),true)}
+async function setLimits(){
+  const q=el=>{const v=($(el).value||"").trim();if(v==="")return null;if(!/^\d{1,3}$/.test(v)||+v>100)return NaN;return +v};
+  const qs=q("lqs"),qu=q("lqu"),cap=$("lc").value||null;
+  if(Number.isNaN(qs)||Number.isNaN(qu))return ssay("Quotas : un nombre entre 0 et 100, ou vide.");
+  if(!confirm("Enregistrer ces limites pour "+who()+" ?"))return;
+  $("bLim").disabled=true;
+  const{error}=await sb.rpc("admin_set_limits",{uid:id,p_cap:cap,p_solid:qs,p_uncertain:qu});
+  if(error){$("bLim").disabled=false;return ssay("Action impossible : "+error.message)}
+  await load();ssay("Limites enregistrées.",true)}
 async function toggleBlock(){
   const b=!U.blocked;
   if(!confirm((b?"Bloquer ":"Débloquer ")+who()+" ?\n"+(b?"Cette personne sera déconnectée et ne pourra plus utiliser Pronos-bet.":"Cette personne pourra de nouveau se connecter.")))return;
