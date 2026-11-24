@@ -81,19 +81,22 @@
   function getPrefs(sb){return sb.rpc("get_my_push_prefs").then(function(r){return r.data||{matches:true,news:true,money:true,picks:true}})}
   function setPrefs(sb,p){return sb.rpc("set_my_push_prefs",{p_matches:!!p.matches,p_news:!!p.news,p_money:!!p.money,p_picks:!!p.picks}).then(function(r){return!r.error})}
 
-  // Invitation discrète sur le tableau de bord (une fois par semaine au maximum)
+  // Pop-up d'invitation sur le tableau de bord : s'affiche tant que les notifications ne sont pas activées (rappel au plus 1 fois par jour après « Plus tard »)
   function banner(sb){
     if(!/dashboard\.html$|\/$/.test(location.pathname)||state()!=="default")return;
-    var last=Number(ls.g(K_NO)||0);if(Date.now()-last<7*864e5)return;
+    var last=Number(ls.g(K_NO)||0);if(Date.now()-last<864e5)return;
     setTimeout(function(){
       if(state()!=="default"||document.getElementById("pushBn"))return;
-      var b=document.createElement("div");b.id="pushBn";b.setAttribute("role","dialog");b.setAttribute("aria-label","Notifications");
-      b.style.cssText="position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:60;max-width:520px;margin:0 auto;background:#1E1760;color:#fff;border:1px solid #3A2F9A;border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.4);font:500 15px/1.35 'Hanken Grotesk',system-ui,sans-serif";
-      b.innerHTML="<b style='display:block;font-size:16px;margin-bottom:4px'>🔔 Ne rate plus rien</b>Buts, matchs qui démarrent, actualités, pronostics du jour, retraits et bonus : reçois-les en notification.<div style='display:flex;gap:10px;margin-top:12px'><button type='button' id='pushY' style='flex:1;min-height:44px;border:0;border-radius:12px;background:#1D6FD8;color:#fff;font:700 15px inherit;cursor:pointer'>Activer</button><button type='button' id='pushN' style='min-height:44px;padding:0 14px;border:1px solid #3A2F9A;border-radius:12px;background:transparent;color:#fff;font:600 15px inherit;cursor:pointer'>Plus tard</button></div>";
-      document.body.appendChild(b);
-      document.getElementById("pushN").onclick=function(){ls.s(K_NO,String(Date.now()));b.remove()};
-      document.getElementById("pushY").onclick=function(){var y=this;y.disabled=true;enable(sb).then(function(r){if(r.ok)b.remove();else{ls.s(K_NO,String(Date.now()));b.firstChild.textContent="⚠️ Notifications";b.childNodes[1].textContent=r.error||"Activation impossible.";y.remove()}})};
-    },4000);
+      var o=document.createElement("div");o.id="pushBn";o.setAttribute("role","dialog");o.setAttribute("aria-modal","true");o.setAttribute("aria-label","Notifications");
+      o.style.cssText="position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,5,40,.72);font:500 15px/1.4 'Hanken Grotesk',system-ui,sans-serif";
+      o.innerHTML="<div style='width:100%;max-width:380px;background:#1E1760;color:#fff;border:1px solid #3A2F9A;border-radius:20px;padding:24px 20px 18px;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,.5)'><div style='font-size:42px;line-height:1'>🔔</div><b id='pushT' style='display:block;font-size:19px;margin:12px 0 8px'>Active les notifications</b><p id='pushP' style='margin:0 0 18px;opacity:.9'>Buts, matchs qui démarrent, actualités, pronostics du jour, retraits et bonus : reçois tout directement sur ton téléphone.</p><button type='button' id='pushY' style='width:100%;min-height:48px;border:0;border-radius:14px;background:#1D6FD8;color:#fff;font:700 16px inherit;cursor:pointer'>Activer les notifications</button><button type='button' id='pushN' style='width:100%;min-height:44px;margin-top:8px;border:0;background:transparent;color:#C9C4F5;font:600 15px inherit;cursor:pointer'>Plus tard</button></div>";
+      document.body.appendChild(o);
+      function close(){ls.s(K_NO,String(Date.now()));o.remove()}
+      document.getElementById("pushN").onclick=close;
+      o.addEventListener("click",function(e){if(e.target===o)close()});
+      document.getElementById("pushY").onclick=function(){var y=this;y.disabled=true;enable(sb).then(function(r){if(r.ok){o.remove();return}
+        document.getElementById("pushT").textContent="⚠️ Notifications";document.getElementById("pushP").textContent=r.error||"Activation impossible.";y.remove();document.getElementById("pushN").textContent="Fermer"})};
+    },1500);
   }
   function boot(sb){sync(sb);banner(sb)}
   window.PUSH={state:state,configured:configured,enable:enable,disable:disable,sync:sync,release:release,test:test,getPrefs:getPrefs,setPrefs:setPrefs,boot:boot};
