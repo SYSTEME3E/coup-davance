@@ -1,6 +1,6 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="news.css"><title>Actualités football – Pronos-bet</title></head><body class="nw"><div class="wrap">
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FFFFFF"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="news.css"><title>Actualités football – Pronos-bet</title></head><body class="nw"><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
-<h1 class="pt">Actualités</h1><p class="sub" style="text-transform:none">Football, mercato, blessures et analyses : titres et liens vers les sources d’origine.</p>
+<h1 class="pt">Actualités</h1><p class="sub" style="text-transform:none">Football, mercato, blessures et analyses : titre, image et extrait, avec le lien vers la source d’origine.</p>
 <div class="nw-tabs" id="tabs" role="tablist" aria-label="Catégories"></div>
 <div class="nw-bar">
   <input id="q" type="search" placeholder="Rechercher (joueur, club, sujet…)" autocomplete="off" enterkeyhint="search" aria-label="Rechercher une actualité">
@@ -14,7 +14,7 @@
 <div class="nw-info"><span id="cnt" aria-live="polite"></span><span id="upd"></span></div>
 <div id="list" class="nw-list" aria-live="polite"><p class="sub">Chargement…</p></div>
 <button id="more" class="more" style="display:none;width:100%;margin-top:14px;min-height:46px">Voir plus d’actualités</button>
-<p class="nw-legal">Les titres et extraits appartiennent à leurs éditeurs et sont affichés avec un lien vers l’article original ; nous ne republions ni articles complets ni images. Un transfert n’est marqué « Officiel » que lorsqu’il provient d’une source officielle (club, ligue ou fédération) ; sinon il est indiqué comme rumeur ou non vérifié. Une erreur ? Utilisez « Signaler ».</p>
+<p class="nw-legal">Les titres, images et courts extraits appartiennent à leurs éditeurs ; ils sont affichés avec le nom de la source et un lien vers l’article original, où se trouve la suite. Nous ne republions pas les articles complets. Un transfert n’est marqué « Officiel » que lorsqu’il provient d’une source officielle (club, ligue ou fédération) ; sinon il est indiqué comme rumeur ou non vérifié. Une erreur ? Utilisez « Signaler ».</p>
 <div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
@@ -23,7 +23,7 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;"
 const safeUrl=u=>/^https?:\/\//i.test(u||"")?u:"#";
 const CATS=[["une","À la une"],["mercato","Mercato"],["clubs","Clubs"],["joueurs","Joueurs"],["matchs","Matchs"],["blessures","Blessures"],["international","Football international"],["analyses","Analyses"]];
 const CN=Object.fromEntries(CATS),TS={official:"Officiel",rumor:"Rumeur",unverified:"Non vérifié"};
-const PAGE=20,SEL="id,license,title,snippet,url,source_name,published_at,created_at,category,transfer_status,verification_note,featured,also_reported_by";
+const PAGE=20,SEL="id,license,title,snippet,url,source_name,published_at,created_at,category,transfer_status,verification_note,featured,also_reported_by,image_url";
 let CAT="une",Q="",SRC="",PER="",TR="",OFF=0,TOTAL=0,TOP="",BUSY=false,SEQ=0,ME=null;
 const loc=()=>window.PB?PB.loc():"fr-FR";
 function ago(s){const d=new Date(s),m=Math.round((Date.now()-d)/6e4);
@@ -32,6 +32,7 @@ function ago(s){const d=new Date(s),m=Math.round((Date.now()-d)/6e4);
 const card=(a,i)=>{
   const ts=a.transfer_status;
   return'<article class="nw-card'+(a.featured?' top':'')+'">'
+  +(a.image_url?'<a class="nw-img" href="'+esc(safeUrl(a.url))+'" target="_blank" rel="noopener noreferrer nofollow" tabindex="-1" aria-hidden="true"><img src="'+esc(safeUrl(a.image_url))+'" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>':'')
   +'<div class="nw-badges"><span class="nw-b">'+esc(CN[a.category]||a.category)+'</span>'+(ts?'<span class="nw-b '+ts+'">'+TS[ts]+'</span>':'')+'</div>'
   +'<h2><a href="'+esc(safeUrl(a.url))+'" target="_blank" rel="noopener noreferrer nofollow">'+esc(a.title)+'</a></h2>'
   +(a.snippet?'<p>'+esc(a.snippet)+'</p>':'')
@@ -75,6 +76,7 @@ $("tabs").onclick=e=>{const b=e.target.closest("[data-c]");if(!b)return;CAT=b.da
 let T;$("q").oninput=e=>{clearTimeout(T);T=setTimeout(()=>{Q=e.target.value.trim();load(true)},350)};
 $("fs").onchange=e=>{SRC=e.target.value;load(true)};$("fp").onchange=e=>{PER=e.target.value;load(true)};$("ft").onchange=e=>{TR=e.target.value;load(true)};
 $("more").onclick=()=>load(false);
+$("list").addEventListener("error",e=>{if(e.target.tagName==="IMG"){const a=e.target.closest(".nw-img");if(a)a.remove()}},true);
 function toast(m){const t=document.createElement("div");t.className="nw-toast";t.setAttribute("role","status");t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2800)}
 $("list").onclick=async e=>{const b=e.target.closest("[data-rp]");if(!b)return;b.disabled=true;
   const{error}=await sb.from("news_reports").insert({article_id:b.dataset.rp,reason:"signalement utilisateur"});
