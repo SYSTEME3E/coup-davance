@@ -48,7 +48,6 @@
     <label class="pnr"><span><b>📰 Actualités</b><small>Les infos des championnats européens</small></span><input type="checkbox" data-p="news"></label>
     <label class="pnr"><span><b>🎯 Pronostics</b><small>Les pronostics du jour déjà en ligne</small></span><input type="checkbox" data-p="picks"></label>
     <label class="pnr"><span><b>💰 VIP, retraits et bonus</b><small>Activation VIP, retrait, bonus et parrainage</small></span><input type="checkbox" data-p="money"></label>
-    <button type="button" class="out2" id="pnt" style="margin-top:12px">Envoyer une notification test</button>
   </div>
 </section>
 <button type="button" class="out2" id="rOut">Quitter</button>
@@ -123,7 +122,6 @@ const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
   pp.addEventListener("change",async e=>{const i=e.target.closest("[data-p]");if(!i)return;
     const p={};pp.querySelectorAll("[data-p]").forEach(x=>p[x.dataset.p]=x.checked);
     const ok=await PUSH.setPrefs(sb,p);say(ok?"Préférences enregistrées.":"Enregistrement impossible.",ok?"ok":"ko")});
-  $("pnt").onclick=async()=>{const t=$("pnt");t.disabled=true;const r=await PUSH.test(sb);say(r.ok?"Notification test envoyée : elle arrive dans quelques secondes.":(/trop|wait|limit/i.test(r.error||"")?"Patiente une minute avant un nouveau test.":"Envoi impossible : "+(r.error||"")),r.ok?"ok":"ko");setTimeout(()=>t.disabled=false,8000)};
   await draw();
 })();
 </script><script src="pwa.js" defer></script></body></html>
