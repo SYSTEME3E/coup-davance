@@ -104,8 +104,11 @@ function meBox(){
   const ex=ME.trial?"Ensuite, le plan Gratuit s’applique.":pl==="free"?"Aucun VIP actif.":ME.ends_at?"":"Accès sans limite de durée.";
   const act=ME.trial?'<div class="ab-act tr">⏳ Essai gratuit en cours : accès Gold complet jusqu’au <b>'+dt(ME.trial_ends_at)+'</b> · encore '+left(ME.trial_ends_at)+'</div>'
     :(pl!=="free"&&ME.ends_at?'<div class="ab-act">✅ Tu as un VIP <b>'+PN[pl]+'</b> actif jusqu’au <b>'+dt(ME.ends_at)+'</b> · encore '+left(ME.ends_at)+'</div>':"");
-  const ad=(!ME.trial&&ME.level&&ME.level!==pl)?'<div class="ab-act tr">⚡ Niveau du jour : <b>'+PN[ME.level]+'</b> (débloqué avec les pubs, jusqu’à minuit UTC)</div>':"";
-  return '<section class="ab-me" aria-label="Mon VIP"><div><h2>Ton plan actuel</h2><div class="pl">'+(ME.trial?"Essai gratuit":PN[pl])+'</div>'+act+(ex?'<div class="ex">'+ex+'</div>':"")+ad+'</div>'
+  const RK={free:0,basic:1,gold:2};
+  const susp=ME.suspended?'<div class="ab-act tr">⏸ Ton VIP est suspendu. Ton compte fonctionne comme un plan Gratuit. Contacte le support pour plus d’informations.</div>':"";
+  const cap=(!ME.suspended&&ME.plan_cap&&RK[ME.level]<RK[pl])?'<div class="ab-act tr">ℹ️ Ton accès est limité au niveau <b>'+PN[ME.level]+'</b> sur ton compte.</div>':"";
+  const ad=(!ME.trial&&!ME.suspended&&ME.level&&RK[ME.level]>RK[pl])?'<div class="ab-act tr">⚡ Niveau du jour : <b>'+PN[ME.level]+'</b> (débloqué avec les pubs, jusqu’à minuit UTC)</div>':"";
+  return '<section class="ab-me" aria-label="Mon VIP"><div><h2>Ton plan actuel</h2><div class="pl">'+(ME.trial?"Essai gratuit":PN[pl])+'</div>'+act+(ex?'<div class="ex">'+ex+'</div>':"")+susp+cap+ad+'</div>'
     +'<div class="qs">'+q("Pronostics solides débloqués aujourd’hui",u)+q("Matchs incertains débloqués aujourd’hui",v)+'</div></section>'}
 
 // ---------- Cartes des plans ----------
