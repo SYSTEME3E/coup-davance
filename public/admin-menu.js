@@ -47,5 +47,5 @@
   const close=()=>{dr.classList.remove("on");ov.classList.remove("on");btn.setAttribute("aria-expanded","false");document.body.style.overflow="";btn.focus()};
   btn.onclick=open;ov.onclick=close;dr.querySelector(".dx").onclick=close;
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dr.classList.contains("on"))close()});
-  document.getElementById("aOut").onclick=async()=>{await sb.auth.signOut();location.href="index.html"};
+  document.getElementById("aOut").onclick=async()=>{try{const t=localStorage.getItem("pb_push_token");if(t)await Promise.race([sb.rpc("unregister_push_token",{p_token:t}),new Promise(r=>setTimeout(r,2500))]);localStorage.removeItem("pb_push_u")}catch(e){}await sb.auth.signOut();location.href="index.html"};
 })();
