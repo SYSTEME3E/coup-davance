@@ -1,7 +1,7 @@
 // Enrichissement : pour chaque article Google News, on retrouve la vraie page de l'éditeur,
 // puis on en tire une image (og:image) et un EXTRAIT de texte (500 à 1000 caractères max).
 // Le reste de l'article n'est jamais copié : le bouton « Lire l'article original » renvoie vers le site de l'éditeur.
-import { decode, stripHtml, clip } from "./text.js";
+import { decode, stripHtml, clip, decodeBytes } from "./text.js";
 
 export const SNIPPET_MAX = Math.min(1000, Math.max(300, Number(process.env.NEWS_SNIPPET_MAX) || 600));
 const UA = "Mozilla/5.0 (compatible; CoupDAvanceNewsBot/1.0; +contact: voir mentions légales)";
@@ -119,10 +119,13 @@ export function extract(html: string, pageUrl: string, max = SNIPPET_MAX): Omit<
 }
 
 async function readLimited(r: Response, limit = 700_000): Promise<string> {
-  const reader = r.body?.getReader(); if (!reader) return await r.text();
-  const dec = new TextDecoder("utf-8", { fatal: false }); let s = "", n = 0;
-  while (n < limit) { const { done, value } = await reader.read(); if (done) break; n += value.length; s += dec.decode(value, { stream: true }); }
-  reader.cancel().catch(() => {}); return s;
+  const ct = r.headers.get("content-type") ?? "";
+  const reader = r.body?.getReader(); if (!reader) return decodeBytes(new Uint8Array(await r.arrayBuffer()), ct);
+  const parts: Uint8Array[] = []; let n = 0;
+  while (n < limit) { const { done, value } = await reader.read(); if (done) break; parts.push(value); n += value.length; }
+  reader.cancel().catch(() => {});
+  const all = new Uint8Array(n); let o = 0; for (const p of parts) { all.set(p, o); o += p.length; }
+  return decodeBytes(all, ct);
 }
 
 export async function enrich(googleOrDirectLink: string): Promise<Enriched | null> {
