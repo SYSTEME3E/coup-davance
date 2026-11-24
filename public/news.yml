@@ -1,0 +1,19 @@
+name: Actualités football
+on:
+  schedule: [{ cron: "*/30 * * * *" }]   # toutes les 30 minutes (GitHub peut retarder de quelques minutes)
+  workflow_dispatch:
+concurrency: { group: news-sync, cancel-in-progress: false }
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - run: npm run news:test
+      - run: npm run news
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
