@@ -16,3 +16,14 @@ export const jaccard = (a: Set<string>, b: Set<string>) => {
 export const clip = (s: string, n: number) => s.length <= n ? s : s.slice(0, n - 1).replace(/\s+\S*$/, "") + "…";
 // Domaine nettoyé (sans www.) d'une URL, ou null.
 export const domain = (u: string | null) => { try { return u ? new URL(u).hostname.replace(/^www\./, "").toLowerCase() : null } catch { return null } };
+
+// Décode des octets selon l'encodage réel (en-tête HTTP, déclaration XML ou balise meta), UTF-8 par défaut.
+// Indispensable pour les flux/pages en ISO-8859-1 (sinon « é » devient « � »).
+export function decodeBytes(buf: Uint8Array, contentType = ""): string {
+  const head = new TextDecoder("latin1").decode(buf.subarray(0, 2048));
+  const label = contentType.match(/charset=["']?([\w-]+)/i)?.[1]
+    ?? head.match(/<\?xml[^>]*encoding=["']([\w-]+)["']/i)?.[1]
+    ?? head.match(/<meta[^>]+charset=["']?([\w-]+)/i)?.[1]
+    ?? "utf-8";
+  try { return new TextDecoder(label).decode(buf); } catch { return new TextDecoder("utf-8").decode(buf); }
+}
