@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { parseRss } from "./providers/rss.js";
 import { build, type SourceRules } from "./pipeline.js";
+import { decodeBytes } from "./text.js";
 import { extract, decodeGoogleId, isPublicHttp, cutText } from "./enrich.js";
 const xml = `<?xml version="1.0"?><rss version="2.0"><channel>
 <item><title>Le club annonce officiellement la signature de X - Club Officiel</title><link>https://example.com/a</link><pubDate>Mon, 23 Nov 2026 10:00:00 GMT</pubDate><description>&lt;a href="https://example.com/a"&gt;Le club annonce officiellement la signature de X&lt;/a&gt;&amp;nbsp;&lt;font&gt;Club Officiel&lt;/font&gt;</description><source url="https://www.club-officiel.test">Club Officiel</source></item>
@@ -57,4 +58,8 @@ const known = [{ id: "k1", title_key: "x", toks: new Set(["psg", "doue", "incert
 const up = build(di.map(a => ({ feed: { ...feed, provider: "rss", license: "commercial" }, a })), rules, known as any);
 assert.equal(up.upgrades.length, 1, "article connu complété avec image");
 assert.equal(up.upgrades[0].image_url, "https://img.media.test/a.jpg");
+// --- Encodage : flux en ISO-8859-1 (accents) ---
+const latin = Buffer.from('<?xml version="1.0" encoding="ISO-8859-1"?><rss version="2.0"><channel><item><title>Neymar : après l\'arbitre, la défaite</title><link>https://m.test/z</link><pubDate>Mon, 23 Nov 2026 10:00:00 GMT</pubDate></item></channel></rss>', "latin1");
+assert.equal(parseRss(decodeBytes(new Uint8Array(latin), "text/xml"), false)[0].title, "Neymar : après l'arbitre, la défaite", "accents ISO-8859-1");
+assert.equal(decodeBytes(new Uint8Array(Buffer.from("é à ç", "utf8")), "text/html; charset=utf-8"), "é à ç");
 console.log("Tous les tests passent.");
