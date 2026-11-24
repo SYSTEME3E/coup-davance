@@ -30,6 +30,7 @@
 <header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>Pronos-bet</span></a></header>
 <h1 class="pt">VIP</h1><p class="sub" style="text-transform:none">Choisis le plan qui te convient. Paiement par Mobile Money, virement bancaire ou carte. Activation automatique.</p>
 <div id="st" class="ab-st" role="status" hidden></div>
+<section class="adg" id="adgate" hidden aria-label="Pubs"></section>
 <div id="app"><p class="sub">Chargement…</p></div>
 <div style="height:48px"></div></div>
 
@@ -55,7 +56,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="menu.js"></script><script>
+</script><script src="menu.js"></script><script src="ads.js"></script><script>
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 // Prix en dollars (fixés dans l'admin) : sert à l'équivalent « ≈ x $ » et au paiement en dollars en RDC. Remplacé par plan_settings au chargement.
 let UD=null,USD_ALT={CD:{basic:5,gold:18}};
@@ -174,8 +175,10 @@ function histBox(){
   return '<section class="ab-sec"><h2>Mes paiements</h2>'+PAYS.map(x=>{const b=BD[x.status]||["mu",x.status],recent=x.status==="pending"&&now-new Date(x.created_at).getTime()<36e5*3;
     return '<div class="pay"><div><b>Plan '+esc(PN[x.plan]||x.plan)+'</b> · '+money(x.amount,x.currency)+'<small>'+dtt(x.created_at)+(x.operator?" · "+esc((OPS[x.operator]||[x.operator])[0]):"")+'</small></div><div class="rt"><span class="bd '+b[0]+'">'+b[1]+'</span>'+(recent?'<button class="lk2" type="button" data-chk="'+esc(x.id)+'">Vérifier</button>':"")+'</div></div>'}).join("")+'</section>'}
 
+const GATE=$("adgate");
 function draw(){
   $("app").innerHTML=meBox()+pickBox()+plansBox()+extra()+histBox();
+  const pls=document.querySelector(".plans");if(pls)pls.parentNode.insertBefore(GATE,pls);   // « payer ou regarder 6 pubs », juste au-dessus des plans
   cpInit();
   document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>openCk(b.dataset.p));
   document.querySelectorAll("[data-chk]").forEach(b=>b.onclick=()=>verify(b.dataset.chk,true))}
@@ -313,4 +316,6 @@ async function verify(id,manual){
   draw();
   const pid=new URLSearchParams(location.search).get("pid");
   if(pid)verify(pid,false)})();
-</script><script src="pwa.js" defer></script></body></html>
+</script><script src="pwa.js" defer>
+PBAds.mount(GATE,{sb:sb,showIfNoSlot:true,heading:n=>"Ou débloque "+n+" sans payer",onUnlock:()=>location.reload()});
+</script></body></html>
