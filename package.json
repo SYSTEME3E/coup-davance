@@ -1,4 +1,19 @@
-{ "name": "coup-davance", "private": true, "type": "module",
-  "scripts": { "sync": "tsx scripts/sync.ts" },
-  "dependencies": { "@supabase/supabase-js": "^2.49.4" },
-  "devDependencies": { "tsx": "^4.19.0", "typescript": "^5.5.0" } }
+{
+  "name": "coup-davance",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "tsx scripts/sync.ts",
+    "news": "tsx scripts/news-sync.ts",
+    "news:test": "tsx scripts/news/news.test.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "fast-xml-parser": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}
