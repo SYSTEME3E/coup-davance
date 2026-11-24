@@ -27,3 +27,11 @@ export function decodeBytes(buf: Uint8Array, contentType = ""): string {
     ?? "utf-8";
   try { return new TextDecoder(label).decode(buf); } catch { return new TextDecoder("utf-8").decode(buf); }
 }
+
+// Nom de l'auteur tel que publié (flux ou page) : on retire « Par », les e-mails et les adresses.
+export function cleanAuthor(raw: string | null | undefined): string | null {
+  let s = stripHtml(String(raw ?? ""));
+  const p = s.match(/\(([^)]+)\)/); if (p && /@/.test(s)) s = p[1];
+  s = s.replace(/^\s*(par|by)\s+/i, "").replace(/\s+/g, " ").trim();
+  return !s || /@|^https?:/i.test(s) || s.length > 80 ? null : s;
+}
