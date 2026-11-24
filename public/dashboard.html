@@ -46,7 +46,7 @@ a.pt-go,a.pt-go:visited{display:block;background:#FFC933;color:#1B1500;border-co
 <p class="note" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="cards.js"></script><script src="menu.js"></script><script src="sportscore.js"></script><script src="ticker.js" defer></script><script src="ads.js"></script><script>PBAds.mount($("adgate"),{sb:sb,onUnlock:function(){location.reload()}});PBAds.display($("adslot"),{sb:sb});</script><script>
+</script><script src="cards.js"></script><script src="menu.js"></script><script src="sportscore.js"></script><script src="ticker.js" defer></script><script src="ads.js"></script><script>PBAds.mount($("adgate"),{sb:sb,showIfNoSlot:true,onUnlock:function(){location.reload()}});PBAds.display($("adslot"),{sb:sb});</script><script>
 $("date").textContent=new Date().toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"long",day:"numeric",month:"long"});
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session){let sv=null;try{sv=localStorage.getItem("pb_home_v1")}catch(x){}if(!(navigator.onLine===false&&sv))return location.href="auth.html#login"}
 let homeHTML="",tok=0,cache=null;
