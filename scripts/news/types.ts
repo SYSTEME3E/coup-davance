@@ -13,6 +13,6 @@ export interface Feed {
 export interface RawArticle {
   title: string; link: string; snippet: string | null;
   sourceName: string | null; sourceUrl: string | null; publishedAt: string; // ISO
-  imageUrl?: string | null;
+  imageUrl?: string | null; author?: string | null;
 }
 export interface NewsProvider { id: string; fetchItems(feed: Feed): Promise<RawArticle[]>; }
