@@ -20,7 +20,8 @@
   tag:'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.5"/>',
   usr:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
   mat:'<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.7V17c0 .6-.5 1-1.2 1.2C7.9 18.7 7 20.2 7 22M14 14.7V17c0 .6.5 1 1.2 1.2.9.5 1.8 2 1.8 3.8M18 2H6v7a6 6 0 0 0 12 0z"/>',
-  back:'<path d="M19 12H5M12 19l-7-7 7-7"/>'
+  back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
+  news:'<path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v5h5M2 15h8M2 11h4M2 19h8"/>'
   };
   const ic=n=>'<svg class="mi" viewBox="0 0 24 24" aria-hidden="true">'+IC[n]+'</svg>';
   const L=[
@@ -29,7 +30,8 @@
     ["admin-prix.html","Prix VIP",["admin-prix.html"],"tag"],
     ["admin-utilisateurs.html","Utilisateurs",["admin-utilisateurs.html","admin-user.html"],"usr"],
     ["admin-matchs.html","Matchs",["admin-matchs.html"],"mat"],
-    ["admin-retraits.html","Retraits",["admin-retraits.html"],"out"]
+    ["admin-retraits.html","Retraits",["admin-retraits.html"],"out"],
+    ["admin-actualites.html","Actualités",["admin-actualites.html"],"news"]
   ];
   const btn=document.createElement("button");
   btn.type="button";btn.className="burger";btn.setAttribute("aria-label","Ouvrir le menu administration");btn.setAttribute("aria-expanded","false");
