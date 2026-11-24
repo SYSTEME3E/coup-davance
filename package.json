@@ -5,7 +5,8 @@
   "scripts": {
     "sync": "tsx scripts/sync.ts",
     "news": "tsx scripts/news-sync.ts",
-    "news:test": "tsx scripts/news/news.test.ts"
+    "news:test": "tsx scripts/news/news.test.ts",
+    "push:test": "tsx scripts/push/push.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
