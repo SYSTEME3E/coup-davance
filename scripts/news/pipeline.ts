@@ -3,6 +3,7 @@ import type { Category, Feed, RawArticle } from "./types.js";
 import { classify } from "./classify.js";
 import { verifyTransfer, type SourceKind } from "./verify.js";
 import { moderate, claimsOfficial } from "./moderate.js";
+import { detectLeague } from "./league.js";
 import { sha1, norm, tokens, jaccard, domain } from "./text.js";
 
 export interface Known { id: string; title_key: string; toks: Set<string>; source_name: string | null; also: string[]; has_image?: boolean }
@@ -12,6 +13,7 @@ export interface Row {
   transfer_status: string | null; verification_note: string | null; moderation_status: string; flags: string[]; mod_reason: string | null;
   feed_id: string; license: string; also_reported_by: string[];
   image_url: string | null; enriched_at: string | null; enrich_status: string | null;
+  author: string | null; league: string | null;
 }
 export interface SourceRules { byDomain: Map<string, SourceKind>; byName: Map<string, SourceKind> }
 export const kindOf = (r: SourceRules, d: string | null, n: string | null): SourceKind =>
@@ -32,7 +34,7 @@ export function build(items: { feed: Feed; a: RawArticle }[], rules: SourceRules
     if (hit) {
       dups++;
       // Le même article arrive avec une image depuis le flux direct de l'éditeur : on complète la version existante.
-      if (a.imageUrl && hit.row && !hit.row.image_url) { hit.row.image_url = a.imageUrl; hit.row.url = a.link; if (a.snippet && a.snippet.length > (hit.row.snippet?.length ?? 0)) hit.row.snippet = a.snippet; }
+      if (a.imageUrl && hit.row && !hit.row.image_url) { hit.row.image_url = a.imageUrl; hit.row.url = a.link; hit.row.author ??= a.author ?? null; if (a.snippet && a.snippet.length > (hit.row.snippet?.length ?? 0)) hit.row.snippet = a.snippet; }
       else if (a.imageUrl && hit.id && hit.has_image === false && !upgrades.some(u => u.id === hit.id)) { upgrades.push({ id: hit.id, url: a.link, image_url: a.imageUrl, snippet: a.snippet }); hit.has_image = true; }
       if (hit.source_name !== src && !hit.also.includes(src)) {
         hit.also.push(src);
@@ -49,7 +51,8 @@ export function build(items: { feed: Feed; a: RawArticle }[], rules: SourceRules
     const row: Row = { url_hash: urlHash, title_key: key, title: a.title, snippet: a.snippet, url: a.link, source_name: src, source_domain: d,
       published_at: a.publishedAt, category, transfer_status: v.status, verification_note: v.note, moderation_status: m.status, flags: m.flags,
       mod_reason: m.reason, feed_id: feed.id, license: feed.license, also_reported_by: [],
-      image_url: a.imageUrl ?? null, enriched_at: null, enrich_status: a.imageUrl ? "feed" : null };
+      image_url: a.imageUrl ?? null, enriched_at: null, enrich_status: a.imageUrl ? "feed" : null,
+      author: a.author ?? null, league: detectLeague(a.title, a.snippet) };
     rows.push(row);
     pool.push({ id: "", title_key: key, toks, source_name: src, also: row.also_reported_by, row });
   }
