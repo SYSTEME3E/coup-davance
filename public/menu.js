@@ -48,17 +48,21 @@
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dr.classList.contains("on"))close()});
 
   g("mLite").onclick=()=>{try{localStorage.setItem("pb_lite",window.LITE?"0":"1")}catch(e){}location.reload()};
-  g("mOut").onclick=async()=>{await sb.auth.signOut();location.href="index.html"};
+  g("mOut").onclick=async()=>{await window.PUSH_READY;if(window.PUSH)await PUSH.release(sb);await sb.auth.signOut();location.href="index.html"};
 
   if(window.PB)PB.sync(sb);
+  // Notifications push : config Firebase puis push.js ; PUSH_READY permet aux pages (réglages) d'attendre le chargement
+  const lp=src=>new Promise(r=>{const s=document.createElement("script");s.src=src;s.onload=s.onerror=()=>r();document.head.appendChild(s)});
+  window.PUSH_READY=lp("firebase-config.js").then(()=>lp("push.js"));
   // Chargement du compte : blocage et liens administrateur
   (async()=>{
     const{data:{session}}=await sb.auth.getSession();
     if(!session)return;
     const{data}=await sb.from("profiles").select("is_admin,blocked").eq("id",session.user.id).maybeSingle();
     if(data){
-      if(data.blocked){await sb.auth.signOut();location.href="auth.html#login";return}
+      if(data.blocked){await window.PUSH_READY;if(window.PUSH)await PUSH.release(sb);await sb.auth.signOut();location.href="auth.html#login";return}
       if(data.is_admin){g("mAdmin").hidden=false}
     }
+    await window.PUSH_READY;if(window.PUSH)PUSH.boot(sb); // connexion : rattache cet appareil au compte
   })();
 })();
