@@ -1,7 +1,7 @@
 // Fournisseur RSS générique. Google News (test) et tout futur flux RSS sous licence passent par ici.
 import { XMLParser } from "fast-xml-parser";
 import type { Feed, NewsProvider, RawArticle } from "../types.js";
-import { stripHtml, clip } from "../text.js";
+import { stripHtml, clip, decodeBytes } from "../text.js";
 import { SNIPPET_MAX, absUrl } from "../enrich.js";
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_", textNodeName: "#t", processEntities: true });
@@ -51,7 +51,7 @@ export const rssProvider = (id: string, google: boolean): NewsProvider => ({
       try {
         const r = await fetch(feed.url, { headers: { "User-Agent": "CoupDAvanceNewsBot/1.0 (+contact: voir mentions légales)", Accept: "application/rss+xml, application/xml, text/xml" }, signal: AbortSignal.timeout(15000) });
         if (!r.ok) throw new Error("HTTP " + r.status);
-        const items = parseRss(await r.text(), google, feed.label);
+        const items = parseRss(decodeBytes(new Uint8Array(await r.arrayBuffer()), r.headers.get("content-type") ?? ""), google, feed.label);
         if (!feed.keyword_filter) return items;
         const re = new RegExp(feed.keyword_filter, "i");   // flux généraliste : on ne garde que ce qui parle de football
         return items.filter(a => re.test(a.title) || re.test(a.snippet ?? ""));
