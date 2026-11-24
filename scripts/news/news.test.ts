@@ -2,8 +2,9 @@
 import assert from "node:assert/strict";
 import { parseRss } from "./providers/rss.js";
 import { build, type SourceRules } from "./pipeline.js";
-import { decodeBytes } from "./text.js";
-import { extract, decodeGoogleId, isPublicHttp, cutText } from "./enrich.js";
+import { decodeBytes, cleanAuthor } from "./text.js";
+import { detectLeague } from "./league.js";
+import { pageAuthor, extract, decodeGoogleId, isPublicHttp, cutText } from "./enrich.js";
 const xml = `<?xml version="1.0"?><rss version="2.0"><channel>
 <item><title>Le club annonce officiellement la signature de X - Club Officiel</title><link>https://example.com/a</link><pubDate>Mon, 23 Nov 2026 10:00:00 GMT</pubDate><description>&lt;a href="https://example.com/a"&gt;Le club annonce officiellement la signature de X&lt;/a&gt;&amp;nbsp;&lt;font&gt;Club Officiel&lt;/font&gt;</description><source url="https://www.club-officiel.test">Club Officiel</source></item>
 <item><title>Le club annonce officiellement la signature de X - Journal A</title><link>https://example.com/b</link><pubDate>Mon, 23 Nov 2026 11:00:00 GMT</pubDate><source url="https://www.journal-a.test">Journal A</source></item>
@@ -62,4 +63,17 @@ assert.equal(up.upgrades[0].image_url, "https://img.media.test/a.jpg");
 const latin = Buffer.from('<?xml version="1.0" encoding="ISO-8859-1"?><rss version="2.0"><channel><item><title>Neymar : après l\'arbitre, la défaite</title><link>https://m.test/z</link><pubDate>Mon, 23 Nov 2026 10:00:00 GMT</pubDate></item></channel></rss>', "latin1");
 assert.equal(parseRss(decodeBytes(new Uint8Array(latin), "text/xml"), false)[0].title, "Neymar : après l'arbitre, la défaite", "accents ISO-8859-1");
 assert.equal(decodeBytes(new Uint8Array(Buffer.from("é à ç", "utf8")), "text/html; charset=utf-8"), "é à ç");
+// --- Championnat et auteur ---
+assert.equal(detectLeague("Real Madrid - PSV Eindhoven : les compos probables", null), "liga");
+assert.equal(detectLeague("Barça : deux dossiers mercato brûlants pour Deco", null), "liga");
+assert.equal(detectLeague("Premier League : Arsenal creuse l'écart", null), "premier-league");
+assert.equal(detectLeague("Le PSG s'impose à Lens en Ligue 1", null), "ligue-1");
+assert.equal(detectLeague("Bundesliga : le Bayern écrase Dortmund", null), "bundesliga");
+assert.equal(detectLeague("Programme TV du jour", null), null);
+assert.equal(cleanAuthor("Par Antoine Clérat"), "Antoine Clérat");
+assert.equal(cleanAuthor("redac@journal.fr (Marie Dupont)"), "Marie Dupont");
+assert.equal(cleanAuthor("redac@journal.fr"), null);
+assert.equal(pageAuthor('<meta name="author" content="Jean Martin">'), "Jean Martin");
+assert.equal(pageAuthor('<script type="application/ld+json">{"@type":"NewsArticle","author":[{"@type":"Person","name":"Sophie Bernard"}]}</script>'), "Sophie Bernard");
+assert.equal(parseRss(direct.replace("<description>Résumé court.</description>", "<dc:creator>Paul Durand</dc:creator>").replace("xmlns:media", 'xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media'), false)[0].author, "Paul Durand");
 console.log("Tous les tests passent.");
