@@ -451,3 +451,9 @@ img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none;-webkit-tou
 
 /* Mode Lite : aucune image de logo (sécurité si une image arrive d'ailleurs) */
 html.lite img.lgo,html.lite .sx-m .tm img,html.lite .oth-m img{display:none!important}
+
+/* Bouton vert « Télécharger l'application » (bas du menu) */
+.drw .dl-app{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:22px 0 10px;padding:13px;border-radius:10px;background:#16A34A;border:1.5px solid #16A34A;color:#fff;font:800 16px "Hanken Grotesk",sans-serif;text-decoration:none;box-sizing:border-box}
+.drw .dl-app[hidden]{display:none}
+.drw .dl-app:hover,.drw .dl-app:focus-visible{background:#128A3E;border-color:#128A3E}
+.drw .dl-app .mi{color:#fff}
