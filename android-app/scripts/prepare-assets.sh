@@ -15,6 +15,7 @@ cat > "$RES/values/ic_launcher_background.xml" <<XML
 </resources>
 XML
 
+
 # Icônes : (dossier, taille de l'icône classique, taille du calque adaptatif)
 for spec in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
   IFS=: read d legacy fg <<<"$spec"
