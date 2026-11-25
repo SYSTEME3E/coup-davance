@@ -5,7 +5,7 @@ set -euo pipefail
 RES="android/app/src/main/res"
 ICON="../public/icons/icon-512.png"
 MASK="../public/icons/maskable-512.png"
-BLUE="#1D6FD8"
+BLUE="#0B1F4D"
 DARK="#030C2E"
 
 # Couleur de fond des icônes adaptatives (celle du fond de l'icône du site)
