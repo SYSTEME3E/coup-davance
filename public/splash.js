@@ -1,5 +1,6 @@
 // Écran de démarrage de l'application PronostBet (une fois par ouverture).
 (function(){
+  if(/CoupDavanceApp/.test(navigator.userAgent)){var m=document.createElement("script");m.src="maj.js";document.head.appendChild(m)}
   var app=/CoupDavanceApp/.test(navigator.userAgent)||matchMedia("(display-mode: standalone)").matches;
   if(!app)return;
   try{if(sessionStorage.getItem("pbSplash"))return}catch(e){}
@@ -26,4 +27,3 @@
     s.style.opacity="0";setTimeout(function(){s.remove()},400);
   },Math.max(0,DUREE-ecoule));
 })();
-
