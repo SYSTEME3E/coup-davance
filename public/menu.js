@@ -7,6 +7,7 @@
   const hdr=document.querySelector("header.top");
   if(!hdr||typeof sb==="undefined")return;
   const g=id=>document.getElementById(id);
+  const nv=document.createElement("script");nv.src="nav.js";document.head.appendChild(nv); // barre du bas + favoris
   const IC={
   cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
   live:'<circle cx="12" cy="12" r="10"/><path d="m12 8 3.8 2.8-1.4 4.4H9.6l-1.4-4.4z"/><path d="M12 8V2.2M15.8 10.8l5.5-1.8M14.4 15.2l3.4 4.7M9.6 15.2l-3.4 4.7M8.2 10.8 2.7 9"/>',
@@ -37,7 +38,7 @@
   const dr=document.createElement("aside");dr.className="drw";dr.setAttribute("role","dialog");dr.setAttribute("aria-modal","true");dr.setAttribute("aria-label","Menu");
   dr.innerHTML=''
     +'<div class="dtop"><b>Menu</b><button type="button" class="dx" aria-label="Fermer le menu">✕</button></div>'
-    +'<nav class="mn">'+'<a href="dashboard.html">'+ic("cal")+'<span>Matchs du jour</span></a>'+'<a href="sport.html">'+ic("live")+'<span>Football en direct</span></a>'+'<a href="actualites.html">'+ic("news")+'<span>Actualités</span></a>'+'<a href="historique.html">'+ic("hist")+'<span>Historique</span></a>'+'<a href="abonnement.html">'+ic("vip")+'<span>VIP</span></a>'+'<a href="balance.html">'+ic("wal")+'<span>Mon solde</span></a>'+'<a href="retrait.html">'+ic("out")+'<span>Retrait</span></a>'+'<a href="reglages.html">'+ic("set")+'<span>Réglages</span></a>'+'<a href="admin.html" id="mAdmin" hidden>'+ic("adm")+'<span>Espace administrateur</span></a></nav>'
+    +'<nav class="mn">'+'<a href="abonnement.html">'+ic("vip")+'<span>VIP</span></a>'+'<a href="balance.html">'+ic("wal")+'<span>Mon solde</span></a>'+'<a href="retrait.html">'+ic("out")+'<span>Retrait</span></a>'+'<a href="reglages.html">'+ic("set")+'<span>Réglages</span></a>'+'<a href="admin.html" id="mAdmin" hidden>'+ic("adm")+'<span>Espace administrateur</span></a></nav>'
     +'<a class="dl-app" id="mApk" href="PronostBet.apk" download hidden>'+ic("dl")+'<span>Télécharger l’application</span></a>'
     +'<button type="button" class="out2" id="mOut">'+ic("quit")+'<span>Quitter</span></button>';
   document.body.appendChild(ov);document.body.appendChild(dr);
