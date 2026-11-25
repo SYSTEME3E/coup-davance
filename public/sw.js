@@ -1,7 +1,7 @@
 // Service worker PronostBet : l'app s'ouvre sans internet (pages, styles, scripts et bibliothèque Supabase gardés en cache).
-// Réseau d'abord ; si le réseau échoue, on sert la copie en cache. Les données (Supabase, SportScore) ne sont jamais mises en cache ici :
+// Pages, scripts et styles du site : copie en cache servie tout de suite, mise à jour en arrière-plan (la nouvelle version s'applique au chargement suivant). Les données (Supabase, SportScore) ne sont jamais mises en cache ici :
 // le dashboard enregistre lui-même sa dernière liste de matchs sur le téléphone.
-const V="pronostbet-v27";
+const V="pronostbet-v28";
 const SB="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js";
 const FONTS="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap";
 const PAGES=["index.html","auth.html","dashboard.html","historique.html","match.html","sport.html","legal.html","conditions.html","confidentialite.html","regles.html","mentions-legales.html","jeu-responsable.html","reglages.html","balance.html","retrait.html","abonnement.html","actualites.html"];
@@ -27,8 +27,12 @@ self.addEventListener("fetch",e=>{
     }
     return; // Supabase (données), SportScore et autres API : jamais mis en cache
   }
-  e.respondWith(fetch(r).then(res=>{if(res.ok){const cp=res.clone();caches.open(V).then(c=>c.put(r,cp))}return res})
-    .catch(()=>caches.match(r,{ignoreSearch:true}).then(m=>m||(r.mode==="navigate"?caches.match("dashboard.html"):Response.error()))));
+  // Clé sans « ?id=… » : match.html?id=1, ?id=2… partagent une seule copie de la page
+  const key=u.origin+u.pathname;
+  const net=()=>fetch(r).then(res=>{if(res.ok){const cp=res.clone();caches.open(V).then(c=>c.put(key,cp))}return res});
+  e.respondWith(caches.match(key).then(m=>{
+    if(m){e.waitUntil(net().catch(()=>{}));return m}
+    return net().catch(()=>caches.match(r,{ignoreSearch:true}).then(x=>x||(r.mode==="navigate"?caches.match("dashboard.html"):Response.error())))}));
 });
 
 // ---- Notifications push (Firebase Cloud Messaging, messages « data » envoyés par l'Edge Function push-worker) ----
