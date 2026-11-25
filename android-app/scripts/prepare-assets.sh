@@ -27,10 +27,12 @@ for spec in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432;
   convert -size ${fg}x${fg} xc:none \( "$MASK" -resize ${inner}x${inner} \) -gravity center -composite "$D/ic_launcher_foreground.png"
 done
 
-# Écran de démarrage Android : fond uni, sans logo (l'animation du site prend le relais)
+# Écran de démarrage : fond bleu + icône au centre, à la taille de chaque image existante
 for f in $(find "$RES" -name "splash.png"); do
   size=$(identify -format "%wx%h" "$f")
-  convert -size ${size} xc:"$DARK" "$f"
+  w=${size%x*}; h=${size#*x}
+  m=$(( (w<h ? w : h) * 30 / 100 ))
+  convert -size ${size} xc:"$DARK" \( "$ICON" -resize ${m}x${m} \) -gravity center -composite "$f"
 done
 # Fond bleu nuit partout au lancement (évite l'écran noir avant l'affichage de la page)
 STYLES="$RES/values/styles.xml"
@@ -43,14 +45,6 @@ cat > "$RES/values/pb_colors.xml" <<XML
     <color name="pb_dark">$DARK</color>
 </resources>
 XML
-# Android 12+ : icône transparente sur l'écran de lancement
-sed -i "/<style name=\"AppTheme.NoActionBarLaunch\"/a\\        <item name=\"windowSplashScreenAnimatedIcon\">@android:color/transparent</item>" "$STYLES"
-grep -q windowSplashScreenAnimatedIcon "$STYLES" &&
 grep -q windowSplashScreenBackground "$STYLES" && grep -q pb_dark "$STYLES" || { echo "::error::styles.xml non modifié"; exit 1; }
-
-# Version de l'app transmise au site (même numéro que versionName : 1.0.<numéro de build>)
-CONF="android/app/src/main/assets/capacitor.config.json"
-sed -i "s#CoupDavanceApp[^\"]*#CoupDavanceApp/1.0.${GITHUB_RUN_NUMBER:-0}#" "$CONF"
-grep -q "CoupDavanceApp/1.0." "$CONF" || { echo "::error::version non ajoutée"; exit 1; }
 
 echo "Icônes et écran de démarrage générés."
