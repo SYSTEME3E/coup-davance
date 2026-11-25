@@ -19,21 +19,24 @@ const LIVE=["1H","2H","ET","BT","P","LIVE","INT","SUSP","HT"],DONE=["FT","AET","
 const ROWS=[["expected_goals","Buts attendus (xG)"],["Ball Possession","Possession"],["Total Shots","Total de tirs"],["Shots on Goal","Tirs cadrés"],["Shots off Goal","Tirs non cadrés"],["Blocked Shots","Tirs contrés"],["Shots insidebox","Tirs dans la surface"],["Shots outsidebox","Tirs hors de la surface"],["Corner Kicks","Corners"],["Fouls","Fautes"],["Offsides","Hors-jeu"],["Yellow Cards","Cartons jaunes"],["Red Cards","Cartons rouges"],["Goalkeeper Saves","Arrêts du gardien"],["goals_prevented","Buts évités"],["Total passes","Passes"],["Passes accurate","Passes réussies"],["Passes %","Précision des passes"]];
 const num=v=>v==null?0:(parseFloat(String(v))||0);
 const id=Number(new URLSearchParams(location.search).get("id"));
-(async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";
-$("who").textContent=session.user.email;
+(async()=>{
+// La vérification de connexion se fait en parallèle des chargements (elle ne bloque plus l'affichage)
+const sessP=sb.auth.getSession().then(({data:{session}})=>{if(!session){location.href="auth.html#login";return null}$("who").textContent=session.user.email;return session});
 if(document.referrer&&new URL(document.referrer).origin===location.origin){$("back").onclick=e=>{e.preventDefault();history.back()}}
 if(!id){$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
 let pr=null,d=null,meta=null;
+// Ligne du pronostic et logos laissés par la carte sur laquelle on a cliqué : la page s'affiche tout de suite (moins de 10 min)
+try{const c=JSON.parse(sessionStorage.getItem("pb_row_"+id)||"null");if(c&&c.row&&Date.now()-c.t<6e5){pr=c.row;meta=c.meta||null}}catch(e){}
+const hadCache=!!pr;
 const loadRow=async()=>{const{data}=await sb.from("predictions_safe").select("*").eq("fixture_id",id).maybeSingle();if(data)pr=data};
+const loadMeta=async()=>{try{const{data}=await sb.from("match_meta").select("*").eq("fixture_id",id).maybeSingle();if(data)meta=data}catch(e){}};
+const loadDetail=async()=>{try{const{data,error}=await sb.functions.invoke("match-info",{body:{action:"detail",id}});if(!error&&data&&!data.error)d=data}catch(e){}};
+const inPlay=()=>!!(pr&&pr.live_status&&!pr.settled_at); // match en cours : pas d'appel API, on attend le score final
 window.afterUnlock=r=>{pr=r;draw()};
-await loadRow();
-if(!pr){$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
-try{const{data}=await sb.from("match_meta").select("*").eq("fixture_id",id).maybeSingle();meta=data}catch(e){}
-document.title=pr.home+" – "+pr.away+" · PronostBet";
 // Lien vers le suivi en direct SportScore (si ce match a été rapproché par sports_data.link_predictions)
-(async()=>{try{const{data}=await sb.rpc("sportscore_link",{p_fixture:id}),l=Array.isArray(data)?data[0]:data;
+const linkSide=async()=>{try{const{data}=await sb.rpc("sportscore_link",{p_fixture:id}),l=Array.isArray(data)?data[0]:data;
   if(!l||!l.slug)return;const live=/live|progress|half|1h|2h|ht/i.test((l.status||"")+" "+(l.status_text||""))&&!/finish|ended/i.test((l.status||"")+" "+(l.status_text||""));
-  $("sl").innerHTML='<a class="btn" style="display:block;text-align:center;text-decoration:none;margin:10px 0" href="sport.html#match/'+encodeURIComponent(l.slug)+(l.match_id&&l.match_id!==l.slug?"/"+encodeURIComponent(l.match_id):"")+'">'+(live?"🔴 Suivre le match en direct":"Voir le match sur Football en direct")+'</a>'}catch(e){}})();
+  $("sl").innerHTML='<a class="btn" style="display:block;text-align:center;text-decoration:none;margin:10px 0" href="sport.html#match/'+encodeURIComponent(l.slug)+(l.match_id&&l.match_id!==l.slug?"/"+encodeURIComponent(l.match_id):"")+'">'+(live?"🔴 Suivre le match en direct":"Voir le match sur Football en direct")+'</a>'}catch(e){}};
 // 10 derniers matchs de chaque équipe, lus dans notre archive (table match_archive)
 const SFX=["united","town","city","county","rovers","athletic","wanderers","albion","argyle","rvs","utd"];
 const keysFor=k=>{const p=String(k||"").split(" "),ss=p.length>1&&SFX.includes(p[p.length-1])?p.slice(0,-1).join(" "):k;return[...new Set([k,ss])].filter(Boolean)};
@@ -51,7 +54,7 @@ const l10=async()=>{
     return '<div class="lb"><h3>'+esc(name)+'</h3>'+(li||'<p class="note">Aucun match enregistré pour l’instant.</p>')+(rows.length&&rows.length<10?'<p class="note">'+rows.length+'/10 matchs enregistrés pour cette équipe.</p>':"")+'</div>'};
   const[h,a]=await Promise.all([blk(pr.home,pr.home_key),blk(pr.away,pr.away_key)]);
   if(h||a)$("l10").innerHTML='<div class="sec l10"><h2>10 derniers matchs</h2>'+h+a+'</div>'};
-l10().catch(()=>{});
+let sideOn=false;const startSide=()=>{if(sideOn||!pr)return;sideOn=true;document.title=pr.home+" – "+pr.away+" · PronostBet";linkSide();l10().catch(()=>{})};
 const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
 let lead=null;
 const S=(h,a)=>{h=+h;a=+a;lead=h>a?"home":a>h?"away":null;return '<span class="g'+(lead==="home"?' w':'')+'">'+h+'</span> – <span class="g'+(lead==="away"?' w':'')+'">'+a+'</span>'};
@@ -99,10 +102,22 @@ const draw=()=>{
 };
 const refresh=async()=>{
   await loadRow();
-  if(pr.live_status&&!pr.settled_at){draw();return} // match en cours : pas d'appel API, on attend le score final
-  try{const{data,error}=await sb.functions.invoke("match-info",{body:{action:"detail",id}});if(!error&&data&&!data.error)d=data}catch(e){}
+  if(inPlay()){draw();return}
+  await loadDetail();
   draw()};
-draw();await refresh();
+// Démarrage : avec la ligne mémorisée, on affiche tout de suite puis on lance TOUT en parallèle ; sans elle (lien direct, notification), ligne + logos en parallèle
+if(hadCache){
+  startSide();draw();
+  const det=inPlay()?Promise.resolve():loadDetail();
+  await Promise.all([loadRow(),loadMeta()]);
+  startSide();draw();
+  await det;draw();
+}else{
+  await Promise.all([loadRow(),loadMeta()]);
+  if(!pr){await sessP;$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
+  startSide();draw();
+  if(!inPlay()){await loadDetail();draw()}
+}
 setInterval(()=>{if(document.hidden)return;if(pr.settled_at&&d&&d.statistics&&d.statistics.length)return;refresh()},45000);
 
 // ---- Vidéos Highlightly : clips de buts (pendant le match) et résumé officiel (après le match) ----
