@@ -95,6 +95,10 @@ const withSS=async rows=>{
 const loadHome=async first=>{
  const s=new Date();s.setHours(0,0,0,0);
  const yd=new Date(s);yd.setDate(yd.getDate()-1);const tm=new Date(s);tm.setDate(tm.getDate()+1);const e=new Date(s);e.setDate(e.getDate()+2);
+ // Affichage immédiat avec la dernière liste gardée sur le téléphone (moins de 30 min) ; la base la met à jour dans la foulée
+ if(first){try{const sv=JSON.parse(localStorage.getItem("pb_home_v1")||"null");
+  if(sv&&Array.isArray(sv.data)&&Date.now()-sv.t<18e5){const a0=sv.data.filter(m=>m.live_status||(new Date(m.kickoff).toDateString()===s.toDateString()&&new Date(m.kickoff).getTime()>Date.now()-3*36e5));
+   if(a0.length){cache={all:a0,error:null,s,tm,others:[]};build()}}}catch(x){}}
  let{data,error}=await sb.from("predictions_safe").select(COLS).gte("kickoff",yd.toISOString()).lt("kickoff",tm.toISOString()).is("settled_at",null).order("kickoff");
  // Mode hors ligne : on garde la dernière liste reçue sur le téléphone et on l'affiche si internet est coupé
  OFF=0;
