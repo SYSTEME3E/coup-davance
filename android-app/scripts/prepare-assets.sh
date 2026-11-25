@@ -79,6 +79,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import androidx.core.content.FileProvider;
+import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
@@ -112,11 +113,24 @@ public class MajPlugin extends Plugin {
                     c.setConnectTimeout(20000);
                     c.setReadTimeout(30000);
                     c.setUseCaches(false);
+                    c.setRequestProperty("Accept-Encoding", "identity");
                     if (c.getResponseCode() != 200) throw new Exception("HTTP " + c.getResponseCode());
                     try (InputStream in = c.getInputStream(); OutputStream out = new FileOutputStream(fichier)) {
                         byte[] tampon = new byte[65536];
                         int n;
-                        while ((n = in.read(tampon)) != -1) out.write(tampon, 0, n);
+                        long total = c.getContentLengthLong(), recu = 0;
+                        int dernier = -1;
+                        while ((n = in.read(tampon)) != -1) {
+                            out.write(tampon, 0, n);
+                            recu += n;
+                            int pct = total > 0 ? (int) (recu * 100 / total) : -1;
+                            if (pct != dernier) {
+                                dernier = pct;
+                                JSObject etat = new JSObject();
+                                etat.put("pct", pct);
+                                notifyListeners("progres", etat);
+                            }
+                        }
                     }
                     PackageInfo info = getContext().getPackageManager().getPackageArchiveInfo(fichier.getPath(), 0);
                     if (info == null || !getContext().getPackageName().equals(info.packageName)) throw new Exception("APK invalide");
