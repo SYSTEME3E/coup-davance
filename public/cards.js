@@ -56,6 +56,9 @@ const pcBar=p=>{const sg=(k,c)=>'<span class="'+c+'" style="flex:'+Math.max(p[k]
 const FAKE='<div class="pc-bar"><span class="h" style="flex:40">00%</span><span class="d" style="flex:30">00%</span><span class="a" style="flex:30">00%</span></div><div class="pc-pills"><span class="pc-pk h">pronostic Domicile · 00%</span><span>score prévu <b>0-0</b></span></div><div class="pc-chips"><span>Plus de 2,5 buts <b>00%</b></span><span>Les deux marquent <b>00%</b></span></div>';
 const lockBox=m=>'<div class="lockbox"><div class="blurred" aria-hidden="true">'+FAKE+'</div><div class="lkov"><b>Pronostic masqué</b><span>Match '+(m.kind==="solid"?"solide":"incertain")+'</span><button type="button" class="btn" data-unlock="'+m.fixture_id+'">Débloquer le pronostic</button></div></div>';
 const FULL={};
+// Lignes affichées sur la page : au clic, la ligne et les logos sont gardés pour que match.html s'affiche tout de suite, sans attendre la base.
+const PBROW={};
+const pbStash=id=>{try{const m=FULL[id]||PBROW[id];if(m)sessionStorage.setItem("pb_row_"+id,JSON.stringify({t:Date.now(),row:m,meta:META[id]||null}))}catch(e){}};
 // Modèle v3 : total de buts attendu, plus de 3,5 / 4,5 et 3 scores les plus probables (absents des anciens pronostics)
 const gx=d=>{const o=d.over||{};let a="";
   if(d.expectedTotal!=null)a+='<span>Total prévu <b>'+fr(d.expectedTotal)+'</b></span>';
@@ -69,7 +72,7 @@ const probs=(d,fold)=>{const p=d.result,k=pcPick(p);
   return pcBar(p)+'<div class="pc-pills"><span class="pc-pk '+k+'">pronostic '+PCN[k]+' · '+p[PCK[k]]+'%</span><span>score prévu <b>'+esc(d.likelyScore)+'</b></span></div>'
   +'<div class="pc-chips"><span>Plus de 2,5 buts <b>'+d.over["2.5"]+'%</b></span><span>Les deux marquent <b>'+d.btts+'%</b></span>'+gx(d)+'</div>'+tops(d)+(fold?"":pcWhy(d))};
 const pcState=m=>m.settled_at?(m.final_home!=null?"done":"void"):m.live_status?"live":new Date(m.kickoff)<Date.now()?"wait":"next";
-const card=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]||{},st=pcState(m),open=isOpen(m),k=open?pcPick(d.result):"",v=m.verdict||{},good=!!v.ok1x2||!!v.scoreHit;
+const card=m=>{m=FULL[m.fixture_id]||m;PBROW[m.fixture_id]=m;const d=m.data,me=META[m.fixture_id]||{},st=pcState(m),open=isOpen(m),k=open?pcPick(d.result):"",v=m.verdict||{},good=!!v.ok1x2||!!v.scoreHit;
   let badge="",mid='<span class="pc-vs">vs</span>',tag="";
   if(st==="done"){const o=m.final_home>m.final_away?"h":m.final_home<m.final_away?"a":"d";
     badge=(m.verdict?'<b class="'+(good?"ok":"ko")+'">'+(good?"✓":"✗")+'</b>':"")+'<span class="pc-bd">FT</span>';
@@ -92,7 +95,7 @@ const card=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]||{},
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-why]");if(!b)return;
   const w=b.closest(".pc").querySelector(".pc-why");if(!w)return;const o=w.hidden;w.hidden=!o;b.setAttribute("aria-expanded",o?"true":"false");b.textContent=o?"masquer ▴":"pourquoi ▾"});
 // ---- Carte « Historique » (style clair : barre bleu / gris / rouge, résultat vert ou rouge) ----
-const histCard=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]||{},open=isOpen(m);
+const histCard=m=>{m=FULL[m.fixture_id]||m;PBROW[m.fixture_id]=m;const d=m.data,me=META[m.fixture_id]||{},open=isOpen(m);
   let body;
   if(open&&drift(m))body=origBox(m,true)+frm(d);
   else if(open){const p=d.result,sg=(k,c)=>'<span class="'+c+'" style="flex:'+Math.max(p[k],1)+'">'+(p[k]>=8?p[k]+"%":"")+'</span>';
@@ -110,7 +113,9 @@ const histCard=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]|
   +'<div class="chk go">Voir le détail et les statistiques ›</div></div>'};
 // Un clic sur une carte ouvre la page du match
 const openCard=e=>{const c=e.target.closest&&e.target.closest(".card[data-id],.pc[data-id],.hc[data-id]");if(!c||e.target.closest("a,button"))return;
-  if(String(getSelection()).length)return;location.href="match.html?id="+c.dataset.id};
+  if(String(getSelection()).length)return;pbStash(c.dataset.id);location.href="match.html?id="+c.dataset.id};
+// Lien « Voir le match ↗ » : même mémorisation
+document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("a.pc-b.go");if(!a)return;const c=a.closest(".pc[data-id]");if(c)pbStash(c.dataset.id)},true);
 document.addEventListener("click",openCard);
 document.addEventListener("keydown",e=>{if(e.key==="Enter")openCard(e)});
 // Charge les logos des matchs affichés ; redessine la liste (rerender) si de nouveaux logos arrivent
@@ -138,8 +143,9 @@ document.addEventListener("click",async e=>{
   if(error||!data||!data.ok){
     if(data&&data.error==="quota")return fail("Quota du jour atteint ("+data.limit+" "+(data.kind==="solid"?"pronostics solides":"matchs incertains")+"). <a href=\"abonnement.html\">Voir les offres VIP</a>");
     return fail("Déblocage impossible. Réessaie dans un instant.")}
-  const{data:row}=await sb.from("predictions_safe").select("*").eq("fixture_id",id).maybeSingle();
+  let row=data.row&&isOpen(data.row)?data.row:null; // unlock_pick peut renvoyer la ligne complète : un seul appel au lieu de deux
+  if(!row){const r=await sb.from("predictions_safe").select("*").eq("fixture_id",id).maybeSingle();row=r.data}
   if(!row||!isOpen(row))return fail("Déblocage impossible. Réessaie dans un instant.");
-  FULL[id]=row;
+  FULL[id]=row;pbStash(id);
   document.querySelectorAll('.card[data-id="'+id+'"],.pc[data-id="'+id+'"],.hc[data-id="'+id+'"]').forEach(c=>{c.outerHTML=(c.classList.contains("hc")?histCard:card)(row)});
   if(window.afterUnlock)window.afterUnlock(row)});
