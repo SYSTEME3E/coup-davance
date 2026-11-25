@@ -5,6 +5,7 @@
   "server": {
     "url": "https://coup-davance.vercel.app/dashboard.html",
     "cleartext": false,
+    "errorPath": "index.html",
     "allowNavigation": ["coup-davance.vercel.app", "*.supabase.co", "ikeepay.com", "*.ikeepay.com"]
   },
   "android": {
