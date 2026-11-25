@@ -34,6 +34,8 @@ a.pt-go,a.pt-go:visited{display:block;background:#FFC933;color:#1B1500;border-co
 <section class="bn" id="bn" hidden aria-label="Annonces"></section>
 <h1 class="pt">Matchs du jour</h1><p class="sub" id="date"></p>
 <div id="install" class="inst" hidden><img src="icon.svg" alt="" width="44" height="44"><div><b>Pronos-bet sur ton téléphone</b><span>Installe l’app pour y accéder en un geste.</span></div><button type="button" id="installBtn" class="btn">Installer l’app</button><p id="installHelp" class="note" hidden></p></div>
+<div id="apk" class="inst" hidden><img src="icon.svg" alt="" width="44" height="44"><div><b>Application Android</b><span>Télécharge l’application et ouvre-la en un geste.</span></div><a class="btn" href="coup-davance.apk" download style="text-align:center;text-decoration:none">Télécharger l’application</a><p class="note sub" style="grid-column:1/-1;margin:0">Une fois téléchargée, ouvre le fichier et autorise l’installation si Android te le demande.</p></div>
+<script>(function(){var u=navigator.userAgent;if(!/Android/i.test(u)||/CoupDavanceApp/.test(u))return;fetch("coup-davance.apk",{method:"HEAD",cache:"no-store"}).then(function(r){if(r.ok&&!/text\/html/.test(r.headers.get("content-type")||"")){var e=document.getElementById("apk");if(e)e.hidden=false}}).catch(function(){})})()</script>
 <section class="bonus" id="bonus"><button type="button" class="btn" id="bonusBtn" aria-expanded="false" aria-controls="bonusList">🎁 Bonus partenaires</button>
 <div id="bonusList" hidden></div></section>
 <section class="adg" id="adgate" hidden aria-label="Pubs"></section>
