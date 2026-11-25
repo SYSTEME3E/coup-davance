@@ -8,11 +8,11 @@
 
   var css=document.createElement("style");
   css.textContent="body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important}"
-  +".bnav{position:fixed;left:0;right:0;bottom:0;z-index:45;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;background:#1B1450;border-top:1px solid #322A7E;padding:6px 2px calc(6px + env(safe-area-inset-bottom,0px))}"
-  +".bnav a{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;color:#A9A4D6;text-decoration:none;font:700 11px 'Hanken Grotesk',system-ui,sans-serif;white-space:nowrap}"
+  +".bnav{position:fixed;left:0;right:0;bottom:0;z-index:45;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;background:#fff;border-top:1px solid #E4E5EE;box-shadow:0 -2px 12px rgba(0,0,0,.18);padding:6px 2px calc(6px + env(safe-area-inset-bottom,0px))}"
+  +".bnav a{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;color:#6B6890;text-decoration:none;font:700 11px 'Hanken Grotesk',system-ui,sans-serif;white-space:nowrap}"
   +".bnav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}"
-  +".bnav a.on{color:#fff}.bnav a.on svg{stroke:#FFC933}"
-  +".bnav .home i{display:flex;align-items:center;justify-content:center;width:62px;height:62px;margin-top:-30px;border-radius:50%;background:#1D6FD8;border:4px solid #130F33;box-shadow:0 4px 14px rgba(29,111,216,.5)}"
+  +".bnav a.on{color:#1D6FD8}"
+  +".bnav .home i{display:flex;align-items:center;justify-content:center;width:62px;height:62px;margin-top:-30px;border-radius:50%;background:#1D6FD8;border:4px solid #fff;box-shadow:0 4px 14px rgba(29,111,216,.5)}"
   +".bnav .home svg,.bnav .home.on svg{width:32px;height:32px;stroke:#fff}"
   +".favb{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:0;background:none;color:#F5B800;font:400 26px/1 system-ui,sans-serif;cursor:pointer}"
   +".pc-top .favb{margin-left:auto;margin-right:-4px}"
