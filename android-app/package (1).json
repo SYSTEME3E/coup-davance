@@ -1,0 +1,16 @@
+{
+  "name": "coup-davance-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enveloppe Android (Capacitor) du site Coup d'Avance : ouvre le site en ligne dans une application.",
+  "scripts": {
+    "sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.2"
+  }
+}
