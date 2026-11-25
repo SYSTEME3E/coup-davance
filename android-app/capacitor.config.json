@@ -1,6 +1,6 @@
 {
   "appId": "com.coupdavance.app",
-  "appName": "Coup d'Avance",
+  "appName": "PronostBet",
   "webDir": "www",
   "server": {
     "url": "https://coup-davance.vercel.app/dashboard.html",
