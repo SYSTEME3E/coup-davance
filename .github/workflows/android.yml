@@ -86,12 +86,26 @@ jobs:
 
       - name: Publier l'APK sur le site (public/)
         run: |
+          set -e
           cp coup-davance.apk "$RUNNER_TEMP/new.apk"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git reset --hard origin/main
-          cp "$RUNNER_TEMP/new.apk" public/coup-davance.apk
-          git add public/coup-davance.apk
-          git commit -m "Application Android : nouvelle version (build ${{ github.run_number }})" || exit 0
-          git push origin HEAD:main
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git checkout -B main origin/main
+            cp "$RUNNER_TEMP/new.apk" public/coup-davance.apk
+            git add public/coup-davance.apk
+            if git diff --cached --quiet; then
+              echo "APK identique, rien à publier."
+              exit 0
+            fi
+            git commit -m "Application Android : nouvelle version (build ${{ github.run_number }})"
+            if git push origin main; then
+              echo "APK publié (tentative $i)."
+              exit 0
+            fi
+            echo "Push refusé (main a changé), nouvelle tentative..."
+            sleep $((i * 5))
+          done
+          echo "::error::Impossible de publier l'APK après 5 tentatives."
+          exit 1
