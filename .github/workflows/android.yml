@@ -19,6 +19,7 @@ jobs:
     env:
       KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
       KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      GS_B64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
     steps:
       - name: Vérifier les secrets de signature
         run: |
@@ -48,6 +49,19 @@ jobs:
         run: |
           npm install
           npx cap add android
+
+      - name: Notifications Android (Firebase)
+        working-directory: android-app
+        run: |
+          if [ -n "$GS_B64" ]; then
+            echo "$GS_B64" | base64 -d > android/app/google-services.json
+            echo "google-services.json installé."
+          else
+            echo "::warning::Secret GOOGLE_SERVICES_JSON_BASE64 absent : l'appli sera construite SANS notifications push."
+          fi
+          M=android/app/src/main/AndroidManifest.xml
+          grep -q POST_NOTIFICATIONS "$M" || sed -i 's#</manifest>#    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n</manifest>#' "$M"
+          grep -n "uses-permission" "$M"
 
       - name: Installer ImageMagick (pour les icônes)
         run: |
