@@ -52,4 +52,88 @@ CONF="android/app/src/main/assets/capacitor.config.json"
 sed -i "s#CoupDavanceApp[^\"]*#CoupDavanceApp/1.0.${GITHUB_RUN_NUMBER:-0}#" "$CONF"
 grep -q "CoupDavanceApp/1.0." "$CONF" || { echo "::error::version non ajoutée"; exit 1; }
 
+# Mise à jour intégrée : module Android qui télécharge le nouvel APK et ouvre l'installation
+JAVA="android/app/src/main/java/com/coupdavance/app"
+MANIFEST="android/app/src/main/AndroidManifest.xml"
+mkdir -p "$JAVA"
+cat > "$JAVA/MainActivity.java" <<'JAVA_EOF'
+package com.coupdavance.app;
+
+import android.os.Bundle;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(MajPlugin.class);
+        super.onCreate(savedInstanceState);
+    }
+}
+JAVA_EOF
+cat > "$JAVA/MajPlugin.java" <<'JAVA_EOF'
+package com.coupdavance.app;
+
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
+import androidx.core.content.FileProvider;
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+@CapacitorPlugin(name = "Maj")
+public class MajPlugin extends Plugin {
+    // Adresse fixe : la page web ne peut pas faire installer un autre fichier
+    private static final String APK = "https://coup-davance.vercel.app/PronostBet.apk";
+
+    @PluginMethod
+    public void installer(final PluginCall call) {
+        if (Build.VERSION.SDK_INT >= 26 && !getContext().getPackageManager().canRequestPackageInstalls()) {
+            getActivity().startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    Uri.parse("package:" + getContext().getPackageName())));
+            call.reject("Autorisation requise", "AUTORISATION");
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    File fichier = new File(getContext().getCacheDir(), "PronostBet-maj.apk");
+                    HttpURLConnection c = (HttpURLConnection) new URL(APK).openConnection();
+                    c.setConnectTimeout(20000);
+                    c.setReadTimeout(30000);
+                    c.setUseCaches(false);
+                    if (c.getResponseCode() != 200) throw new Exception("HTTP " + c.getResponseCode());
+                    try (InputStream in = c.getInputStream(); OutputStream out = new FileOutputStream(fichier)) {
+                        byte[] tampon = new byte[65536];
+                        int n;
+                        while ((n = in.read(tampon)) != -1) out.write(tampon, 0, n);
+                    }
+                    PackageInfo info = getContext().getPackageManager().getPackageArchiveInfo(fichier.getPath(), 0);
+                    if (info == null || !getContext().getPackageName().equals(info.packageName)) throw new Exception("APK invalide");
+                    Uri uri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".fileprovider", fichier);
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setDataAndType(uri, "application/vnd.android.package-archive");
+                    i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getContext().startActivity(i);
+                    call.resolve();
+                } catch (Exception e) {
+                    call.reject("Mise à jour impossible : " + e.getMessage());
+                }
+            }
+        }).start();
+    }
+}
+JAVA_EOF
+grep -q REQUEST_INSTALL_PACKAGES "$MANIFEST" || sed -i 's#</manifest>#    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />\n</manifest>#' "$MANIFEST"
+
 echo "Icônes et écran de démarrage générés."
