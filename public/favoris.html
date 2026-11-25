@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="PronostBet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="theme.css"><title>Favoris – PronostBet</title><style>
+.oth-h{margin:22px 0 4px;font:800 19px/1.2 "Bricolage Grotesque",sans-serif}
+.oth-s{margin:0 0 8px;color:var(--muted);font-size:14px}
+.oth-c{display:flex;align-items:center;gap:8px;margin:14px 0 4px;font:700 14px "Hanken Grotesk",sans-serif;color:var(--muted)}
+.oth-m{display:flex;align-items:center;gap:12px;padding:11px 12px;margin:6px 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;color:var(--ink);text-decoration:none}
+.oth-m .st{flex:0 0 52px;font:700 13px "Hanken Grotesk",sans-serif;color:var(--muted);text-align:center}
+.oth-m .tm{flex:1;min-width:0}.oth-m .tm div{display:flex;align-items:center;gap:8px;padding:2px 0}
+.oth-m .tm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.oth-m .sc{display:flex;flex-direction:column;gap:2px;font:800 15px "Hanken Grotesk",sans-serif;text-align:right}
+.oth-m.lv .st{color:#e5322d}.oth-lv i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e5322d;margin-right:4px}
+.oth-m .tm{display:block}
+</style></head><body class="pd"><div class="wrap">
+<header class="top"><a class="logo" href="index.html"><img src="icon.svg" alt="" width="34" height="34"><span>PronostBet</span></a></header>
+<h1 class="pt">Favoris</h1><p class="sub" style="text-transform:none">Les matchs marqués d’une étoile sur ce téléphone</p>
+<div id="list"><p class="sub">Chargement…</p></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
+const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
+</script><script src="cards.js"></script><script src="sportscore.js"></script><script src="menu.js"></script><script>
+const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute,kind,unlocked";
+let ROWS=[],SSM=[];
+const favs=()=>{try{return Object.values(JSON.parse(localStorage.getItem("pb_favoris_v1"))||{}).sort((a,b)=>b.ajout-a.ajout)}catch(e){return[]}};
+// ligne d'un match du direct : score actualisé s'il est dans la liste du jour
+const row=f=>{const m=SSM.find(x=>String(x.id)===String(f.id)),sc=m&&m.hs!=null&&m.as!=null,
+  st=!m?"Voir":m.live?"En direct":m.done?"Terminé":new Date(m.start).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  return(f.comp?'<div class="oth-c"><span>'+esc(f.comp)+'</span></div>':'')
+  +'<a class="oth-m" href="'+esc(f.link)+'"><div class="st">'+esc(st)+'</div><div class="tm"><div><span>'+esc(f.home)+'</span></div><div><span>'+esc(f.away)+'</span></div></div><div class="sc"><b>'+(sc?esc(m.hs):"–")+'</b><b>'+(sc?esc(m.as):"–")+'</b></div></a>'};
+const draw=()=>{const l=favs();
+  if(!l.length){$("list").innerHTML='<div class="card"><b>Aucun favori pour le moment.</b><p class="sub" style="margin:8px 0 0">Touche l’étoile ☆ sur un match de l’accueil ou du direct.</p></div>';return}
+  $("list").innerHTML=l.map(f=>{if(f.k.indexOf("p:")===0){const m=ROWS.find(x=>String(x.fixture_id)===f.id);if(m)return card(m)
+      ;return'<div class="pc" data-id="'+esc(f.id)+'"><div class="pc-top"><span></span><span class="pc-badge"></span></div><div class="pc-lg"><span>'+esc(f.comp)+'</span></div><div class="pc-teams"><div class="pc-t l"><b>'+esc(f.home)+'</b></div><div class="pc-m"><span class="pc-vs">vs</span></div><div class="pc-t r"><b>'+esc(f.away)+'</b></div></div></div>'}
+    return row(f)}).join("")};
+const load=async()=>{const ids=favs().filter(f=>f.k.indexOf("p:")===0).map(f=>Number(f.id));
+  if(ids.length){try{const{data}=await sb.from("predictions_safe").select(COLS).in("fixture_id",ids);if(data)ROWS=data}catch(e){}}
+  draw();
+  if(favs().some(f=>f.k.indexOf("s:")===0)){try{SSM=await ssToday();draw()}catch(e){}}
+  if(ROWS.length)ensureLogos(ROWS,draw)};
+document.addEventListener("pbfav",draw);
+(async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";await load();
+  setInterval(()=>{if(!document.hidden)load()},60000)})();
+</script></body></html>
