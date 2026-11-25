@@ -13,7 +13,7 @@
     d.innerHTML='<img src="icons/icon-512.png" alt="" style="width:130px;height:130px;border-radius:30px">'
       +'<p style="margin:32px 0">Une nouvelle version de PronostBet est disponible.<br>Mets l’application à jour pour continuer.</p>'
       +'<button style="width:100%;max-width:340px;min-height:54px;border:0;border-radius:14px;background:#1D6FD8;color:#fff;font:700 18px Arial,sans-serif">Mettre à jour</button>'
-      +'<div style="display:none;width:100%;max-width:340px;margin-top:20px"><div style="height:12px;border-radius:6px;background:#ffffff26;overflow:hidden"><div class="pbj" style="height:100%;width:0;background:#4cc3ff;transition:width .2s"></div></div><div class="pbt" style="margin-top:8px;font-weight:700"></div></div>'
+      +'<div style="display:none;width:100%;max-width:340px;margin-top:20px"><div style="height:12px;border-radius:6px;background:#ffffff26;overflow:hidden"><div class="pbj" style="height:100%;width:0;background:#22c55e;transition:width .2s"></div></div><div class="pbt" style="margin-top:8px;font-weight:700"></div></div>'
       +'<p style="margin:16px 0 0;font-size:15px;word-break:break-word;user-select:text"></p>';
     (document.body||document.documentElement).appendChild(d);
     document.documentElement.style.overflow="hidden";
