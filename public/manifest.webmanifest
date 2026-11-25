@@ -1,6 +1,6 @@
 {
-  "name": "Pronos-bet",
-  "short_name": "Pronos-bet",
+  "name": "PronostBet",
+  "short_name": "PronostBet",
   "description": "Pronostics de football : matchs du jour, probabilités et résultats en direct.",
   "lang": "fr",
   "start_url": "dashboard.html",

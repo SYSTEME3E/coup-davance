@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Remplace les icônes et l'écran de démarrage par défaut de Capacitor par ceux de Coup d'Avance.
+# Remplace les icônes et l'écran de démarrage par défaut de Capacitor par ceux de PronostBet.
 # À lancer depuis android-app/ après « npx cap add android ». Nécessite ImageMagick (convert).
 set -euo pipefail
 RES="android/app/src/main/res"

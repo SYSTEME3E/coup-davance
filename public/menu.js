@@ -39,7 +39,7 @@
   dr.innerHTML=''
     +'<div class="dtop"><b>Menu</b><button type="button" class="dx" aria-label="Fermer le menu">✕</button></div>'
     +'<nav class="mn">'+'<a href="dashboard.html">'+ic("cal")+'<span>Matchs du jour</span></a>'+'<a href="sport.html">'+ic("live")+'<span>Football en direct</span></a>'+'<a href="actualites.html">'+ic("news")+'<span>Actualités</span></a>'+'<a href="historique.html">'+ic("hist")+'<span>Historique</span></a>'+'<a href="abonnement.html">'+ic("vip")+'<span>VIP</span></a>'+'<a href="balance.html">'+ic("wal")+'<span>Mon solde</span></a>'+'<a href="retrait.html">'+ic("out")+'<span>Retrait</span></a>'+'<a href="reglages.html">'+ic("set")+'<span>Réglages</span></a>'+'<a href="admin.html" id="mAdmin" hidden>'+ic("adm")+'<span>Espace administrateur</span></a></nav>'
-    +'<a class="dl-app" id="mApk" href="coup-davance.apk" download hidden>'+ic("dl")+'<span>Télécharger l’application</span></a>'
+    +'<a class="dl-app" id="mApk" href="PronostBet.apk" download hidden>'+ic("dl")+'<span>Télécharger l’application</span></a>'
     +'<button type="button" class="out2" id="mLite" style="margin-bottom:10px">'+ic("lite")+'<span>'+(window.LITE?'Mode Lite activé · sans images (touche pour désactiver)':'Activer le mode Lite (sans images, plus léger)')+'</span></button>'
     +'<button type="button" class="out2" id="mOut">'+ic("quit")+'<span>Quitter</span></button>';
   document.body.appendChild(ov);document.body.appendChild(dr);
@@ -50,7 +50,7 @@
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dr.classList.contains("on"))close()});
 
   (function(){var u=navigator.userAgent;if(!/Android/i.test(u)||/CoupDavanceApp/.test(u))return;
-    fetch("coup-davance.apk",{method:"HEAD",cache:"no-store"}).then(function(r){if(r.ok&&!/text\/html/.test(r.headers.get("content-type")||""))g("mApk").hidden=false}).catch(function(){})})();
+    fetch("PronostBet.apk",{method:"HEAD",cache:"no-store"}).then(function(r){if(r.ok&&!/text\/html/.test(r.headers.get("content-type")||""))g("mApk").hidden=false}).catch(function(){})})();
   g("mLite").onclick=()=>{try{localStorage.setItem("pb_lite",window.LITE?"0":"1")}catch(e){}location.reload()};
   g("mOut").onclick=async()=>{await window.PUSH_READY;if(window.PUSH)await PUSH.release(sb);await sb.auth.signOut();location.href="index.html"};
 

@@ -1,6 +1,6 @@
 name: Application Android (APK)
 
-# Fabrique l'APK signé et le dépose dans public/coup-davance.apk (téléchargeable depuis le site).
+# Fabrique l'APK signé et le dépose dans public/PronostBet.apk (téléchargeable depuis le site).
 # Se lance uniquement à la main : onglet Actions > Application Android (APK) > Run workflow.
 on:
   workflow_dispatch:
@@ -165,26 +165,26 @@ jobs:
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
           UNSIGNED=$(ls app/build/outputs/apk/release/*.apk | head -1)
           "$BT/zipalign" -p -f 4 "$UNSIGNED" "$RUNNER_TEMP/aligned.apk"
-          "$BT/apksigner" sign --ks "$RUNNER_TEMP/release.jks" --ks-pass env:KS_PASS --ks-key-alias coupdavance --out "$GITHUB_WORKSPACE/coup-davance.apk" "$RUNNER_TEMP/aligned.apk"
-          "$BT/apksigner" verify --print-certs "$GITHUB_WORKSPACE/coup-davance.apk"
+          "$BT/apksigner" sign --ks "$RUNNER_TEMP/release.jks" --ks-pass env:KS_PASS --ks-key-alias coupdavance --out "$GITHUB_WORKSPACE/PronostBet.apk" "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" verify --print-certs "$GITHUB_WORKSPACE/PronostBet.apk"
           rm -f "$RUNNER_TEMP/release.jks"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: coup-davance-apk
-          path: coup-davance.apk
+          name: PronostBet-apk
+          path: PronostBet.apk
 
       - name: Publier l'APK sur le site (public/)
         run: |
           set -e
-          cp coup-davance.apk "$RUNNER_TEMP/new.apk"
+          cp PronostBet.apk "$RUNNER_TEMP/new.apk"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for i in 1 2 3 4 5; do
             git fetch origin main
             git checkout -B main origin/main
-            cp "$RUNNER_TEMP/new.apk" public/coup-davance.apk
-            git add public/coup-davance.apk
+            cp "$RUNNER_TEMP/new.apk" public/PronostBet.apk
+            git add public/PronostBet.apk
             if git diff --cached --quiet; then
               echo "APK identique, rien à publier."
               exit 0

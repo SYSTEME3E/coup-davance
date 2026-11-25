@@ -1,7 +1,7 @@
-// Service worker Pronos-bet : l'app s'ouvre sans internet (pages, styles, scripts et bibliothèque Supabase gardés en cache).
+// Service worker PronostBet : l'app s'ouvre sans internet (pages, styles, scripts et bibliothèque Supabase gardés en cache).
 // Réseau d'abord ; si le réseau échoue, on sert la copie en cache. Les données (Supabase, SportScore) ne sont jamais mises en cache ici :
 // le dashboard enregistre lui-même sa dernière liste de matchs sur le téléphone.
-const V="pronos-bet-v25";
+const V="pronostbet-v26";
 const SB="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js";
 const FONTS="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap";
 const PAGES=["index.html","auth.html","dashboard.html","historique.html","match.html","sport.html","legal.html","conditions.html","confidentialite.html","regles.html","mentions-legales.html","jeu-responsable.html","reglages.html","balance.html","retrait.html","abonnement.html","actualites.html"];
@@ -35,10 +35,10 @@ self.addEventListener("fetch",e=>{
 // Chaque push doit afficher une notification (exigence de Chrome) : titre, texte, logo (icon) et image viennent du serveur.
 self.addEventListener("push",e=>{
   let j={};
-  try{j=e.data?e.data.json():{}}catch(_){try{j={title:"Pronos-bet",body:e.data.text()}}catch(__){}}
+  try{j=e.data?e.data.json():{}}catch(_){try{j={title:"PronostBet",body:e.data.text()}}catch(__){}}
   const d=Object.assign({},j.notification||{},j.data||{},(j.title||j.body)?{title:j.title,body:j.body}:{});
   const ok=u=>/^https:\/\//i.test(u||"")||/^(icons\/|\/icons\/)/.test(u||"")?u:undefined;
-  e.waitUntil(self.registration.showNotification(d.title||"Pronos-bet",{
+  e.waitUntil(self.registration.showNotification(d.title||"PronostBet",{
     body:d.body||"",icon:ok(d.icon)||"icons/icon-192.png",badge:"icons/icon-192.png",image:ok(d.image),
     tag:d.tag||undefined,renotify:!!d.tag,lang:"fr",data:{url:d.url||"dashboard.html"}}));
 });

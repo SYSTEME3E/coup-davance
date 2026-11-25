@@ -1,4 +1,4 @@
-# Coup d’Avance
+# PronostBet
 HTML + TypeScript · Vercel (site) · Supabase (comptes + base) · football-data.org (données) · GitHub Actions (calcul quotidien).
 
 ## Mise en route

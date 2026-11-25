@@ -1,4 +1,4 @@
-// Pronos-bet : bloc « 6 pubs = niveau supérieur pour la journée » (Gratuit => Basic, Basic => Gold).
+// PronostBet : bloc « 6 pubs = niveau supérieur pour la journée » (Gratuit => Basic, Basic => Gold).
 // - L'éligibilité est décidée côté serveur (rpc ad_progress) : Gold / essai => le bloc n'apparaît pas et AUCUNE pub n'est chargée.
 // - Les pubs sont des « rewarded ads » AdSense (pub plein écran, choisie par l'utilisateur, fermable).
 // - Chaque pub vue est enregistrée côté serveur (rpc ad_reward_claim) ; à la 6e, Basic est actif jusqu'à la fin de la journée.
