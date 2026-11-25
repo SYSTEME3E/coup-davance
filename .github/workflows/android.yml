@@ -81,6 +81,12 @@ jobs:
         working-directory: android-app
         run: |
           npm install
+          # Sans google-services.json, le plugin push fait PLANTER l'appli au lancement (Firebase non initialisé).
+          # On ne l'inclut donc que si le secret est présent : sinon l'appli s'ouvre normalement, sans notifications.
+          if [ -z "$GS_B64" ]; then
+            echo "::warning::GOOGLE_SERVICES_JSON_BASE64 absent : plugin push retiré pour éviter le plantage."
+            npm uninstall @capacitor/push-notifications
+          fi
           npx cap add android
 
       - name: Notifications Android (Firebase)
@@ -88,7 +94,19 @@ jobs:
         run: |
           if [ -n "$GS_B64" ]; then
             echo "$GS_B64" | base64 -d > android/app/google-services.json
-            echo "google-services.json installé."
+            # Vérifie que le fichier est un JSON valide ET correspond à l'appli (com.coupdavance.app)
+            python3 - <<'PY'
+          import json,sys
+          try:
+              d=json.load(open("android/app/google-services.json"))
+          except Exception as e:
+              print("::error::google-services.json invalide (base64 / JSON cassé) :",e); sys.exit(1)
+          pk=[c["client_info"]["android_client_info"]["package_name"] for c in d.get("client",[])]
+          print("Packages dans google-services.json :",pk)
+          if "com.coupdavance.app" not in pk:
+              print("::error::Aucune appli Android 'com.coupdavance.app' dans google-services.json. Ajoute-la dans Firebase (Paramètres du projet > Vos applications > Android) puis retélécharge le fichier."); sys.exit(1)
+          PY
+            echo "google-services.json installé et vérifié."
           else
             echo "::warning::Secret GOOGLE_SERVICES_JSON_BASE64 absent : l'appli sera construite SANS notifications push."
           fi
