@@ -53,7 +53,7 @@ const runTests=async()=>{const box=$("tpo");box.innerHTML='<p class="note">Test 
   const DB=(r.data||[]).map(x=>({id:x.fixture_id,home:x.home,away:x.away,comp:x.league,t:+new Date(x.kickoff),live:!!x.live_status}));
   // 2) SportScore : liste « en direct + récents » (50 matchs maximum par appel)
   const D0=await SS("v1/fixtures",{limit:200,date:new Date().toISOString().slice(0,10)});
-  const SSM=(await ssToday()).map(m=>({raw:m.raw,id:m.mid||m.id,home:m.home,away:m.away,comp:m.comp,t:m.start?+new Date(m.start):0,live:m.live,done:m.done,hs:m.hs,as:m.as,minute:m.minute}));
+  const SSM=(await ssToday(undefined,true)).map(m=>({raw:m.raw,id:m.mid||m.id,home:m.home,away:m.away,comp:m.comp,t:m.start?+new Date(m.start):0,live:m.live,done:m.done,hs:m.hs,as:m.as,minute:m.minute}));
   // 3) Comparaison
   const matched=[],onlyDB=[],onlySS=[];
   DB.forEach(d=>{const m=SSM.find(x=>sameMatch(d,x,4));m?matched.push([d,m]):onlyDB.push(d)});
