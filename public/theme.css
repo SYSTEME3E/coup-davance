@@ -98,32 +98,33 @@ body.ss{background:#130F33;--ink:#FFFFFF;--mut:#A9A4D6}
    PAGE HISTORIQUE : carte claire (style de la capture), sur fond violet
    ===================================================================== */
 .hc{--ink:#14201A;--muted:#5A6B61;--line:#E3E7E0;--bg:#FFFFFF;--surface:#F6F7F4;--accent:#1D6FD8;--brand:#1D6FD8;
-  background:#EAF1FD;border:1px solid #BCD0F0;border-radius:18px;padding:16px 14px;margin:0 0 12px;color:#14201A;
-  cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25);content-visibility:auto;contain-intrinsic-size:auto 440px;min-width:0}
-.hc .tm{font:800 25px/1.2 "Bricolage Grotesque",sans-serif;color:#14201A}
-.hc .tm span{font:400 19px "Hanken Grotesk",sans-serif;color:#5A6B61}
-.hc .sub{margin:8px 0 6px;font-size:17px;line-height:1.5;color:#5A6B61;text-transform:none}
-.hc .hc-tag{margin:6px 0 8px;font-size:17px}
+  background:#EAF1FD;border:1px solid #BCD0F0;border-radius:18px;padding:11px 12px;margin:0 0 10px;color:#14201A;
+  cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25);content-visibility:auto;contain-intrinsic-size:auto 300px;min-width:0}
+.hc .tm{font:800 19px/1.2 "Bricolage Grotesque",sans-serif;color:#14201A}
+.hc .tm span{font:400 14px "Hanken Grotesk",sans-serif;color:#5A6B61}
+.hc .sub{margin:4px 0 2px;font-size:14px;line-height:1.35;color:#5A6B61;text-transform:none}
+.hc .hc-tag{margin:2px 0 4px;font-size:14px}
 .hc .cf{font-size:1em}.hc .cf.hi{color:#1a9a4a}.hc .cf.lo{color:#E67700}
-.hc .bar{height:58px;border-radius:14px;gap:2px;margin:6px 0}
-.hc .bar span{font-size:19px;min-width:6px}
+.hc .bar{height:34px;border-radius:10px;gap:2px;margin:4px 0}
+.hc .bar span{font-size:14px;min-width:6px}
 .hc .bar .h{background:#1D6FD8;color:#fff}.hc .bar .d{background:#C9D1CB;color:#14201A}.hc .bar .a{background:#D93B3B;color:#fff}
-.hc .lg{font-size:17px;margin:2px 0 16px;color:#5A6B61}
-.hc .stats{font-size:17px;color:#5A6B61;gap:10px}
-.hc .stats div{border-top:1px solid #D5DDE8;padding-top:10px}
-.hc .stats b{font-size:25px;margin-top:2px;color:#14201A}
-.hc .frm{display:grid;gap:10px;margin-top:14px;font-size:17px;color:#5A6B61}
-.hc .frm i{width:29px;height:29px;line-height:29px;font-size:15px;border-radius:6px;margin-left:6px}
-.hc .res{margin-top:16px;padding:16px;border-width:1.5px;background:#fff;border-color:#E3E7E0}
+.hc .lg{font-size:13px;margin:0 0 8px;color:#5A6B61}
+.hc .stats{font-size:12.5px;line-height:1.25;color:#5A6B61;gap:6px}
+.hc .stats div{border-top:1px solid #D5DDE8;padding-top:5px}
+.hc .stats b{font-size:17px;margin-top:1px;color:#14201A}
+.hc .frm{display:grid;gap:4px;margin-top:8px;font-size:13px;color:#5A6B61}
+.hc .frm i{width:22px;height:22px;line-height:22px;font-size:12px;border-radius:6px;margin-left:6px}
+.hc .res{margin-top:8px;padding:9px 12px;border-width:1.5px;background:#fff;border-color:#E3E7E0}
 .hc .res.ok{background:#EAF5EA;border-color:#2E7D32}
 .hc .res.ko{background:#FDECEA;border-color:#B42318}
 .hc .res.live{background:#FDECEA;border-color:#D93B3B}
-.hc .res .sc{font-size:36px;white-space:nowrap;color:#14201A}.hc .res.live .sc{color:#B42318}
-.hc .res .sc small,.hc .res .vd small{font-size:17px;color:#5A6B61}
-.hc .res .vd b{font-size:21px;color:#14201A}
-.hc .stk{margin-top:14px}.hc .stk span{font-size:17px;padding:9px 16px}
-.hc .chk{font-size:17px;line-height:1.55;color:#5A6B61;margin-top:12px}
-.hc .chk.go{color:#1D6FD8;font-weight:700;margin-top:16px}
+.hc .res .sc{font-size:26px;white-space:nowrap;color:#14201A}.hc .res.live .sc{color:#B42318}
+.hc .res .sc small,.hc .res .vd small{font-size:13px;color:#5A6B61}
+.hc .res .vd b{font-size:16px;color:#14201A}
+.hc .stk{margin-top:8px}.hc .stk span{font-size:14px;padding:6px 12px}
+.hc .chk{font-size:14px;line-height:1.4;color:#5A6B61;margin-top:8px}
+.hc .chk.go{color:#1D6FD8;font-weight:700;margin-top:8px}
+.hc .tops{margin-top:6px;font-size:12.5px;color:#5A6B61}.hc .tops b{color:#14201A}
 .hc .lockbox .lkov b{color:#14201A}.hc .lockbox .lkov span{color:#5A6B61}
 .hc .lockbox .btn{background:#1D6FD8;color:#fff}
 .hc .lockbox .lkn{background:#fff;color:#B42318}
