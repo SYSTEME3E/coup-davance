@@ -108,7 +108,7 @@ const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
   await (window.PUSH_READY||Promise.resolve());
   const st=$("pnst"),b=$("pnb"),pp=$("pnp"),say=(t,c)=>{st.textContent=t||"";st.className=c||""};
   if(!window.PUSH){say("Notifications indisponibles pour le moment.","ko");return}
-  const MSG={unsupported:"Ce navigateur ne gère pas les notifications.","ios-install":"Sur iPhone : touche Partager puis « Sur l’écran d’accueil », ouvre l’app installée, puis reviens ici.",unconfigured:"Les notifications ne sont pas encore configurées sur ce site.",denied:"Bloquées dans le navigateur : touche le cadenas à côté de l’adresse, autorise les notifications, puis recharge la page."};
+  const MSG={unsupported:"Ce navigateur ne gère pas les notifications.","ios-install":"Sur iPhone : touche Partager puis « Sur l’écran d’accueil », ouvre l’app installée, puis reviens ici.",unconfigured:"Les notifications ne sont pas encore configurées sur ce site.",denied:(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()?"Bloquées : Réglages du téléphone → Applis → PronostBet → Notifications, puis autorise.":"Bloquées dans le navigateur : touche le cadenas à côté de l’adresse, autorise les notifications, puis recharge la page.")};
   let busy=false;
   async function draw(){
     const s=PUSH.state();b.classList.remove("off");pp.hidden=true;b.hidden=true;
