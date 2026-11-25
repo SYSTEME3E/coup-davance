@@ -1,0 +1,14 @@
+{
+  "appId": "com.coupdavance.app",
+  "appName": "Coup d'Avance",
+  "webDir": "www",
+  "server": {
+    "url": "https://coup-davance.vercel.app/dashboard.html",
+    "cleartext": false,
+    "allowNavigation": ["coup-davance.vercel.app", "*.supabase.co", "ikeepay.com", "*.ikeepay.com"]
+  },
+  "android": {
+    "appendUserAgent": "CoupDavanceApp",
+    "allowMixedContent": false
+  }
+}
