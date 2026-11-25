@@ -16,7 +16,6 @@
   out:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
   set:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
   adm:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
-  lite:'<path d="m2 2 20 20"/><path d="M10.4 5H19a2 2 0 0 1 2 2v8.6M21 21H5a2 2 0 0 1-2-2V7a2 2 0 0 1 .6-1.4"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L10 17"/>',
   quit:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
   home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
   img:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',
@@ -40,7 +39,6 @@
     +'<div class="dtop"><b>Menu</b><button type="button" class="dx" aria-label="Fermer le menu">✕</button></div>'
     +'<nav class="mn">'+'<a href="dashboard.html">'+ic("cal")+'<span>Matchs du jour</span></a>'+'<a href="sport.html">'+ic("live")+'<span>Football en direct</span></a>'+'<a href="actualites.html">'+ic("news")+'<span>Actualités</span></a>'+'<a href="historique.html">'+ic("hist")+'<span>Historique</span></a>'+'<a href="abonnement.html">'+ic("vip")+'<span>VIP</span></a>'+'<a href="balance.html">'+ic("wal")+'<span>Mon solde</span></a>'+'<a href="retrait.html">'+ic("out")+'<span>Retrait</span></a>'+'<a href="reglages.html">'+ic("set")+'<span>Réglages</span></a>'+'<a href="admin.html" id="mAdmin" hidden>'+ic("adm")+'<span>Espace administrateur</span></a></nav>'
     +'<a class="dl-app" id="mApk" href="PronostBet.apk" download hidden>'+ic("dl")+'<span>Télécharger l’application</span></a>'
-    +'<button type="button" class="out2" id="mLite" style="margin-bottom:10px">'+ic("lite")+'<span>'+(window.LITE?'Mode Lite activé · sans images (touche pour désactiver)':'Activer le mode Lite (sans images, plus léger)')+'</span></button>'
     +'<button type="button" class="out2" id="mOut">'+ic("quit")+'<span>Quitter</span></button>';
   document.body.appendChild(ov);document.body.appendChild(dr);
 
@@ -51,7 +49,6 @@
 
   (function(){var u=navigator.userAgent;if(!/Android/i.test(u)||/CoupDavanceApp/.test(u))return;
     fetch("PronostBet.apk",{method:"HEAD",cache:"no-store"}).then(function(r){if(r.ok&&!/text\/html/.test(r.headers.get("content-type")||""))g("mApk").hidden=false}).catch(function(){})})();
-  g("mLite").onclick=()=>{try{localStorage.setItem("pb_lite",window.LITE?"0":"1")}catch(e){}location.reload()};
   g("mOut").onclick=async()=>{await window.PUSH_READY;if(window.PUSH)await PUSH.release(sb);await sb.auth.signOut();location.href="index.html"};
 
   if(window.PB)PB.sync(sb);

@@ -52,7 +52,7 @@ const l10=async()=>{
   const[h,a]=await Promise.all([blk(pr.home,pr.home_key),blk(pr.away,pr.away_key)]);
   if(h||a)$("l10").innerHTML='<div class="sec l10"><h2>10 derniers matchs</h2>'+h+a+'</div>'};
 l10().catch(()=>{});
-const lg=(u,c)=>u&&!window.LITE?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
+const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
 let lead=null;
 const S=(h,a)=>{h=+h;a=+a;lead=h>a?"home":a>h?"away":null;return '<span class="g'+(lead==="home"?' w':'')+'">'+h+'</span> – <span class="g'+(lead==="away"?' w':'')+'">'+a+'</span>'};
 const team=(side)=>{const t=(d&&d[side])||{},logo=t.logo||(meta&&meta[side+"_logo"]);
@@ -108,7 +108,7 @@ setInterval(()=>{if(document.hidden)return;if(pr.settled_at&&d&&d.statistics&&d.
 // ---- Vidéos Highlightly : clips de buts (pendant le match) et résumé officiel (après le match) ----
 const VH=["youtube.com","youtube-nocookie.com","youtu.be","streamable.com","vimeo.com","dailymotion.com","twitter.com","x.com","rumble.com"];
 const okHost=u=>{try{const x=new URL(u),h=x.hostname.toLowerCase();return x.protocol==="https:"&&VH.some(d=>h===d||h.endsWith("."+d))}catch(e){return false}};
-const vTile=(v,k)=>'<div class="vtile"><button type="button" class="vplay" data-k="'+k+'" aria-label="Lancer la vidéo : '+esc(v.title)+'">'+(!window.LITE&&v.imgUrl?'<img src="'+esc(v.imgUrl)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<i></i></button><div class="vcap">'+esc(v.title)+'<small>'+esc([v.channel||v.source].filter(Boolean).join(" · "))+'</small></div></div>';
+const vTile=(v,k)=>'<div class="vtile"><button type="button" class="vplay" data-k="'+k+'" aria-label="Lancer la vidéo : '+esc(v.title)+'">'+(v.imgUrl?'<img src="'+esc(v.imgUrl)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+'<i></i></button><div class="vcap">'+esc(v.title)+'<small>'+esc([v.channel||v.source].filter(Boolean).join(" · "))+'</small></div></div>';
 let vdData=null,vdSig="",vdNext=0,vdBusy=false;
 const vdDraw=d=>{
   const el=$("vd");

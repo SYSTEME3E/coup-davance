@@ -7,7 +7,3 @@ window.CFG = { url: "https://edeoyscelvyrxpiaexhl.supabase.co", key: "sb_publish
   // AdSense : bloc « Annonces display » (bloc « Pronostic »)
   adsDisplaySlot: "6991531637" };
 
-// Mode Lite (comme Facebook Lite) : pas d'images (logos des équipes), moins de requêtes ; les informations restent synchronisées.
-// Activé par défaut ; se change dans le menu (« Mode Lite »). Le choix est gardé sur le téléphone.
-window.LITE=(function(){try{var v=localStorage.getItem("pb_lite");if(v==="0")return false}catch(e){}return true})();
-if(window.LITE)document.documentElement.classList.add("lite");

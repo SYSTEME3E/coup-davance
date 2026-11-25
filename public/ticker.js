@@ -6,7 +6,7 @@
   var bar=document.getElementById("tick");if(!bar)return;
   var DEBUG=/[?&]debug=1/.test(location.search);
   var E=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
-  var lg=function(u){return u&&!window.LITE?'<img src="'+E(u)+'" alt="" referrerpolicy="no-referrer" draggable="false" onerror="this.remove()">':""};
+  var lg=function(u){return u?'<img src="'+E(u)+'" alt="" referrerpolicy="no-referrer" draggable="false" onerror="this.remove()">':""};
   var sig="",tries=0,retry=null;
   function item(x){
     var sc=x.hs!=null&&x.as!=null?'<span class="tk-s">'+E(x.hs)+' - '+E(x.as)+'</span>':'<span class="tk-s">vs</span>';
@@ -39,5 +39,5 @@
     bar.innerHTML='<div class="tk-b"><i></i>EN DIRECT</div><div class="tk-w"><div class="tk-t">'+h+h+'</div></div>';
     bar.querySelector(".tk-t").style.setProperty("--tkd",Math.max(30,a.length*5)+"s");
     bar.hidden=false}
-  load();setInterval(function(){if(!document.hidden)load()},window.LITE?90000:60000);
+  load();setInterval(function(){if(!document.hidden)load()},60000);
 })();
