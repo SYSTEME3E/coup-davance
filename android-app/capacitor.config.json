@@ -6,10 +6,16 @@
     "url": "https://coup-davance.vercel.app/dashboard.html",
     "cleartext": false,
     "errorPath": "index.html",
-    "allowNavigation": ["coup-davance.vercel.app", "*.supabase.co", "ikeepay.com", "*.ikeepay.com"]
+    "allowNavigation": [
+      "coup-davance.vercel.app",
+      "*.supabase.co",
+      "ikeepay.com",
+      "*.ikeepay.com"
+    ]
   },
   "android": {
     "appendUserAgent": "CoupDavanceApp",
-    "allowMixedContent": false
+    "allowMixedContent": false,
+    "backgroundColor": "#030C2E"
   }
 }
