@@ -1,19 +1,16 @@
 name: Application Android (APK)
 
 # Fabrique l'APK signé et le dépose dans public/coup-davance.apk (téléchargeable depuis le site).
-# Se lance à la main (onglet Actions > Application Android > Run workflow) ou quand android-app/ change.
+# Se lance uniquement à la main : onglet Actions > Application Android (APK) > Run workflow.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ["android-app/**"]
 
 permissions:
   contents: write
 
 concurrency:
   group: android-apk
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
