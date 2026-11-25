@@ -39,6 +39,39 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      # Cache Gradle : évite de re-télécharger toutes les dépendances à chaque build
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      # Anti-429 : remplace Maven Central (limité sur les IP GitHub) par le miroir Google
+      - name: Miroir Maven (anti erreur 429)
+        run: |
+          mkdir -p "$HOME/.gradle/init.d"
+          cat > "$HOME/.gradle/init.d/mirror.gradle" <<'GRADLE'
+          def MIRROR = 'https://maven-central.storage-download.googleapis.com/maven2/'
+          def swap = { repos ->
+            repos.configureEach { r ->
+              if (r instanceof MavenArtifactRepository) {
+                def u = r.url.toString()
+                if (u.contains('repo.maven.apache.org') || u.contains('repo1.maven.org')) {
+                  r.url = MIRROR
+                }
+              }
+            }
+          }
+          gradle.settingsEvaluated { settings ->
+            swap(settings.pluginManagement.repositories)
+            try { swap(settings.dependencyResolutionManagement.repositories) } catch (ignored) {}
+          }
+          gradle.allprojects { prj ->
+            swap(prj.buildscript.repositories)
+            swap(prj.repositories)
+          }
+          GRADLE
+          sed -i 's/^          //' "$HOME/.gradle/init.d/mirror.gradle"
+          cat "$HOME/.gradle/init.d/mirror.gradle"
+
       - name: Préparer le SDK Android (déjà installé sur le serveur GitHub)
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
@@ -80,7 +113,21 @@ jobs:
 
       - name: Compiler (release)
         working-directory: android-app/android
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          # 3 tentatives : si le réseau/le dépôt répond mal (429, timeout), on réessaie
+          for i in 1 2 3; do
+            if ./gradlew assembleRelease --no-daemon --stacktrace \
+                 -Dorg.gradle.internal.http.connectionTimeout=60000 \
+                 -Dorg.gradle.internal.http.socketTimeout=60000 \
+                 -Dorg.gradle.internal.repository.max.retries=6 \
+                 -Dorg.gradle.internal.repository.initial.backoff=2000; then
+              exit 0
+            fi
+            echo "::warning::Compilation échouée (tentative $i/3), nouvelle tentative dans $((i * 20))s..."
+            sleep $((i * 20))
+          done
+          echo "::error::La compilation a échoué après 3 tentatives."
+          exit 1
 
       - name: Aligner et signer
         working-directory: android-app/android
