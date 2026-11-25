@@ -56,11 +56,18 @@ const pcBar=p=>{const sg=(k,c)=>'<span class="'+c+'" style="flex:'+Math.max(p[k]
 const FAKE='<div class="pc-bar"><span class="h" style="flex:40">00%</span><span class="d" style="flex:30">00%</span><span class="a" style="flex:30">00%</span></div><div class="pc-pills"><span class="pc-pk h">pronostic Domicile · 00%</span><span>score prévu <b>0-0</b></span></div><div class="pc-chips"><span>Plus de 2,5 buts <b>00%</b></span><span>Les deux marquent <b>00%</b></span></div>';
 const lockBox=m=>'<div class="lockbox"><div class="blurred" aria-hidden="true">'+FAKE+'</div><div class="lkov"><b>Pronostic masqué</b><span>Match '+(m.kind==="solid"?"solide":"incertain")+'</span><button type="button" class="btn" data-unlock="'+m.fixture_id+'">Débloquer le pronostic</button></div></div>';
 const FULL={};
+// Modèle v3 : total de buts attendu, plus de 3,5 / 4,5 et 3 scores les plus probables (absents des anciens pronostics)
+const gx=d=>{const o=d.over||{};let a="";
+  if(d.expectedTotal!=null)a+='<span>Buts attendus <b>'+fr(d.expectedTotal)+'</b></span>';
+  if(o["3.5"]!=null)a+='<span>Plus de 3,5 buts <b>'+o["3.5"]+'%</b></span>';
+  if(o["4.5"]!=null)a+='<span>Plus de 4,5 buts <b>'+o["4.5"]+'%</b></span>';
+  return a};
+const tops=d=>Array.isArray(d.topScores)&&d.topScores.length?'<div class="pc-chips"><span>Scores probables <b>'+d.topScores.map(t=>esc(t.s)+' ('+fr(t.p)+'%)').join(" · ")+'</b></span></div>':"";
 const pcWhy=d=>xt(d)+frm(d);
 // fold = true : le détail (corners, forme…) est renvoyé à part, dans un bloc repliable (voir card)
 const probs=(d,fold)=>{const p=d.result,k=pcPick(p);
   return pcBar(p)+'<div class="pc-pills"><span class="pc-pk '+k+'">pronostic '+PCN[k]+' · '+p[PCK[k]]+'%</span><span>score prévu <b>'+esc(d.likelyScore)+'</b></span></div>'
-  +'<div class="pc-chips"><span>Plus de 2,5 buts <b>'+d.over["2.5"]+'%</b></span><span>Les deux marquent <b>'+d.btts+'%</b></span></div>'+(fold?"":pcWhy(d))};
+  +'<div class="pc-chips"><span>Plus de 2,5 buts <b>'+d.over["2.5"]+'%</b></span><span>Les deux marquent <b>'+d.btts+'%</b></span>'+gx(d)+'</div>'+tops(d)+(fold?"":pcWhy(d))};
 const pcState=m=>m.settled_at?(m.final_home!=null?"done":"void"):m.live_status?"live":new Date(m.kickoff)<Date.now()?"wait":"next";
 const card=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]||{},st=pcState(m),open=isOpen(m),k=open?pcPick(d.result):"",v=m.verdict||{},good=!!v.ok1x2||!!v.scoreHit;
   let badge="",mid='<span class="pc-vs">vs</span>',tag="";
@@ -91,8 +98,9 @@ const histCard=m=>{m=FULL[m.fixture_id]||m;const d=m.data,me=META[m.fixture_id]|
   else if(open){const p=d.result,sg=(k,c)=>'<span class="'+c+'" style="flex:'+Math.max(p[k],1)+'">'+(p[k]>=8?p[k]+"%":"")+'</span>';
     body='<div class="bar">'+sg("home","h")+sg("draw","d")+sg("away","a")+'</div>'
     +'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
-    +'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div></div>'
-    +frm(d)}
+    +'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div>'
+    +(d.expectedTotal!=null?'<div>Buts attendus<b>'+fr(d.expectedTotal)+'</b></div>':"")+(d.over&&d.over["4.5"]!=null?'<div>Plus de 4,5 buts<b>'+d.over["4.5"]+'%</b></div>':"")+'</div>'
+    +tops(d)+frm(d)}
   else body=lockBox(m);
   return '<div class="hc" data-id="'+m.fixture_id+'" role="link" tabindex="0">'
   +'<div class="tm"><b class="tn">'+lgo(me.home_logo)+esc(m.home)+'</b><span>contre</span><b class="tn">'+lgo(me.away_logo)+esc(m.away)+'</b></div>'
