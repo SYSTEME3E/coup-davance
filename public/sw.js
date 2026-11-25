@@ -1,7 +1,7 @@
 // Service worker Pronos-bet : l'app s'ouvre sans internet (pages, styles, scripts et bibliothèque Supabase gardés en cache).
 // Réseau d'abord ; si le réseau échoue, on sert la copie en cache. Les données (Supabase, SportScore) ne sont jamais mises en cache ici :
 // le dashboard enregistre lui-même sa dernière liste de matchs sur le téléphone.
-const V="pronos-bet-v24";
+const V="pronos-bet-v25";
 const SB="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js";
 const FONTS="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap";
 const PAGES=["index.html","auth.html","dashboard.html","historique.html","match.html","sport.html","legal.html","conditions.html","confidentialite.html","regles.html","mentions-legales.html","jeu-responsable.html","reglages.html","balance.html","retrait.html","abonnement.html","actualites.html"];
@@ -17,6 +17,7 @@ self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.a
 self.addEventListener("fetch",e=>{
   const r=e.request,u=new URL(r.url);
   if(r.method!=="GET")return;
+  if(/\.apk$/i.test(u.pathname))return; // l'APK Android se télécharge directement, jamais mis en cache
   // Bibliothèque Supabase et polices : copie en cache d'abord (elles ne changent pas), mise à jour en arrière-plan
   if(u.origin!==location.origin){
     if(r.url===SB||u.hostname==="fonts.googleapis.com"||u.hostname==="fonts.gstatic.com"){
