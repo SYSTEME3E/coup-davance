@@ -185,6 +185,8 @@ jobs:
             git checkout -B main origin/main
             cp "$RUNNER_TEMP/new.apk" public/PronostBet.apk
             git add public/PronostBet.apk
+            echo '{"build":${{ github.run_number }}}' > public/version.json
+            git add public/version.json
             if git diff --cached --quiet; then
               echo "APK identique, rien à publier."
               exit 0
