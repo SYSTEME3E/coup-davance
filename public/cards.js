@@ -58,11 +58,11 @@ const lockBox=m=>'<div class="lockbox"><div class="blurred" aria-hidden="true">'
 const FULL={};
 // Modèle v3 : total de buts attendu, plus de 3,5 / 4,5 et 3 scores les plus probables (absents des anciens pronostics)
 const gx=d=>{const o=d.over||{};let a="";
-  if(d.expectedTotal!=null)a+='<span>Buts attendus <b>'+fr(d.expectedTotal)+'</b></span>';
-  if(o["3.5"]!=null)a+='<span>Plus de 3,5 buts <b>'+o["3.5"]+'%</b></span>';
-  if(o["4.5"]!=null)a+='<span>Plus de 4,5 buts <b>'+o["4.5"]+'%</b></span>';
+  if(d.expectedTotal!=null)a+='<span>Total prévu <b>'+fr(d.expectedTotal)+'</b></span>';
+  if(o["3.5"]!=null)a+='<span>+3,5 buts <b>'+o["3.5"]+'%</b></span>';
+  if(o["4.5"]!=null)a+='<span>+4,5 buts <b>'+o["4.5"]+'%</b></span>';
   return a};
-const tops=d=>Array.isArray(d.topScores)&&d.topScores.length?'<div class="pc-chips"><span>Scores probables <b>'+d.topScores.map(t=>esc(t.s)+' ('+fr(t.p)+'%)').join(" · ")+'</b></span></div>':"";
+const tops=d=>Array.isArray(d.topScores)&&d.topScores.length?'<div class="pc-chips"><span>Top scores <b>'+d.topScores.map(t=>esc(t.s)+' ('+fr(t.p)+'%)').join(" · ")+'</b></span></div>':"";
 const pcWhy=d=>xt(d)+frm(d);
 // fold = true : le détail (corners, forme…) est renvoyé à part, dans un bloc repliable (voir card)
 const probs=(d,fold)=>{const p=d.result,k=pcPick(p);
