@@ -93,18 +93,29 @@ jobs:
         working-directory: android-app
         run: |
           if [ -n "$GS_B64" ]; then
-            echo "$GS_B64" | base64 -d > android/app/google-services.json
-            # Vérifie que le fichier est un JSON valide ET correspond à l'appli (com.coupdavance.app)
+            # Accepte du base64 (avec ou sans retours à la ligne) OU le JSON brut collé tel quel
+            if printf '%s' "$GS_B64" | head -c 1 | grep -q '{'; then
+              printf '%s' "$GS_B64" > android/app/google-services.json
+            else
+              printf '%s' "$GS_B64" | tr -d ' \r\n' | base64 -d > android/app/google-services.json 2>/dev/null || true
+            fi
             python3 - <<'PY'
           import json,sys
+          f="android/app/google-services.json"
           try:
-              d=json.load(open("android/app/google-services.json"))
+              d=json.load(open(f,encoding="utf-8"))
           except Exception as e:
-              print("::error::google-services.json invalide (base64 / JSON cassé) :",e); sys.exit(1)
-          pk=[c["client_info"]["android_client_info"]["package_name"] for c in d.get("client",[])]
-          print("Packages dans google-services.json :",pk)
+              print("::error::Le secret GOOGLE_SERVICES_JSON_BASE64 n'est pas un JSON/base64 valide. Recopie-le en entier (sans guillemets autour).")
+              sys.exit(1)
+          pk=[]
+          for c in d.get("client",[]):
+              n=(c.get("client_info",{}).get("android_client_info",{}) or {}).get("package_name")
+              if n: pk.append(n)
+          print("Projet Firebase :",d.get("project_info",{}).get("project_id"))
+          print("Applis Android trouvees :",pk if pk else "AUCUNE")
           if "com.coupdavance.app" not in pk:
-              print("::error::Aucune appli Android 'com.coupdavance.app' dans google-services.json. Ajoute-la dans Firebase (Paramètres du projet > Vos applications > Android) puis retélécharge le fichier."); sys.exit(1)
+              print("::error::Ce google-services.json ne contient pas l'appli Android com.coupdavance.app (trouve : %s). Dans Firebase > Parametres du projet > Vos applis : ajoute une appli ANDROID avec ce package, puis retelecharge google-services.json." % (pk or "aucune appli Android - c'est probablement le fichier de l'appli web"))
+              sys.exit(1)
           PY
             echo "google-services.json installé et vérifié."
           else
