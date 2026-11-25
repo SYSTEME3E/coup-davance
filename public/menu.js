@@ -24,6 +24,7 @@
   usr:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
   mat:'<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.7V17c0 .6-.5 1-1.2 1.2C7.9 18.7 7 20.2 7 22M14 14.7V17c0 .6.5 1 1.2 1.2.9.5 1.8 2 1.8 3.8M18 2H6v7a6 6 0 0 0 12 0z"/>',
   back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
+  dl:'<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',
   news:'<path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v5h5M2 15h8M2 11h4M2 19h8"/>'
   };
   const ic=n=>'<svg class="mi" viewBox="0 0 24 24" aria-hidden="true">'+IC[n]+'</svg>';
@@ -38,6 +39,7 @@
   dr.innerHTML=''
     +'<div class="dtop"><b>Menu</b><button type="button" class="dx" aria-label="Fermer le menu">✕</button></div>'
     +'<nav class="mn">'+'<a href="dashboard.html">'+ic("cal")+'<span>Matchs du jour</span></a>'+'<a href="sport.html">'+ic("live")+'<span>Football en direct</span></a>'+'<a href="actualites.html">'+ic("news")+'<span>Actualités</span></a>'+'<a href="historique.html">'+ic("hist")+'<span>Historique</span></a>'+'<a href="abonnement.html">'+ic("vip")+'<span>VIP</span></a>'+'<a href="balance.html">'+ic("wal")+'<span>Mon solde</span></a>'+'<a href="retrait.html">'+ic("out")+'<span>Retrait</span></a>'+'<a href="reglages.html">'+ic("set")+'<span>Réglages</span></a>'+'<a href="admin.html" id="mAdmin" hidden>'+ic("adm")+'<span>Espace administrateur</span></a></nav>'
+    +'<a class="dl-app" id="mApk" href="coup-davance.apk" download hidden>'+ic("dl")+'<span>Télécharger l’application</span></a>'
     +'<button type="button" class="out2" id="mLite" style="margin-bottom:10px">'+ic("lite")+'<span>'+(window.LITE?'Mode Lite activé · sans images (touche pour désactiver)':'Activer le mode Lite (sans images, plus léger)')+'</span></button>'
     +'<button type="button" class="out2" id="mOut">'+ic("quit")+'<span>Quitter</span></button>';
   document.body.appendChild(ov);document.body.appendChild(dr);
@@ -47,6 +49,8 @@
   btn.onclick=open;ov.onclick=close;dr.querySelector(".dx").onclick=close;
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&dr.classList.contains("on"))close()});
 
+  (function(){var u=navigator.userAgent;if(!/Android/i.test(u)||/CoupDavanceApp/.test(u))return;
+    fetch("coup-davance.apk",{method:"HEAD",cache:"no-store"}).then(function(r){if(r.ok&&!/text\/html/.test(r.headers.get("content-type")||""))g("mApk").hidden=false}).catch(function(){})})();
   g("mLite").onclick=()=>{try{localStorage.setItem("pb_lite",window.LITE?"0":"1")}catch(e){}location.reload()};
   g("mOut").onclick=async()=>{await window.PUSH_READY;if(window.PUSH)await PUSH.release(sb);await sb.auth.signOut();location.href="index.html"};
 
