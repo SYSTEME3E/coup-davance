@@ -30,7 +30,7 @@ PB.parse=s=>{s=String(s||"").replace(/\s|\u00a0/g,"");if(PB.cur()==="XOF")return
 // ---- Dictionnaire français -> anglais (les textes non listés restent en français) ----
 const EN={
 "Matchs du jour":"Today’s matches","Football en direct":"Live football","Historique":"History","VIP":"VIP","Mon solde":"My balance","Parrainage et gains":"Referral and earnings","Retrait":"Withdrawal","Retirer mes gains":"Withdraw my earnings","Réglages":"Settings","Espace administrateur":"Admin area","Quitter":"Log out","Menu":"Menu","Fermer le menu":"Close menu","Ouvrir le menu":"Open menu",
-"Activer le mode Lite (sans images, plus léger)":"Turn on Lite mode (no images, lighter)","Mode Lite activé · sans images (touche pour désactiver)":"Lite mode on · no images (tap to turn off)",
+
 "Chargement…":"Loading…","Voir plus":"See more","Voir moins":"See less","Annuler":"Cancel","Copier":"Copy","Copié ✓":"Copied ✓","Enregistrer":"Save","Payer":"Pay","Fermer":"Close","Retour":"Back","← Retour":"← Back",
 "Connexion":"Log in","Créer un compte":"Create an account","Se connecter":"Log in","Me connecter":"Log in","Créer mon compte":"Create my account","Crée ton compte gratuit":"Create your free account","Content de te revoir":"Welcome back",
 "Gardez toujours une longueur d’avance":"Always stay one step ahead","Créez votre compte gratuit et accédez aux pronostics du jour.":"Create your free account and get today’s predictions.",
