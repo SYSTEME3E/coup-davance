@@ -10,14 +10,17 @@
   var ua=navigator.userAgent,ios=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
   var standalone=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
   var cfg=function(){return window.FB||{}};
-  function configured(){var c=cfg();return !!(c.apiKey&&c.projectId&&c.messagingSenderId&&c.appId&&c.vapidKey)&&!/REMPLACE/.test(JSON.stringify(c))}
-  function supported(){return "serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window}
+  // Dans l'appli Android (Capacitor), la WebView ne gère pas le Web Push : on passe par le plugin natif PushNotifications (FCM).
+  var cap=window.Capacitor,native=!!(cap&&cap.isNativePlatform&&cap.isNativePlatform()),NP=native&&cap.Plugins&&cap.Plugins.PushNotifications,K_NP="pb_push_np";
+  function configured(){if(native)return !!NP;var c=cfg();return !!(c.apiKey&&c.projectId&&c.messagingSenderId&&c.appId&&c.vapidKey)&&!/REMPLACE/.test(JSON.stringify(c))}
+  function supported(){if(native)return !!NP;return "serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window}
   // unsupported · ios-install · unconfigured · denied · default (jamais demandé) · off (coupé dans l'appli) · granted (autorisé, jeton à enregistrer) · on
   function state(){
     if(!supported())return ios&&!standalone?"ios-install":"unsupported";
     if(!configured())return "unconfigured";
-    if(Notification.permission==="denied")return "denied";
-    if(Notification.permission==="default")return "default";
+    var perm=native?(ls.g(K_NP)||"default"):Notification.permission;
+    if(perm==="denied")return "denied";
+    if(perm==="default")return "default";
     if(ls.g(K_OFF))return "off";
     return ls.g(K_TOK)?"on":"granted";
   }
@@ -35,7 +38,7 @@
     });
   }
   // Enregistre (ou met à jour) le jeton de cet appareil pour le compte connecté
-  function register(sb){
+  function webRegister(sb){
     return sb.auth.getSession().then(function(r){
       var s=r.data&&r.data.session;if(!s)return{ok:false,error:"Connecte-toi pour activer les notifications."};
       return reg().then(fbToken).then(function(x){
@@ -46,8 +49,42 @@
       });
     }).catch(function(e){return{ok:false,error:errTxt(e)}});
   }
+
+  function register(sb){return native?nativeRegister(sb):webRegister(sb)}
+  // ---- Appli Android : jeton FCM via le plugin natif ----
+  function nativeRefresh(){
+    if(!NP)return Promise.resolve();
+    return NP.checkPermissions().then(function(r){var p=r&&r.receive;ls.s(K_NP,p==="granted"?"granted":p==="denied"?"denied":"default")}).catch(function(){});
+  }
+  function nativeRegister(sb){
+    return sb.auth.getSession().then(function(r){
+      var s=r.data&&r.data.session;if(!s)return{ok:false,error:"Connecte-toi pour activer les notifications."};
+      return new Promise(function(res){
+        var hs=[],done=false;
+        function fin(v){if(done)return;done=true;hs.forEach(function(h){Promise.resolve(h).then(function(x){x&&x.remove&&x.remove()}).catch(function(){})});res(v)}
+        hs.push(NP.addListener("registration",function(t){
+          sb.rpc("register_push_token",{p_token:t.value,p_ua:ua.slice(0,200),p_lang:(navigator.language||"fr").slice(0,10)}).then(function(r2){
+            if(r2.error)return fin({ok:false,error:errTxt(r2.error)});
+            ls.s(K_TOK,t.value);ls.s(K_USER,s.user.id);ls.s(K_T,String(Date.now()));fin({ok:true});
+          },function(e){fin({ok:false,error:errTxt(e)})});
+        }));
+        hs.push(NP.addListener("registrationError",function(e){fin({ok:false,error:"Activation impossible : "+String(e&&e.error||e||"").slice(0,120)})}));
+        NP.register().catch(function(e){fin({ok:false,error:errTxt(e)})});
+        setTimeout(function(){fin({ok:false,error:"Activation trop longue, réessaie."})},15000);
+      });
+    }).catch(function(e){return{ok:false,error:errTxt(e)}});
+  }
+  function nativeEnable(sb){
+    return NP.requestPermissions().then(function(r){
+      var p=r&&r.receive;ls.s(K_NP,p==="granted"?"granted":p==="denied"?"denied":"default");
+      if(p!=="granted")return{ok:false,denied:p==="denied",error:p==="denied"?"Notifications bloquées : ouvre Réglages du téléphone → Applis → PronostBet → Notifications, puis autorise.":"Autorisation refusée."};
+      ls.d(K_OFF);return nativeRegister(sb);
+    }).catch(function(e){return{ok:false,error:errTxt(e)}});
+  }
+
   // À appeler depuis un clic : affiche la demande d'autorisation du navigateur
   function enable(sb){
+    if(native)return NP?nativeEnable(sb):Promise.resolve({ok:false,error:"Mets à jour l’application pour activer les notifications."});
     var st=state();
     if(st==="unconfigured")return Promise.resolve({ok:false,error:"Notifications pas encore configurées (firebase-config.js)."});
     if(st==="ios-install")return Promise.resolve({ok:false,error:"Sur iPhone, ajoute d’abord l’app à l’écran d’accueil."});
@@ -59,6 +96,9 @@
     });
   }
   function disable(sb){
+    if(native){var nt=ls.g(K_TOK);ls.s(K_OFF,"1");ls.d(K_TOK);ls.d(K_USER);
+      var np=nt?sb.rpc("unregister_push_token",{p_token:nt}).then(function(){},function(){}):Promise.resolve();
+      return np.then(function(){return NP&&NP.unregister?NP.unregister().catch(function(){}):null}).then(function(){return{ok:true}},function(){return{ok:true}})}
     var t=ls.g(K_TOK);ls.s(K_OFF,"1");ls.d(K_TOK);ls.d(K_USER);
     var p=t?sb.rpc("unregister_push_token",{p_token:t}).then(function(){},function(){}):Promise.resolve();
     return p.then(function(){return configured()&&supported()?fbToken(null).catch(function(){return null}):null}).then(function(x){return x&&x.m.deleteToken(x.msg).catch(function(){})}).then(function(){return{ok:true}},function(){return{ok:true}});
@@ -99,7 +139,9 @@
         document.getElementById("pushT").textContent="⚠️ Notifications";document.getElementById("pushP").textContent=r.error||"Activation impossible.";y.remove();document.getElementById("pushN").textContent="Fermer"})};
     },1500);
   }
-  function boot(sb){sync(sb);banner(sb)}
+  function boot(sb){if(native){nativeRefresh().then(function(){sync(sb);banner(sb)});return}sync(sb);banner(sb)}
+  // Appli Android : un toucher sur une notification ouvre la page prévue (même site uniquement)
+  if(native&&NP){nativeRefresh();NP.addListener("pushNotificationActionPerformed",function(a){try{var d=(a&&a.notification&&a.notification.data)||{};var u=new URL(d.url||"dashboard.html",location.href);if(u.origin===location.origin)location.href=u.href}catch(e){}})}
   // Sur le tableau de bord, la pop-up se lance toute seule (sans dépendre du chargement du menu) dès que le client Supabase et la session sont prêts
   if(window.PUSH_PROMPT){var n=0,iv=setInterval(function(){
     if(++n>40){clearInterval(iv);return}
