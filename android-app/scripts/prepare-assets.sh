@@ -6,6 +6,7 @@ RES="android/app/src/main/res"
 ICON="../public/icons/icon-512.png"
 MASK="../public/icons/maskable-512.png"
 BLUE="#1D6FD8"
+DARK="#030C2E"
 
 # Couleur de fond des icônes adaptatives (celle du fond de l'icône du site)
 cat > "$RES/values/ic_launcher_background.xml" <<XML
@@ -31,6 +32,19 @@ for f in $(find "$RES" -name "splash.png"); do
   size=$(identify -format "%wx%h" "$f")
   w=${size%x*}; h=${size#*x}
   m=$(( (w<h ? w : h) * 30 / 100 ))
-  convert -size ${size} xc:"$BLUE" \( "$ICON" -resize ${m}x${m} \) -gravity center -composite "$f"
+  convert -size ${size} xc:"$DARK" \( "$ICON" -resize ${m}x${m} \) -gravity center -composite "$f"
 done
+# Fond bleu nuit partout au lancement (évite l'écran noir avant l'affichage de la page)
+STYLES="$RES/values/styles.xml"
+# thème de lancement (Android 12+) et fond de fenêtre de l'activité
+sed -i "/<style name=\"AppTheme.NoActionBarLaunch\"/a\\        <item name=\"windowSplashScreenBackground\">$DARK</item>" "$STYLES"
+sed -i "/<style name=\"AppTheme.NoActionBar\" /a\\        <item name=\"android:windowBackground\">@color/pb_dark</item>" "$STYLES"
+cat > "$RES/values/pb_colors.xml" <<XML
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="pb_dark">$DARK</color>
+</resources>
+XML
+grep -q windowSplashScreenBackground "$STYLES" && grep -q pb_dark "$STYLES" || { echo "::error::styles.xml non modifié"; exit 1; }
+
 echo "Icônes et écran de démarrage générés."
