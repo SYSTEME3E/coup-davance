@@ -26,3 +26,4 @@
     s.style.opacity="0";setTimeout(function(){s.remove()},400);
   },Math.max(0,DUREE-ecoule));
 })();
+
