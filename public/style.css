@@ -456,3 +456,15 @@ img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none;-webkit-tou
 .drw .dl-app:hover,.drw .dl-app:focus-visible{background:#128A3E;border-color:#128A3E}
 .drw .dl-app .mi{color:#fff}
 .logo b{color:var(--brand);font:inherit}
+
+/* ---- Ordinateur (≥ 900 px) : pages du bas dans le menu + 2 cards de pronostic par ligne ---- */
+.drw .dsk{display:none!important}
+@media (min-width:900px){
+  .drw a.dsk{display:flex!important}
+  .drw hr.dsk{display:block!important;border:0;border-top:1px solid var(--line);margin:4px 0}
+  .drw .mn a.cur{border-color:#6F5BFF;background:#F1EEFF}
+  body.pd .wrap:has(#list){max-width:1100px}
+  body.pd #list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px;align-items:start}
+  body.pd #list>*{grid-column:1/-1}
+  body.pd #list>.pc{grid-column:auto;margin-bottom:16px}
+}
