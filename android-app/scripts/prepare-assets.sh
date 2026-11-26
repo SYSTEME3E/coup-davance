@@ -150,4 +150,8 @@ public class MajPlugin extends Plugin {
 JAVA_EOF
 grep -q REQUEST_INSTALL_PACKAGES "$MANIFEST" || sed -i 's#</manifest>#    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />\n</manifest>#' "$MANIFEST"
 
+# Sons des notifications : klaxon + sifflet (buts, canal pb_buts) et carillon (le reste, canal pb_infos)
+mkdir -p "$RES/raw"
+cp sounds/notif_but.ogg sounds/notif_info.ogg "$RES/raw/"
+
 echo "Icônes et écran de démarrage générés."
