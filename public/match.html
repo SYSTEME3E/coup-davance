@@ -15,7 +15,7 @@
 <div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="cards.js"></script><script src="menu.js"></script><script src="ads.js"></script><script>PBAds.display($("adslot"),{sb:sb});</script><script>
+</script><script src="cards.js"></script><script src="sportscore.js"></script><script src="menu.js"></script><script src="ads.js"></script><script>PBAds.display($("adslot"),{sb:sb});</script><script>
 const LIVE=["1H","2H","ET","BT","P","LIVE","INT","SUSP","HT"],DONE=["FT","AET","PEN"];
 const ROWS=[["expected_goals","Buts attendus (xG)"],["Ball Possession","Possession"],["Total Shots","Total de tirs"],["Shots on Goal","Tirs cadrés"],["Shots off Goal","Tirs non cadrés"],["Blocked Shots","Tirs contrés"],["Shots insidebox","Tirs dans la surface"],["Shots outsidebox","Tirs hors de la surface"],["Corner Kicks","Corners"],["Fouls","Fautes"],["Offsides","Hors-jeu"],["Yellow Cards","Cartons jaunes"],["Red Cards","Cartons rouges"],["Goalkeeper Saves","Arrêts du gardien"],["goals_prevented","Buts évités"],["Total passes","Passes"],["Passes accurate","Passes réussies"],["Passes %","Précision des passes"]];
 const num=v=>v==null?0:(parseFloat(String(v))||0);
@@ -131,6 +131,15 @@ const refresh=async()=>{
 async function liveOnly(){
   const get=async()=>{try{const{data}=await sb.from("live_matches").select("*").eq("id",id).maybeSingle();return data}catch(e){return null}};
   let m=await get();if(!m)return false;
+  // Page du match en direct (SportScore) : on retrouve le match par les noms d'équipes et l'heure, puis on y va directement
+  $("mh").innerHTML='<p class="sub" style="text-align:center;text-transform:none">Ouverture du match en direct…</p>';
+  try{
+    const x={home:m.home,away:m.away,t:Date.parse(m.kickoff)||0};
+    const same=y=>ssSameMatch(x,{home:y.home,away:y.away,t:+new Date(y.start)||0},6);
+    let f=(await ssLive()).find(same);
+    if(!f){const d=m.kickoff?new Date(m.kickoff).toISOString().slice(0,10):undefined;f=(await ssToday(d)).find(same)}
+    if(f&&f.id){location.replace("sport.html#match/"+encodeURIComponent(f.id)+(f.mid&&f.mid!==f.id?"/"+encodeURIComponent(f.mid):""));return true}
+  }catch(e){}
   const draw=()=>{
     const fin=m.status==="finished",ht=m.status==="ht",lv=m.status==="live",sc=m.home_score!=null&&m.away_score!=null;
     const st=fin?"Terminé":ht?"Mi-temps":lv?(m.minute!=null?m.minute+"’":"En direct"):new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
@@ -141,7 +150,7 @@ async function liveOnly(){
       +'<span style="flex:none;font:800 34px/1 \'Bricolage Grotesque\',sans-serif">'+(sc?esc(m.home_score)+' - '+esc(m.away_score):'vs')+'</span>'
       +'<b style="flex:1;font-size:17px">'+esc(m.away)+'</b></div>'
       +'<p style="margin:12px 0 0;font-weight:700;color:'+(lv?'#e5322d':'inherit')+'">'+(lv?'● ':'')+esc(st)+'</p></div>'
-      +'<p class="sub" style="text-align:center;margin:14px 0">Pas de pronostic pour ce match.</p>'
+      +'<p class="sub" style="text-align:center;margin:14px 0;text-transform:none">Pas de pronostic pour ce match.</p>'
       +'<p style="text-align:center;margin:0 0 16px"><a href="sport.html">Voir tous les matchs en direct</a></p>';
   };
   draw();
