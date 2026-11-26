@@ -9,9 +9,10 @@
 <div id="st"></div>
 <div id="hs"></div>
 <div id="l10"></div>
+<div id="tp"></div>
 <div id="ev"></div>
 <div id="adslot" hidden></div>
-<p class="note pwr" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p>
+<p class="note" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p>
 <div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
@@ -210,4 +211,13 @@ $("vd").addEventListener("click",e=>{
 vdLoad();
 setInterval(()=>{if(document.hidden||vdBusy||Date.now()<vdNext)return;vdLoad()},15000);
 })();
+</script><script>
+// Avis des sites de pronostics : uniquement les articles approuvés par un admin pour CE match (titre + lien vers le site d'origine, rien de recopié).
+(async()=>{try{
+  const{data}=await sb.from("tip_articles").select("title,url,source_name,published_at").eq("fixture_id",id).eq("moderation_status","approved").order("published_at",{ascending:false}).limit(5);
+  if(!data||!data.length)return;
+  $("tp").innerHTML='<div class="sec"><h2>Avis des sites de pronostics</h2><ul class="note" style="margin:0;padding-left:18px">'
+    +data.map(x=>'<li style="margin:6px 0"><a href="'+esc(/^https?:\/\//i.test(x.url)?x.url:"#")+'" target="_blank" rel="noopener noreferrer nofollow">'+esc(x.title)+'</a> <small>('+esc(x.source_name||"")+')</small></li>').join("")
+    +'</ul><p class="note" style="margin:8px 0 0"><small>Contenus de sites tiers, à titre d’information. Aucun résultat n’est garanti. <a href="jeu-responsable.html">Jeu responsable</a>.</small></p></div>'
+}catch(e){}})();
 </script></body></html>
