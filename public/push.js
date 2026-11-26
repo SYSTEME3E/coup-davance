@@ -141,6 +141,12 @@
   }
   function boot(sb){if(native){nativeRefresh().then(function(){sync(sb);banner(sb)});return}sync(sb);banner(sb)}
   // Appli Android : un toucher sur une notification ouvre la page prévue (même site uniquement)
+  // Canaux sonores Android (le son d'un canal est fixé à sa création) : « pb_buts » = klaxon + sifflet (buts), « pb_infos » = carillon (le reste).
+  // Les fichiers notif_but / notif_info sont dans res/raw (copiés par android-app/scripts/prepare-assets.sh). Le nom du canal est repris par le champ channel_id de push-worker.
+  if(native&&NP&&NP.createChannel){
+    NP.createChannel({id:"pb_buts",name:"Buts",description:"Alerte but (klaxon + sifflet)",importance:5,sound:"notif_but",vibration:true,visibility:1}).catch(function(){});
+    NP.createChannel({id:"pb_infos",name:"Infos & matchs",description:"Coup d'envoi, mi-temps, fin de match, actualités, bonus",importance:4,sound:"notif_info",vibration:true,visibility:1}).catch(function(){});
+  }
   if(native&&NP){nativeRefresh();NP.addListener("pushNotificationActionPerformed",function(a){try{var d=(a&&a.notification&&a.notification.data)||{};var u=new URL(d.url||"dashboard.html",location.href);if(u.origin===location.origin)location.href=u.href}catch(e){}})}
   // Sur le tableau de bord, la pop-up se lance toute seule (sans dépendre du chargement du menu) dès que le client Supabase et la session sont prêts
   if(window.PUSH_PROMPT){var n=0,iv=setInterval(function(){
