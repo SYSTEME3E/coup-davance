@@ -5,7 +5,7 @@ const V="pronostbet-v32";
 const SB="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js";
 const FONTS="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap";
 const PAGES=["index.html","auth.html","dashboard.html","historique.html","match.html","sport.html","legal.html","conditions.html","confidentialite.html","regles.html","mentions-legales.html","jeu-responsable.html","reglages.html","balance.html","retrait.html","abonnement.html","actualites.html","favoris.html"];
-const FILES=["config.js","firebase-config.js","push.js","i18n.js","menu.js","nav.js","maj.js","pwa.js","splash.js","cards.js","ads.js","sportscore.js","ticker.js","ticker.css","matchview.js","matchview.css","predview.css","style.css","theme.css","news.css","news-white.css",""icon.svg",","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png"];
+const FILES=["config.js","firebase-config.js","push.js","i18n.js","menu.js","nav.js","maj.js","pwa.js","splash.js","cards.js","ads.js","sportscore.js","ticker.js","ticker.css","matchview.js","matchview.css","predview.css","style.css","theme.css","news.css","news-white.css","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png"];
 const EXT=[SB,FONTS];
 self.addEventListener("install",e=>{e.waitUntil((async()=>{
   const c=await caches.open(V);
