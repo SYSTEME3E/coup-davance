@@ -14,7 +14,7 @@ const sb = createClient(url, key, { auth: { persistSession: false } });
 const must = <T>(r: { data: T | null; error: any }, what: string): T => { if (r.error) throw new Error(what + " : " + r.error.message); return r.data as T; };
 
 async function main() {
-  const feeds = must(await sb.from("news_feeds").select("*").eq("enabled", true), "news_feeds") as Feed[];
+  const feeds = must(await sb.from("news_feeds").select("*").eq("enabled", true).neq("provider", "rss_pronostics"), "news_feeds")   // les flux de pronostics ont leur propre synchro (tips-sync.ts) as Feed[];
   const rulesRows = must(await sb.from("news_sources").select("domain,name,kind"), "news_sources") as { domain: string | null; name: string | null; kind: any }[];
   const rules: SourceRules = { byDomain: new Map(), byName: new Map() };
   for (const r of rulesRows) { if (r.domain) rules.byDomain.set(r.domain.toLowerCase(), r.kind); if (r.name) rules.byName.set(norm(r.name), r.kind); }
