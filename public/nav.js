@@ -1,10 +1,61 @@
-// Barre de navigation du bas + favoris (étoile jaune sur les matchs). Favoris gardés sur le téléphone, par appareil.
+// Barre de navigation du bas + favoris (étoile jaune sur les matchs).
+// Favoris : copie gardée sur le téléphone (rapide, marche hors ligne) + synchronisation avec le compte Supabase (table « favorites »),
+// pour retrouver la même liste dans l'app Android et sur le web.
 (function(){
   if(/\/(admin|verif)/.test(location.pathname))return;
-  var KEY="pb_favoris_v1";
-  function lire(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
-  function ecrire(f){try{localStorage.setItem(KEY,JSON.stringify(f))}catch(e){}}
-  window.PBFAV={lire:lire};
+  var KEY="pb_favoris_v1",QK="pb_favq_v1",UK="pb_fav_uid";
+  function rd(k,d){try{var v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
+  function wr(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  function lire(){return rd(KEY,{})}
+  function ecrire(f){wr(KEY,f)}
+
+  // ---- Synchronisation avec le compte ----
+  var DB=null;try{DB=typeof sb!=="undefined"?sb:null}catch(e){}
+  var busy=false,again=false,last=0;
+  // file d'attente : changements pas encore envoyés au compte (hors ligne, erreur réseau…)
+  function enfiler(op,k,data){var q=rd(QK,{});q[k]={op:op,data:data,ajout:data&&data.ajout||Date.now(),t:Date.now()+Math.random()};wr(QK,q)}
+  function sync(){
+    if(!DB)return;
+    if(busy){again=true;return}
+    busy=true;last=Date.now();
+    var fin=function(){busy=false;if(again){again=false;setTimeout(sync,300)}};
+    DB.auth.getSession().then(function(r){
+      var s=r&&r.data&&r.data.session,u=s&&s.user&&s.user.id;
+      if(!u)return fin();
+      // les favoris gardés sur le téléphone appartenaient à un autre compte : on ne les mélange pas
+      var prev=null,SK="pb_fav_sync_"+u,premier=true;
+      try{prev=localStorage.getItem(UK);premier=!localStorage.getItem(SK)}catch(e){}
+      if(prev&&prev!==u){wr(KEY,{});wr(QK,{});premier=true}
+      try{localStorage.setItem(UK,u)}catch(e){}
+      var q=rd(QK,{});
+      // première connexion de cet appareil avec ce compte : on envoie les favoris du téléphone (rien n'est perdu)
+      if(premier){var f0=lire();Object.keys(f0).forEach(function(k){if(!q[k])q[k]={op:"set",data:f0[k],ajout:f0[k].ajout||Date.now(),t:0}})}
+      var sets=[],dels=[];
+      Object.keys(q).forEach(function(k){if(q[k].op==="del")dels.push(k);else sets.push({user_id:u,k:k,data:q[k].data,ajout:q[k].ajout})});
+      var p=Promise.resolve({});
+      if(sets.length)p=p.then(function(){return DB.from("favorites").upsert(sets,{onConflict:"user_id,k"})});
+      p=p.then(function(x){if(x&&x.error)throw x.error;if(dels.length)return DB.from("favorites").delete().eq("user_id",u).in("k",dels)});
+      return p.then(function(x){
+        if(x&&x.error)throw x.error;
+        // on retire de la file ce qui vient d'être envoyé (sauf si l'utilisateur l'a modifié entre-temps)
+        var q2=rd(QK,{});Object.keys(q).forEach(function(k){if(q2[k]&&q2[k].t===q[k].t)delete q2[k]});wr(QK,q2);
+        return DB.from("favorites").select("k,data,ajout").eq("user_id",u);
+      }).then(function(x){
+        if(x.error)throw x.error;
+        var f={};(x.data||[]).forEach(function(r){f[r.k]=Object.assign({},r.data,{k:r.k,ajout:Number(r.ajout)})});
+        // changements faits pendant la synchronisation : on les garde
+        var q3=rd(QK,{});Object.keys(q3).forEach(function(k){if(q3[k].op==="del")delete f[k];else f[k]=q3[k].data});
+        var avant=JSON.stringify(Object.keys(lire()).sort());
+        ecrire(f);
+        try{localStorage.setItem(SK,"1")}catch(e){}
+        repeindre();
+        document.dispatchEvent(new CustomEvent("pbfavsync"));
+        if(avant!==JSON.stringify(Object.keys(f).sort()))document.dispatchEvent(new CustomEvent("pbfav"));
+        fin();
+      });
+    }).catch(function(){fin()});
+  }
+  window.PBFAV={lire:lire,sync:sync};
 
   var css=document.createElement("style");
   css.textContent="body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important}"
@@ -64,12 +115,21 @@
     var b=e.target.closest&&e.target.closest(".favb");if(!b)return;
     e.preventDefault();e.stopImmediatePropagation();
     var f=lire(),k=b.dataset.fav;
-    if(f[k])delete f[k];
-    else{var el=b.closest(".pc[data-id],.sx-m,.oth-m"),i=el&&infos(el);if(!i)return;i.ajout=Date.now();f[k]=i}
-    ecrire(f);
+    if(f[k]){delete f[k];enfiler("del",k)}
+    else{var el=b.closest(".pc[data-id],.sx-m,.oth-m"),i=el&&infos(el);if(!i)return;i.ajout=Date.now();f[k]=i;enfiler("set",k,i)}
+    ecrire(f);sync();
     document.querySelectorAll(".favb").forEach(function(x){if(x.dataset.fav===k)peindre(x,!!f[k])});
     document.dispatchEvent(new CustomEvent("pbfav"));
   },true);
+  function repeindre(){var f=lire();document.querySelectorAll(".favb").forEach(function(x){peindre(x,!!f[x.dataset.fav])})}
   decorer();
   new MutationObserver(decorer).observe(document.body,{childList:true,subtree:true});
+
+  // synchronisation : au chargement, à la connexion, au retour en ligne et quand l'app revient au premier plan
+  sync();
+  if(DB){
+    try{DB.auth.onAuthStateChange(function(ev){if(ev==="SIGNED_IN"&&Date.now()-last>5000)setTimeout(sync,0)})}catch(e){}
+    addEventListener("online",sync);
+    document.addEventListener("visibilitychange",function(){if(!document.hidden&&Date.now()-last>30000)sync()});
+  }
 })();
