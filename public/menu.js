@@ -25,10 +25,16 @@
   mat:'<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.7V17c0 .6-.5 1-1.2 1.2C7.9 18.7 7 20.2 7 22M14 14.7V17c0 .6.5 1 1.2 1.2.9.5 1.8 2 1.8 3.8M18 2H6v7a6 6 0 0 0 12 0z"/>',
   back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
   dl:'<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',
+  fav:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2L5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
   news:'<path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v5h5M2 15h8M2 11h4M2 19h8"/>'
   };
   const ic=n=>'<svg class="mi" viewBox="0 0 24 24" aria-hidden="true">'+IC[n]+'</svg>';
 
+  // pages de la barre du bas : dans le menu sur ordinateur uniquement (classe « dsk »)
+  const page=location.pathname.split("/").pop().replace(/\.html$/,"");
+  const pgs=[["dashboard","Accueil","home"],["actualites","Actualités","news"],["favoris","Favoris","fav"],["historique","Historique","hist"],["sport","Direct","live"]]
+    .map(x=>'<a class="dsk'+(page===x[0]?" cur":"")+'" href="'+x[0]+'.html"'+(page===x[0]?' aria-current="page"':'')+'>'+ic(x[2])+'<span>'+x[1]+'</span></a>').join("")
+    +'<hr class="dsk sep">';
   const btn=document.createElement("button");
   btn.type="button";btn.className="burger";btn.setAttribute("aria-label","Ouvrir le menu");btn.setAttribute("aria-expanded","false");
   btn.innerHTML="<i></i><i></i><i></i>";
@@ -38,7 +44,7 @@
   const dr=document.createElement("aside");dr.className="drw";dr.setAttribute("role","dialog");dr.setAttribute("aria-modal","true");dr.setAttribute("aria-label","Menu");
   dr.innerHTML=''
     +'<div class="dtop"><b>Menu</b><button type="button" class="dx" aria-label="Fermer le menu">✕</button></div>'
-    +'<nav class="mn">'+'<a href="abonnement.html">'+ic("vip")+'<span>VIP</span></a>'+'<a href="balance.html">'+ic("wal")+'<span>Mon solde</span></a>'+'<a href="retrait.html">'+ic("out")+'<span>Retrait</span></a>'+'<a href="reglages.html">'+ic("set")+'<span>Réglages</span></a>'+'<a href="admin.html" id="mAdmin" hidden>'+ic("adm")+'<span>Espace administrateur</span></a></nav>'
+    +'<nav class="mn">'+pgs+'<a href="abonnement.html">'+ic("vip")+'<span>VIP</span></a>'+'<a href="balance.html">'+ic("wal")+'<span>Mon solde</span></a>'+'<a href="retrait.html">'+ic("out")+'<span>Retrait</span></a>'+'<a href="reglages.html">'+ic("set")+'<span>Réglages</span></a>'+'<a href="admin.html" id="mAdmin" hidden>'+ic("adm")+'<span>Espace administrateur</span></a></nav>'
     +'<a class="dl-app" id="mApk" href="PronostBet.apk" download hidden>'+ic("dl")+'<span>Télécharger l’application</span></a>'
     +'<button type="button" class="out2" id="mOut">'+ic("quit")+'<span>Quitter</span></button>';
   document.body.appendChild(ov);document.body.appendChild(dr);
