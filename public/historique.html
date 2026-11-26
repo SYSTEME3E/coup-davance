@@ -2,7 +2,7 @@
 <header class="top"><a class="logo" href="index.html"><img src="icons/icon-192.png" alt="" width="34" height="34"><span>PRONOST<b>BET</b></span></a></header>
 <h1 class="pt">Historique</h1><p class="sub">Scores finaux et pronostics des matchs terminés</p>
 <div class="srch"><input id="hq" type="search" placeholder="Rechercher une équipe ou une compétition…" autocomplete="off"><input id="hd" type="date" aria-label="Date du match"></div>
-<div class="flt" id="flt"><button data-f="ok">✔ Gagnés <span id="n-ok"></span></button><button data-f="ko">✘ Ratés <span id="n-ko"></span></button><button data-f="other">Autres <span id="n-other"></span></button></div>
+<div class="flt" id="flt"><button data-f="ok">✔ Gagnés <span id="n-ok"></span></button><button data-f="ko">✘ Ratés <span id="n-ko"></span></button></div>
 <p class="sub" id="tabinfo" style="margin:0 0 6px"></p>
 <div id="list"><p class="sub">Chargement…</p></div>
 <button id="more" class="more" style="display:none">Voir plus de matchs</button>
@@ -10,10 +10,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
 </script><script src="cards.js"></script><script src="menu.js"></script><script>
-const PAGE=40,HASH={ok:"gagnes",ko:"rates",other:"autres"};
-const fromHash=()=>({"#gagnes":"ok","#rates":"ko","#autres":"other"})[location.hash]||"ok";
-const INFO={ok:"Pronostics justes : bon résultat (1X2) ou score exact trouvé.",ko:"Pronostics ratés : ni le bon résultat, ni le score exact.",other:"Matchs annulés ou dont le résultat n’est pas encore arrivé."};
-const EMPTY={ok:"Aucun pronostic gagné pour le moment.",ko:"Aucun pronostic raté pour le moment.",other:"Aucun match annulé ou en attente de résultat."};
+const PAGE=40,HASH={ok:"gagnes",ko:"rates"};
+const fromHash=()=>({"#gagnes":"ok","#rates":"ko"})[location.hash]||"ok";
+const INFO={ok:"Pronostics justes : bon résultat (1X2) ou score exact trouvé.",ko:"Pronostics ratés : ni le bon résultat, ni le score exact."};
+const EMPTY={ok:"Aucun pronostic gagné pour le moment.",ko:"Aucun pronostic raté pour le moment."};
 let rows=[],filter=fromHash(),from=0,more=true;
 const dayLabel=k=>new Date(k+"T12:00:00").toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"long",day:"numeric",month:"long"});
 const keyOf=m=>{const x=new Date(m.kickoff);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
@@ -40,7 +40,7 @@ function bySearch(a){const q=clean(),dv=$("hd").value;
   return a}
 const qb=()=>bySearch(byTab(sb.from("predictions_safe").select(COLS),filter)).order("kickoff",{ascending:false});
 async function counts(){const my=tok;
-  await Promise.all(["ok","ko","other"].map(async t=>{
+  await Promise.all(["ok","ko"].map(async t=>{
     const{count,error}=await bySearch(byTab(sb.from("predictions_safe").select("fixture_id",{count:"exact",head:true}),t));
     if(my!==tok)return;
     $("n-"+t).textContent=error||count==null?"":"("+count+")"}))}
