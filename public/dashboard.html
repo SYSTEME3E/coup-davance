@@ -52,7 +52,7 @@ let LIM=30,LIMO=40,lastSig="",FILT="all",OFF=0;const COLS="fixture_id,kickoff,le
 document.addEventListener("click",e=>{if(e.target&&e.target.id==="moreHome"){LIM+=30;build()}if(e.target&&e.target.id==="moreOth"){LIMO+=40;build()}});
 const PF=m=>FILT==="all"||(FILT==="live"?!!m.live_status:FILT==="next"?(!m.live_status&&!m.settled_at&&new Date(m.kickoff)>Date.now()):(isOpen(m)&&Math.max(m.data.result.home,m.data.result.draw,m.data.result.away)>=80));
 // ---- Autres matchs du jour (sans pronostic) : tous les championnats fournis par SportScore, comme la page « Football en direct » ----
-const PRIO=/^(english premier league|spanish la liga|italian serie a|french ligue 1|bundesliga|uefa champions league|uefa europa league|uefa conference league)$/i;
+const PRIO=/^(english premier league|spanish la liga|italian serie a|french ligue 1|bundesliga|uefa champions league|uefa europa league|uefa europa conference league|uefa conference league)$/i;
 const EURO=/premier league|la liga|serie a|serie b|ligue 1|ligue 2|bundesliga|championship|eredivisie|primeira liga|super lig|super league|premiership|pro league|segunda|league one|league two|champions league|europa|conference|cup|coupe|copa|pokal|coppa|ekstraklasa|allsvenskan|eliteserien|superliga|superettan|veikkausliiga|hnl|nb i|liga i|fortuna|a-league|euro/i;
 const hm=d=>new Date(d).toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"});
 const othRow=x=>{const sc=x.hs!=null&&x.as!=null,
@@ -109,13 +109,16 @@ const loadHome=async first=>{
  // 1) affichage immédiat des matchs avec pronostic (la base répond en quelques ms) ; SportScore se charge ensuite en arrière-plan
  if(first&&!error){cache={all,error,s,tm,others:[]};build()}
  const rows=data||[];
- const oP=(async()=>{try{const t=await ssToday();
-  return t.filter(x=>!x.done&&x.start&&new Date(x.start).toDateString()===s.toDateString()
-   &&!rows.some(m=>ssSameMatch({home:m.home,away:m.away,t:+new Date(m.kickoff)},{home:x.home,away:x.away,t:+new Date(x.start)},3)))}catch(e){return[]}})();
+ const oP=(async()=>{try{
+  const d0=new Date(s);d0.setHours(0,0,0,0);const d1=new Date(d0.getTime()+864e5);
+  const{data,error:e2}=await sb.from("live_matches").select("id,home,away,league,kickoff,home_score,away_score,minute,status").gte("kickoff",d0.toISOString()).lt("kickoff",d1.toISOString()).order("kickoff").limit(1000);
+  if(e2||!data)return[];
+  return data.map(r=>({id:null,home:r.home,away:r.away,comp:r.league,start:r.kickoff,hs:r.home_score,as:r.away_score,minute:r.minute,live:r.status==="live"||r.status==="ht",done:r.status==="finished"}))
+   .filter(x=>!x.done&&!rows.some(m=>ssSameMatch({home:m.home,away:m.away,t:+new Date(m.kickoff)},{home:x.home,away:x.away,t:+new Date(x.start)},3)))}catch(e){return[]}})();
  all=await withSS(all);
  if(first&&!error){cache={all,error,s,tm,others:[]};build()} // 2) avec les scores en direct
  const others=await oP; // 3) avec les autres championnats
- const sig=s.toDateString()+JSON.stringify(all.map(m=>[m.fixture_id,m.live_status,m.live_home,m.live_away,m.live_minute]))+JSON.stringify(others.map(x=>[x.id,x.live,x.hs,x.as]));
+ const sig=s.toDateString()+JSON.stringify(all.map(m=>[m.fixture_id,m.live_status,m.live_home,m.live_away,m.live_minute]))+JSON.stringify(others.map(x=>[x.id||x.home,x.live,x.hs,x.as,x.minute]));
  if(!first&&!error&&sig===lastSig)return; // rien n'a changé : on ne redessine pas la liste
  lastSig=sig;cache={all,error,s,tm,others};build();
  ensureLogos(all.slice(0,60),build)};
