@@ -156,3 +156,6 @@ body.ss{background:#130F33;--ink:#FFFFFF;--mut:#A9A4D6}
 /* Bandeau compétition / stade (page match) : texte foncé lisible sur fond clair */
 .ss .ms-hero .ms-comp{background:#F1F2F7;color:#1B1650;opacity:1;-webkit-text-fill-color:#1B1650;text-shadow:none}
 .ss .ms-hero .ms-comp small{color:#4A4775;font-weight:700;-webkit-text-fill-color:#4A4775}
+
+/* Bandeau compétition · journée · stade de match.html (.mh .lgl) : texte foncé sur fond clair */
+.ss .mh .lgl,.ss .mh .lgl span{color:#1B1650;-webkit-text-fill-color:#1B1650;opacity:1}
