@@ -1,3 +1,10 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PronostBet</title>
-<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1E1760;color:#fff;font:600 16px system-ui,sans-serif;text-align:center;padding:24px}button{margin-top:16px;min-height:48px;padding:0 24px;border:0;border-radius:14px;background:#1D6FD8;color:#fff;font:700 16px inherit}</style></head>
-<body><div><div style="font-size:44px">⚽</div><p>Impossible de charger PronostBet.<br>Vérifie ta connexion internet.</p><button onclick="location.reload()">Réessayer</button></div></body></html>
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PRONOSTBET</title>
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#130F33;color:#fff;font:600 16px system-ui,sans-serif;text-align:center;padding:24px}.n{font:800 30px system-ui,sans-serif;margin-bottom:18px}.n b{color:#4cc3ff}button{margin-top:16px;min-height:48px;padding:0 24px;border:0;border-radius:14px;background:#1D6FD8;color:#fff;font:700 16px system-ui,sans-serif}</style></head>
+<body><div><div class="n">PRONOST<b>BET</b></div><p>Impossible de charger l’application.<br>Vérifie ta connexion internet.</p><button id="r">Réessayer</button></div>
+<script>
+// On retourne toujours sur l'adresse du site (autorisée dans l'app), jamais sur « localhost » : sinon Android ouvre Chrome.
+var SITE="https://coup-davance.vercel.app/dashboard.html";
+function go(){location.replace(SITE)}
+document.getElementById("r").onclick=go;
+addEventListener("online",go);
+</script></body></html>
