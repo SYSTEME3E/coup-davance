@@ -159,3 +159,21 @@ body.ss{background:#130F33;--ink:#FFFFFF;--mut:#A9A4D6}
 
 /* Bandeau compétition · journée · stade de match.html (.mh .lgl) : texte foncé sur fond clair */
 .ss .mh .lgl,.ss .mh .lgl span{color:#1B1650;-webkit-text-fill-color:#1B1650;opacity:1}
+
+/* Forme récente (match.html) */
+.fm .fmh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}
+.fm .fmh h2{margin:0}
+.fm .fmh a{color:#1D4ED8;font-weight:700;font-size:15px;text-decoration:none;white-space:nowrap}
+.fm .fmt{display:flex;align-items:center;gap:10px;margin:16px 0 10px}
+.fm .fmt b{font:800 17px/1.2 "Bricolage Grotesque",sans-serif;color:#1B1650}
+.fm .fml{width:32px;height:32px;object-fit:contain}
+.fm .fmr{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.fm .fc{border-radius:8px;overflow:hidden;background:#F1F2F7;min-width:0}
+.fm .fk{height:30px;display:flex;align-items:center;justify-content:center;font:800 15px "Hanken Grotesk",sans-serif;color:#fff}
+.fm .fk.fV{background:#2A8F6A}.fm .fk.fN{background:#636B7C}.fm .fk.fD{background:#F0525A}
+.fm .fk.fq{background:#E6E8EE;color:#7C8296}
+.fm .fb{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 2px 8px}
+.fm .fb img{width:26px;height:26px;object-fit:contain}
+.fm .fb span{font:800 14px "Hanken Grotesk",sans-serif;color:#1B1650;white-space:nowrap}
+.fm .fab{width:26px;height:26px;border-radius:50%;background:#E3E5F2;color:#4A4775;display:flex;align-items:center;justify-content:center;font:800 9px "Hanken Grotesk",sans-serif}
+.fm .fc:first-child .fb span{color:#7C8296}
