@@ -11,7 +11,7 @@
 .oth-m .tm{display:block}
 </style></head><body class="pd"><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icons/icon-192.png" alt="" width="34" height="34"><span>PRONOST<b>BET</b></span></a></header>
-<h1 class="pt">Favoris</h1><p class="sub" style="text-transform:none">Les matchs marqués d’une étoile sur ce téléphone</p>
+<h1 class="pt">Favoris</h1><p class="sub" style="text-transform:none">Les matchs marqués d’une étoile sur ton compte</p>
 <div id="list"><p class="sub">Chargement…</p></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
@@ -35,6 +35,7 @@ const load=async()=>{const ids=favs().filter(f=>f.k.indexOf("p:")===0).map(f=>Nu
   if(favs().some(f=>f.k.indexOf("s:")===0)){try{SSM=await ssToday();draw()}catch(e){}}
   if(ROWS.length)ensureLogos(ROWS,draw)};
 document.addEventListener("pbfav",draw);
+document.addEventListener("pbfavsync",load); // favoris du compte récupérés : on recharge les matchs
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(!session)return location.href="auth.html#login";await load();
   setInterval(()=>{if(!document.hidden)load()},60000)})();
 </script></body></html>
