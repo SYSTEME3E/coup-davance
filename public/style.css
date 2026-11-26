@@ -455,3 +455,4 @@ img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none;-webkit-tou
 .drw .dl-app[hidden]{display:none}
 .drw .dl-app:hover,.drw .dl-app:focus-visible{background:#128A3E;border-color:#128A3E}
 .drw .dl-app .mi{color:#fff}
+.logo b{color:var(--brand);font:inherit}

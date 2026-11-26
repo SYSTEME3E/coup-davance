@@ -115,3 +115,4 @@ body.pd{--bg:#130F33;--surface:#1B1450;--ink:#FFFFFF;--muted:#A9A4D6;--line:#322
 .pd .srch input,.pd input[type=search],.pd input[type=date]{background:#fff;border:1px solid #E4E5EE;color:#1B1650;color-scheme:light}
 .pd .srch input::placeholder,.pd input[type=search]::placeholder{color:#6B6890;opacity:1}
 .pd .srch input:focus,.pd input[type=search]:focus,.pd input[type=date]:focus{border-color:#6F5BFF;box-shadow:0 0 0 3px rgba(111,91,255,.25)}
+.pd .logo b{color:#4cc3ff}
