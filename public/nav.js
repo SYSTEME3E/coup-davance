@@ -68,7 +68,9 @@
   +".favb{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:0;background:none;color:#F5B800;font:400 26px/1 system-ui,sans-serif;cursor:pointer}"
   +".pc-top .favb{margin-left:auto;margin-right:-4px}"
   +".sx-m.hasfav{grid-template-columns:50px minmax(0,1fr) 30px 34px;gap:8px}"
-  +".nw-toast{bottom:calc(100px + env(safe-area-inset-bottom,0px))!important}";
+  +".nw-toast{bottom:calc(100px + env(safe-area-inset-bottom,0px))!important}"
+  // ordinateur : plus de barre du bas, les pages sont dans le menu à 3 barres
+  +"@media (min-width:900px){.bnav{display:none!important}body{padding-bottom:24px!important}.nw-toast{bottom:24px!important}}";
   document.head.appendChild(css);
 
   var IC={
