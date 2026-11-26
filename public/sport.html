@@ -15,7 +15,7 @@ const DEBUG=/[?&]debug=1/.test(location.search);
 
 // Compétitions proposées. Ces identifiants (slugs) ont été vérifiés auprès de SportScore.
 // Attention : « premier-league » seul n'existe pas pour les classements, il faut « english-premier-league ».
-const POP=[["Premier League","english-premier-league"],["Champions League","uefa-champions-league"],["La Liga","spanish-la-liga"],["Serie A","italian-serie-a"],["Bundesliga","bundesliga"],["Ligue 1","french-ligue-1"],["Europa League","uefa-europa-league"],["Brasileirão","brazilian-serie-a"],["MLS","united-states-major-league-soccer"],["Coupe du monde","fifa-world-cup"]];
+const POP=[["Premier League","english-premier-league"],["Champions League","uefa-champions-league"],["La Liga","spanish-la-liga"],["Serie A","italian-serie-a"],["Bundesliga","bundesliga"],["Ligue 1","french-ligue-1"],["Europa League","uefa-europa-league"],["Conference League","uefa-conference-league"],["Brasileirão","brazilian-serie-a"],["MLS","united-states-major-league-soccer"],["Coupe du monde","fifa-world-cup"]];
 
 // Suivi live compact (comme 1xBet) : on n'affiche que le terrain et le score ; « Agrandir » montre le lecteur en entier.
 const trkBox=id=>'<div class="sx-trk"><div class="v"><iframe src="'+esc("https://sportscore.com/api/widget/tracker/?sport=football&id="+encodeURIComponent(id)+"&src="+encodeURIComponent((window.CFG||{}).src||""))+'" title="Suivi du match en direct" loading="lazy" allow="fullscreen" sandbox="allow-same-origin allow-scripts allow-popups"></iframe></div><button type="button" class="sx-trk-b" data-trk>Agrandir</button></div>';
@@ -127,7 +127,7 @@ const P={
 
 // Liste des matchs : filtre (onglets + recherche), grandes compétitions en premier, 50 matchs affichés à la fois
 const nz=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-const PRIO=/^(english premier league|spanish la liga|italian serie a|french ligue 1|bundesliga|uefa champions league|uefa europa league|brazilian serie a)$/i;
+const PRIO=/^(english premier league|spanish la liga|italian serie a|french ligue 1|bundesliga|uefa champions league|uefa europa league|uefa europa conference league|uefa conference league|brazilian serie a)$/i;
 function mlist(){
   const terms=nz(QUERY).split(/\s+/).filter(Boolean);
   const ms=MATCHES.filter(m=>(FILTER==="live"?m.live:FILTER==="done"?m.done:FILTER==="next"?(!m.live&&!m.done):true)&&(!terms.length||terms.every(t=>nz(m.home+" "+m.away+" "+m.comp).includes(t))));
