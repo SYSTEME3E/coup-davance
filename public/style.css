@@ -468,3 +468,6 @@ img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none;-webkit-tou
   body.pd #list>*{grid-column:1/-1}
   body.pd #list>.pc{grid-column:auto;margin-bottom:16px}
 }
+
+/* « Propulsé par » : flouté (texte conservé) */
+.pwr{filter:blur(4px);-webkit-filter:blur(4px);user-select:none}
