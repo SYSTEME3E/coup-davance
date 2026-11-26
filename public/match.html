@@ -5,6 +5,7 @@
 <div id="sl"></div>
 <div id="pred"></div>
 <div id="vd"></div>
+<div id="fm"></div>
 <div id="st"></div>
 <div id="hs"></div>
 <div id="l10"></div>
@@ -40,12 +41,30 @@ const linkSide=async()=>{try{const{data}=await sb.rpc("sportscore_link",{p_fixtu
 // 10 derniers matchs de chaque équipe, lus dans notre archive (table match_archive)
 const SFX=["united","town","city","county","rovers","athletic","wanderers","albion","argyle","rvs","utd"];
 const keysFor=k=>{const p=String(k||"").split(" "),ss=p.length>1&&SFX.includes(p[p.length-1])?p.slice(0,-1).join(" "):k;return[...new Set([k,ss])].filter(Boolean)};
+// Forme récente : 5 derniers résultats de chaque équipe (V / N / D, adversaire, score)
+const FORM={};
+const abbr=n=>'<span class="fab">'+esc(String(n||"?").replace(/^(FC|CF|AC|AS|SC)\s+/i,"").slice(0,3).toUpperCase())+'</span>';
+const fLogo=(u,n)=>u?'<img src="'+esc(u)+'" alt="" referrerpolicy="no-referrer" draggable="false" onerror="this.outerHTML=this.dataset.f" data-f="'+esc(abbr(n))+'">':abbr(n);
+const drawForme=()=>{
+  if(!pr||!FORM.h||!FORM.a){return}
+  const hl=(d&&d.home&&d.home.logo)||(meta&&meta.home_logo)||"",al=(d&&d.away&&d.away.logo)||(meta&&meta.away_logo)||"";
+  const row=(name,logo,oppName,oppLogo,F)=>{
+    const rs=(F.rows||[]).filter(r=>r.home_goals!=null&&r.away_goals!=null).slice(0,5);
+    if(!rs.length)return"";
+    const cols=['<div class="fc"><div class="fk fq">?</div><div class="fb">'+fLogo(oppLogo,oppName)+'<span>?</span></div></div>'].concat(rs.map(r=>{
+      const home=F.ks.includes(r.home_key),gf=home?r.home_goals:r.away_goals,ga=home?r.away_goals:r.home_goals,
+        opp=home?r.away:r.home,ol=home?r.away_logo:r.home_logo,res=gf>ga?"V":gf<ga?"D":"N";
+      return'<div class="fc"><div class="fk f'+res+'">'+res+'</div><div class="fb">'+fLogo(ol,opp)+'<span>'+gf+'-'+ga+'</span></div></div>'})).join("");
+    return'<div class="fmt">'+(logo?lg(logo,"fml"):"")+'<b>'+esc(name)+'</b></div><div class="fmr">'+cols+'</div>'};
+  const h=row(pr.home,hl,pr.away,al,FORM.h),a=row(pr.away,al,pr.home,hl,FORM.a);
+  $("fm").innerHTML=(h||a)?'<div class="sec fm"><div class="fmh"><h2>Forme récente</h2><a href="#l10">Détails de la forme</a></div>'+h+a+'</div>':"";
+};
 const l10=async()=>{
   if(!pr.home_key||!pr.away_key)return;
   const blk=async(name,key)=>{const ks=keysFor(key),list=ks.map(x=>'"'+x+'"').join(",");
     const{data,error}=await sb.from("match_archive").select("*").or("home_key.in.("+list+"),away_key.in.("+list+")").order("kickoff",{ascending:false}).limit(10);
     if(error)return"";
-    const rows=data||[];
+    const rows=data||[];FORM[name===pr.home?"h":"a"]={rows,ks};
     const li=rows.map(r=>{const home=ks.includes(r.home_key),gf=home?r.home_goals:r.away_goals,ga=home?r.away_goals:r.home_goals,opp=home?r.away:r.home,res=gf>ga?"V":gf<ga?"D":"N",
       dt=new Date(r.kickoff).toLocaleDateString((window.PB?PB.loc():"fr-FR"),{day:"2-digit",month:"2-digit"}),
       sm=(a,b)=>a!=null&&b!=null?a+b:null,
@@ -53,6 +72,7 @@ const l10=async()=>{
       return '<div class="lr"><span class="ld">'+dt+'</span><span class="lo">'+(home?"vs ":"à ")+esc(opp)+(st?'<small>'+st+'</small>':"")+'</span><b class="ls">'+gf+' – '+ga+'</b><span class="frm"><i class="f'+res+'">'+res+'</i></span></div>'}).join("");
     return '<div class="lb"><h3>'+esc(name)+'</h3>'+(li||'<p class="note">Aucun match enregistré pour l’instant.</p>')+(rows.length&&rows.length<10?'<p class="note">'+rows.length+'/10 matchs enregistrés pour cette équipe.</p>':"")+'</div>'};
   const[h,a]=await Promise.all([blk(pr.home,pr.home_key),blk(pr.away,pr.away_key)]);
+  drawForme();
   if(h||a)$("l10").innerHTML='<div class="sec l10"><h2>10 derniers matchs</h2>'+h+a+'</div>'};
 let sideOn=false;const startSide=()=>{if(sideOn||!pr)return;sideOn=true;document.title=pr.home+" – "+pr.away+" · PronostBet";linkSide();l10().catch(()=>{})};
 const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
@@ -62,6 +82,7 @@ const team=(side)=>{const t=(d&&d[side])||{},logo=t.logo||(meta&&meta[side+"_log
   return '<div class="t'+(lead===side?' win':'')+'">'+lg(logo)+'<b>'+esc(pr[side])+'</b></div>'};
 const isLive=()=>(d&&LIVE.includes(d.status))||(!!pr.live_status&&!(pr.settled_at));
 const draw=()=>{
+  drawForme();
   const lgLogo=(d&&d.league&&d.league.logo)||(meta&&meta.league_logo);
   let center="";
   const g=d&&d.goals&&d.goals.home!=null?d.goals:(pr.live_status?{home:pr.live_home,away:pr.live_away}:null);
