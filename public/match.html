@@ -127,6 +127,27 @@ const refresh=async()=>{
   await loadDetail();
   draw()};
 // Démarrage : avec la ligne mémorisée, on affiche tout de suite puis on lance TOUT en parallèle ; sans elle (lien direct, notification), ligne + logos en parallèle
+// Match du direct sans pronostic (lien des notifications de but) : score, minute et statut, actualisés tout seuls
+async function liveOnly(){
+  const get=async()=>{try{const{data}=await sb.from("live_matches").select("*").eq("id",id).maybeSingle();return data}catch(e){return null}};
+  let m=await get();if(!m)return false;
+  const draw=()=>{
+    const fin=m.status==="finished",ht=m.status==="ht",lv=m.status==="live",sc=m.home_score!=null&&m.away_score!=null;
+    const st=fin?"Terminé":ht?"Mi-temps":lv?(m.minute!=null?m.minute+"’":"En direct"):new Date(m.kickoff).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+    $("mh").innerHTML='<div class="card" style="text-align:center">'
+      +(m.league?'<p class="sub" style="margin:0 0 10px">'+esc(m.league)+'</p>':'')
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">'
+      +'<b style="flex:1;font-size:17px">'+esc(m.home)+'</b>'
+      +'<span style="flex:none;font:800 34px/1 \'Bricolage Grotesque\',sans-serif">'+(sc?esc(m.home_score)+' - '+esc(m.away_score):'vs')+'</span>'
+      +'<b style="flex:1;font-size:17px">'+esc(m.away)+'</b></div>'
+      +'<p style="margin:12px 0 0;font-weight:700;color:'+(lv?'#e5322d':'inherit')+'">'+(lv?'● ':'')+esc(st)+'</p></div>'
+      +'<p class="sub" style="text-align:center;margin:14px 0">Pas de pronostic pour ce match.</p>'
+      +'<p style="text-align:center;margin:0 0 16px"><a href="sport.html">Voir tous les matchs en direct</a></p>';
+  };
+  draw();
+  setInterval(async()=>{if(document.hidden||m.status==="finished")return;const n=await get();if(n){m=n;draw()}},30000);
+  return true;
+}
 if(hadCache){
   startSide();draw();
   const det=inPlay()?Promise.resolve():loadDetail();
@@ -135,7 +156,7 @@ if(hadCache){
   await det;draw();
 }else{
   await Promise.all([loadRow(),loadMeta()]);
-  if(!pr){await sessP;$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
+  if(!pr){await sessP;if(await liveOnly())return;$("mh").innerHTML='<div class="card">Match introuvable.</div><p style="text-align:center;margin:16px 0"><a href="sport.html">Voir les matchs en direct</a></p>';return}
   startSide();draw();
   if(!inPlay()){await loadDetail();draw()}
 }
