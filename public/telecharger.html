@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FFFFFF"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><title>Télécharge PronostBet</title>
+<style>
+:root{--ink:#1B1650;--mut:#5E5A82;--brand:#5B4BDB;--grn:#16A34A;--grn2:#22C55E}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ink);min-height:100%;font-family:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:440px;margin:0 auto;padding:0 16px max(28px,env(safe-area-inset-bottom));padding-top:env(safe-area-inset-top)}
+.top{display:flex;align-items:center;padding:14px 0}
+.logo{display:inline-flex;align-items:center;gap:10px;font:800 22px "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);text-decoration:none;white-space:nowrap}
+.logo img{width:34px;height:34px;border-radius:9px;display:block}
+.logo b{color:var(--brand)}
+.hero{display:block;width:calc(100% + 32px);max-width:none;height:auto;margin:6px -16px 0;border:0;border-radius:0;box-shadow:none}
+h1{margin:22px 0 8px;font:800 24px/1.2 "Bricolage Grotesque",system-ui,sans-serif;text-align:center}
+p.t{margin:0 0 24px;font-size:16px;line-height:1.5;color:var(--mut);text-align:center}
+.btn{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:58px;border-radius:16px;background:linear-gradient(135deg,var(--grn2),var(--grn));color:#fff;font:800 18px "Hanken Grotesk",system-ui,sans-serif;text-decoration:none;box-shadow:0 8px 22px rgba(22,163,74,.4);animation:pulse 1.8s ease-in-out infinite}
+.btn:active{transform:scale(.98)}
+.btn svg{width:22px;height:22px;flex:none;animation:bob 1.2s ease-in-out infinite}
+.btn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:shine 2.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 8px 22px rgba(22,163,74,.4)}50%{transform:scale(1.035);box-shadow:0 12px 30px rgba(22,163,74,.55)}}
+@keyframes bob{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}
+@keyframes shine{0%{left:-60%}60%,100%{left:130%}}
+@media (prefers-reduced-motion:reduce){.btn,.btn svg,.btn::after{animation:none}}
+.hint{margin:14px 0 0;font-size:14px;line-height:1.4;color:var(--mut);text-align:center}
+.skip{display:block;margin-top:20px;font-size:14px;color:var(--brand);text-align:center;text-decoration:underline}
+[hidden]{display:none!important}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a class="logo" href="auth.html#login"><img src="icons/icon-192.png" alt="" width="34" height="34"><span>PRONOST<b>BET</b></span></a></header>
+<img class="hero" src="telecharger-hero.jpg" alt="Football : pronostics PronostBet" width="750" height="422">
+<h1>Les pronostics foot dans ta poche</h1>
+<p class="t">Télécharge l’application pour suivre les matchs, recevoir les pronostics et les notifications en direct.</p>
+<a class="btn" id="dl" href="PronostBet.apk" download hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16"/></svg>
+  Télécharger l’application
+</a>
+<p class="hint" id="hint" hidden>Si Android le demande, autorise l’installation depuis ce navigateur, puis ouvre l’app et crée ton compte.</p>
+<a class="skip" id="skip" href="auth.html#login" hidden>Continuer sur le site</a>
+</div>
+<script>
+(function(){
+  var ua=navigator.userAgent,ios=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  var app=/CoupDavanceApp/i.test(ua)||(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform())||matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+  // iPhone / appli déjà installée : pas de téléchargement, on va directement à la connexion
+  if(ios||app){location.replace("auth.html#login");return}
+  var dl=document.getElementById("dl"),hint=document.getElementById("hint"),skip=document.getElementById("skip");
+  // Le bouton n'apparaît que si le fichier APK est bien en ligne ; sinon on laisse passer vers le site
+  fetch("PronostBet.apk",{method:"HEAD",cache:"no-store"}).then(function(r){
+    if(r.ok&&!/text\/html/.test(r.headers.get("content-type")||"")){dl.hidden=false;hint.hidden=false}
+    else location.replace("auth.html#login")
+  }).catch(function(){location.replace("auth.html#login")});
+  skip.hidden=false;
+})();
+</script></body></html>
