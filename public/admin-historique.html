@@ -9,6 +9,7 @@
 <p class="sub" style="text-transform:none">Récupère les résultats passés (petites ligues comprises) depuis SportScore, avec ton téléphone, et les ajoute à l’archive. Garde cet écran ouvert jusqu’à la fin. Tu peux relancer sans risque : les matchs déjà présents sont ignorés.</p>
 <div class="ctl"><label>Nombre de jours à remonter <input id="days" type="number" min="1" max="120" value="45"></label>
 <label><input id="dry" type="checkbox" checked style="width:20px;height:20px"> Essai : ne rien écrire</label>
+<label><input id="full" type="checkbox" style="width:20px;height:20px"> Mode complet : chaque ligue qui joue aujourd’hui, jour par jour (plus long, environ 10 min)</label>
 <button id="go" type="button" class="more">Lancer</button><button id="stop" type="button" hidden>Arrêter</button></div>
 <div id="msg" class="pfm" role="status"></div><div id="log" aria-live="polite"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script>
@@ -33,13 +34,43 @@ async function day(date){
   const r=await fetch("https://sportscore.com/api/v1/fixtures/?"+q,{signal:AbortSignal.timeout(20000)});
   if(!r.ok)throw new Error("HTTP "+r.status);const d=await r.json();
   const a=Array.isArray(d)?d:(d.matches||d.data||d.results||d.fixtures||[]);return Array.isArray(a)?a:[]}
+const slug=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+async function dayComp(date,comp){
+  const q=new URLSearchParams({sport:"football",date,competition:comp,status:"finished",limit:"200",src:CFG.src||"coup-davance"});
+  for(let a=0;a<3;a++){try{
+    const r=await fetch("https://sportscore.com/api/v1/fixtures/?"+q,{signal:AbortSignal.timeout(20000)});
+    if(r.status===429){await sleep(3000*(a+1));continue}
+    if(!r.ok)throw new Error("HTTP "+r.status);const d=await r.json();
+    const x=Array.isArray(d)?d:(d.matches||d.data||d.results||d.fixtures||[]);return Array.isArray(x)?x:[]}
+  catch(e){if(a===2)throw e;await sleep(1200*(a+1))}}return[]}
+async function fullMode(days,dry){
+  const d0=new Date();d0.setUTCHours(0,0,0,0);
+  const{data,error}=await sb.from("live_matches").select("league").gte("kickoff",d0.toISOString()).lt("kickoff",new Date(+d0+864e5).toISOString());
+  if(error){L("Lecture des ligues : "+error.message);return{seen:0,kept:0,added:0}}
+  const leagues=[...new Set((data||[]).map(r=>r.league).filter(Boolean))];
+  L(leagues.length+" ligues à remonter sur "+days+" jours");
+  let seen=0,kept=0,added=0,done=0,fails=0,next=0;
+  async function worker(){
+    while(!stop&&fails<8){const k=next++;if(k>=leagues.length)return;const lg=leagues[k],cs=slug(lg);let n=0,nw=0,ok=0;
+      for(let i=0;i<=days&&!stop&&fails<8;i++){
+        const date=new Date(Date.now()-i*864e5).toISOString().slice(0,10);
+        let list;try{list=await dayComp(date,cs);fails=0}catch(e){fails++;continue}
+        const rows=list.map(norm).filter(Boolean);seen+=list.length;n+=rows.length;kept+=rows.length;
+        if(!dry&&rows.length){const{data:r,error:er}=await sb.rpc("admin_import_history",{p:rows.slice(0,200)});if(er){L(lg+" écriture : "+er.message);fails++}else{nw+=r.new||0;ok++}}
+        await sleep(250)}
+      added+=nw;done++;$("msg").textContent="Ligue "+done+" sur "+leagues.length+" ("+lg+")…";
+      L(lg+" : "+n+" matchs"+(dry?"":", "+nw+" nouveaux")+(n===0?" (aucun : nom de ligue non reconnu ?)":""))}}
+  await Promise.all([worker(),worker(),worker()]);
+  if(fails>=8)L("Trop d’échecs de suite : arrêt. Relance plus tard (les matchs déjà ajoutés sont ignorés).");
+  return{seen,kept,added}}
 let stop=false;
 $("stop").onclick=()=>{stop=true;$("stop").disabled=true};
 $("go").onclick=async()=>{
   const days=Math.min(120,Math.max(1,+$("days").value||45)),dry=$("dry").checked;stop=false;
   $("go").disabled=true;$("stop").hidden=false;$("stop").disabled=false;$("log").textContent="";$("msg").textContent="";
   let seen=0,kept=0,added=0,fails=0;
-  for(let i=1;i<=days&&!stop;i++){
+  if($("full").checked){const r=await fullMode(days,dry);seen=r.seen;kept=r.kept;added=r.added}
+  else for(let i=1;i<=days&&!stop;i++){
     const date=new Date(Date.now()-i*864e5).toISOString().slice(0,10);
     $("msg").textContent="Jour "+i+" sur "+days+" ("+date+")…";
     let list;try{list=await day(date);fails=0}catch(e){L(date+" échec : "+(e.message||e));if(++fails>=5){L("5 échecs de suite : arrêt.");break}continue}
