@@ -44,8 +44,11 @@ const fx=d=>{const f=d&&d.flux;if(!f)return"";let h="";const a=f.archive;
   return h};
 const when=m=>new Date(m.kickoff).toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"short",day:"numeric",month:"short"})+" · "+new Date(m.kickoff).toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"});
 const isOpen=m=>!!(m.data&&m.data.result);
+// Étiquettes : « Sélection solide » (modèle + marché d'accord, confiance ≥ 60 %) et « Prudence » (le marché voit le match autrement).
+// Les cotes des bookmakers ne sont jamais envoyées au navigateur : seuls data.tier et data.alert le sont.
 const tagOf=m=>{const solid=m.kind?m.kind==="solid":(()=>{const p=m.data.result;return Math.max(p.home,p.draw,p.away)>=55})();
-  return /friendl/i.test(m.league||"")?'<span class="cf lo">Match amical · très imprévisible</span>':solid?'<span class="cf hi">Favori probable</span>':'<span class="cf lo">Match incertain</span>'};
+  const dd=m.data||{};
+  return /friendl/i.test(m.league||"")?'<span class="cf lo">Match amical · très imprévisible</span>':dd.tier==="solide"?'<span class="cf hi">Sélection solide ✓</span>':dd.alert==="marche"?'<span class="cf lo">⚠ Prudence · le marché voit ce match autrement</span>':solid?'<span class="cf hi">Favori probable</span>':'<span class="cf lo">Match incertain</span>'};
 // ---- Cartes de pronostic (style SportScore sombre) ----
 const PCN={h:"Domicile",d:"Nul",a:"Extérieur"},PCK={h:"home",d:"draw",a:"away"};
 // Pronostic d'origine : si les chiffres stockés ont été recalculés après le match, ils ne correspondent plus au verdict enregistré.
