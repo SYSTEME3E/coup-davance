@@ -212,12 +212,12 @@ vdLoad();
 setInterval(()=>{if(document.hidden||vdBusy||Date.now()<vdNext)return;vdLoad()},15000);
 })();
 </script><script>
-// Avis des sites de pronostics : uniquement les articles approuvés par un admin pour CE match (titre + lien vers le site d'origine, rien de recopié).
+// Avis des sites de pronostics : uniquement les articles approuvés par un admin pour CE match. Affichés comme avis (source + texte), sans lien sortant.
 (async()=>{try{
-  const{data}=await sb.from("tip_articles").select("title,url,source_name,published_at").eq("fixture_id",id).eq("moderation_status","approved").order("published_at",{ascending:false}).limit(5);
+  const{data}=await sb.from("tip_articles").select("title,source_name,published_at").eq("fixture_id",id).eq("moderation_status","approved").order("published_at",{ascending:false}).limit(5);
   if(!data||!data.length)return;
   $("tp").innerHTML='<div class="sec"><h2>Avis des sites de pronostics</h2><ul class="note" style="margin:0;padding-left:18px">'
-    +data.map(x=>'<li style="margin:6px 0"><a href="'+esc(/^https?:\/\//i.test(x.url)?x.url:"#")+'" target="_blank" rel="noopener noreferrer nofollow">'+esc(x.title)+'</a> <small>('+esc(x.source_name||"")+')</small></li>').join("")
-    +'</ul><p class="note" style="margin:8px 0 0"><small>Contenus de sites tiers, à titre d’information. Aucun résultat n’est garanti. <a href="jeu-responsable.html">Jeu responsable</a>.</small></p></div>'
+    +data.map(x=>'<li style="margin:6px 0">'+esc(x.title)+' <small>— '+esc(x.source_name||"")+'</small></li>').join("")
+    +'</ul><p class="note" style="margin:8px 0 0"><small>Avis de sites tiers, à titre d’information. Aucun résultat n’est garanti. <a href="jeu-responsable.html">Jeu responsable</a>.</small></p></div>'
 }catch(e){}})();
 </script></body></html>
