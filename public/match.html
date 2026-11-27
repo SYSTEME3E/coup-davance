@@ -102,7 +102,10 @@ const draw=()=>{
   const ctx={st:isDone?"done":isLv?"live":"next",
     h:isDone?(pr.final_home!=null?pr.final_home:g.home):g&&g.home,a:isDone?(pr.final_away!=null?pr.final_away:g.away):g&&g.away,
     ht:(d&&d.status==="HT")||pr.live_status==="HT",min:(d&&d.elapsed)||pr.live_minute,
-    xg:sx&&sy&&sx.stats.expected_goals!=null&&sy.stats.expected_goals!=null?[num(sx.stats.expected_goals),num(sy.stats.expected_goals)]:null};
+    xg:sx&&sy&&sx.stats.expected_goals!=null&&sy.stats.expected_goals!=null?[num(sx.stats.expected_goals),num(sy.stats.expected_goals)]:null,
+    red:sx&&sy?[num(sx.stats["Red Cards"]),num(sy.stats["Red Cards"])]:null,
+    // buts (minute + camp) pour rejouer le match et tracer la courbe des probabilités
+    ev:d&&d.events&&d.home?d.events.filter(e=>e.type==="Goal"&&e.detail!=="Missed Penalty"&&e.min!=null&&e.min<=125).map(e=>({m:e.min,h:e.team===d.home.id,og:/Own/i.test(e.detail||"")})):null};
   const body=!pr.data?"":!isOpen(pr)?lockBox(pr):(drift(pr)||(ctx.st!=="next"&&ctx.h==null))?(drift(pr)?origBox(pr):probs(pr.data)):ppRender(pr,ctx);
   $("pred").innerHTML=pr.data?'<div class="sec"><h2>Pronostics</h2><div class="mk" style="margin-bottom:10px">'+tagOf(pr)+'</div><div class="pc-solo">'+body+'</div></div>':"";
   // statistiques
