@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="fr"><head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2617146871223427" crossorigin="anonymous"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="matchview.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="theme.css"><title>Match – PronostBet</title></head><body class="ss"><div class="wrap">
+<!DOCTYPE html><html lang="fr"><head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2617146871223427" crossorigin="anonymous"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="matchview.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="predpanel.css"><link rel="stylesheet" href="theme.css"><title>Match – PronostBet</title></head><body class="ss"><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icons/icon-192.png" alt="" width="34" height="34"><span>PRONOST<b>BET</b></span></a><span id="who" hidden></span></header>
 <a class="back" href="dashboard.html" id="back">← Retour aux matchs</a>
 <div id="mh"><p class="sub">Chargement du match…</p></div>
@@ -16,7 +16,7 @@
 <div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="cards.js"></script><script src="sportscore.js"></script><script src="menu.js"></script><script src="ads.js"></script><script>PBAds.display($("adslot"),{sb:sb});</script><script>
+</script><script src="cards.js"></script><script src="sportscore.js"></script><script src="predpanel.js"></script><script src="menu.js"></script><script src="ads.js"></script><script>PBAds.display($("adslot"),{sb:sb});</script><script>
 const LIVE=["1H","2H","ET","BT","P","LIVE","INT","SUSP","HT"],DONE=["FT","AET","PEN"];
 const ROWS=[["expected_goals","Buts attendus (xG)"],["Ball Possession","Possession"],["Total Shots","Total de tirs"],["Shots on Goal","Tirs cadrés"],["Shots off Goal","Tirs non cadrés"],["Blocked Shots","Tirs contrés"],["Shots insidebox","Tirs dans la surface"],["Shots outsidebox","Tirs hors de la surface"],["Corner Kicks","Corners"],["Fouls","Fautes"],["Offsides","Hors-jeu"],["Yellow Cards","Cartons jaunes"],["Red Cards","Cartons rouges"],["Goalkeeper Saves","Arrêts du gardien"],["goals_prevented","Buts évités"],["Total passes","Passes"],["Passes accurate","Passes réussies"],["Passes %","Précision des passes"]];
 const num=v=>v==null?0:(parseFloat(String(v))||0);
@@ -96,7 +96,15 @@ const draw=()=>{
   else center='<div class="scr" style="font-size:30px">'+new Date(pr.kickoff).toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"})+'<small>'+new Date(pr.kickoff).toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"short",day:"numeric",month:"short"})+'</small></div>';
   const extra=[d&&d.league&&d.league.round,d&&d.venue].filter(Boolean).join(" · ");
   $("mh").innerHTML='<div class="mh"><div class="lgl">'+lg(lgLogo,"lgo sm")+'<span>'+esc(pr.league||"")+(extra?' · '+esc(extra):"")+'</span></div><div class="tt">'+team("home")+center+team("away")+'</div></div>';
-  $("pred").innerHTML=pr.data?'<div class="sec"><h2>Pronostic</h2><div class="mk" style="margin-bottom:8px">'+tagOf(pr)+'</div>'+'<div class="pc-solo">'+(isOpen(pr)?(drift(pr)?origBox(pr):probs(pr.data)):lockBox(pr))+'</div>'+'</div>':"";
+  // Panneau Pronostics : 3 états (avant-match / direct / terminé), calculé à partir du pronostic stocké + score
+  const isDone=!!(pr.settled_at&&pr.final_home!=null)||!!(d&&DONE.includes(d.status)&&g),isLv=!isDone&&isLive();
+  const sx=d&&d.statistics&&d.statistics.find(s=>d.home&&s.team===d.home.id),sy=d&&d.statistics&&d.statistics.find(s=>d.away&&s.team===d.away.id);
+  const ctx={st:isDone?"done":isLv?"live":"next",
+    h:isDone?(pr.final_home!=null?pr.final_home:g.home):g&&g.home,a:isDone?(pr.final_away!=null?pr.final_away:g.away):g&&g.away,
+    ht:(d&&d.status==="HT")||pr.live_status==="HT",min:(d&&d.elapsed)||pr.live_minute,
+    xg:sx&&sy&&sx.stats.expected_goals!=null&&sy.stats.expected_goals!=null?[num(sx.stats.expected_goals),num(sy.stats.expected_goals)]:null};
+  const body=!pr.data?"":!isOpen(pr)?lockBox(pr):(drift(pr)||(ctx.st!=="next"&&ctx.h==null))?(drift(pr)?origBox(pr):probs(pr.data)):ppRender(pr,ctx);
+  $("pred").innerHTML=pr.data?'<div class="sec"><h2>Pronostics</h2><div class="mk" style="margin-bottom:10px">'+tagOf(pr)+'</div><div class="pc-solo">'+body+'</div></div>':"";
   // statistiques
   let st='<div class="sec"><h2>Statistiques du match</h2>';
   const hs=d&&d.statistics&&d.statistics.find(s=>s.team===d.home.id),as=d&&d.statistics&&d.statistics.find(s=>s.team===d.away.id);
