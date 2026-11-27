@@ -219,3 +219,24 @@ body.ss{--ink:#1B1650;--mut:#6B6890;--navy:#1F1A52;--pill:#5B4BDB;--blue:#1D6FE0
 .vd .vcap small{display:block;color:var(--muted);font-weight:500;font-size:13px;margin-top:2px}
 .vd iframe{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:14px;background:#000}
 .vd .vopen{display:inline-block;margin-top:8px;font-size:14px;font-weight:700}
+
+/* Chronologie du match — fond nuit (même couleurs que la capture) */
+.ms-dk{background:#04041A;border:1px solid #14143A}
+.ms-dk .ms-dkh{padding:16px 18px;font:800 15px "Hanken Grotesk",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#7C7EA3;border-bottom:1px solid #14143A}
+.ms-dk .ms-body{padding:0 14px}
+.ms-dk .ms-empty{color:#7C7EA3}
+.tv{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr);align-items:center;gap:6px;padding:16px 0;border-bottom:1px solid #12123A}
+.tv:last-child{border-bottom:0}
+.tv .mn{text-align:center;font:700 17px ui-monospace,Menlo,monospace;color:#8FA8F0}
+.tv .s{min-width:0}.tv .s.h{text-align:right}.tv .s.a{text-align:left}
+.tv-p{display:flex;flex-direction:column;gap:3px;font:500 16px/1.25 "Hanken Grotesk",sans-serif}
+.tv-p .in{color:#fff;font-weight:700}.tv-p .out{color:#8E90B3}
+.tv-p i{font-style:normal;font-size:13px;margin:0 6px}.tv-p .up{color:#2FD071}.tv-p .dn{color:#F0525C}
+.s.a .tv-p i{margin:0 6px 0 0}.s.a .tv-p .in,.s.a .tv-p .out{display:flex;flex-direction:row-reverse;justify-content:flex-end}
+.tv-c{display:flex;align-items:center;gap:10px;font:700 17px/1.25 "Hanken Grotesk",sans-serif;color:#fff}
+.s.h .tv-c{justify-content:flex-end}
+.tv-c .cd{width:16px;height:22px;border-radius:3px;flex:none}.cd.y{background:#FFC21A}.cd.r{background:#E5322D}
+.tv-g{display:flex;gap:10px;align-items:flex-start}.s.h .tv-g{justify-content:flex-end}.s.a .tv-g{flex-direction:row-reverse;justify-content:flex-end}
+.tv-g .w{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.s.h .tv-g .w{align-items:flex-end}
+.tv-g .w b{color:#2FD071;font:700 17px/1.2 "Hanken Grotesk",sans-serif}.tv-g .bl{font-size:20px;line-height:1}
+.tv-g .d{font:400 14px/1.45 ui-monospace,Menlo,monospace;color:#8E90B3;text-align:right}.s.a .tv-g .d{text-align:left}
