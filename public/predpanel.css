@@ -1,0 +1,33 @@
+/* Panneau Pronostics (avant-match · direct · terminé) — nuit violet, barres rose */
+.pp{color:#fff}
+.pp-k{font:800 13px "Hanken Grotesk",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#A9A4D6;margin:2px 0 12px}
+.pp-lv{display:inline-flex;align-items:center;gap:6px;color:#FF8A96}
+.pp-lv i{width:8px;height:8px;border-radius:50%;background:#FF4D5E;animation:pp-pl 1.2s infinite}
+@keyframes pp-pl{50%{opacity:.3}}@media (prefers-reduced-motion:reduce){.pp-lv i{animation:none}}
+.pp-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:6px}
+.pp-t{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border-radius:14px;background:#161040;border:1px solid #33298A;text-align:center;min-width:0}
+.pp-tn{font:700 12px "Hanken Grotesk",sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#A9A4D6;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-t b{font:800 21px/1.1 "Bricolage Grotesque",sans-serif}
+.pp-t small{font:500 11px "Hanken Grotesk",sans-serif;color:#8E89C4}
+.pp-t small .up{color:#6CCB45;font-weight:800}.pp-t small .dn{color:#F05252;font-weight:800}
+.pp-t.fav{background:#2A0F3C;border-color:#FF2D6A}.pp-t.fav b{color:#FF3D78}
+.pp-t.hit{box-shadow:0 0 0 2px #6CCB45 inset}
+.pp-t em{position:absolute;top:-9px;font:800 10px "Hanken Grotesk",sans-serif;letter-spacing:.06em;text-transform:uppercase;font-style:normal;background:#6CCB45;color:#10240A;padding:2px 8px;border-radius:99px}
+.pp-h{font:800 13px "Hanken Grotesk",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#A9A4D6;margin:20px 0 6px}
+.pp-r{display:grid;grid-template-columns:96px minmax(0,1fr) 58px;align-items:center;gap:10px;padding:7px 0;font:500 15px "Hanken Grotesk",sans-serif;color:#CFCBF0}
+.pp-r b{text-align:right;font:700 14px ui-monospace,Menlo,monospace;color:#fff}
+.pp-b{height:7px;border-radius:99px;background:#0E0A2E;overflow:hidden}
+.pp-b i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#FF1F5A,#FF6F8E)}
+.pp-r.hit{color:#fff;font-weight:700}.pp-r.hit .pp-b i{background:linear-gradient(90deg,#4DB82A,#8BE06A)}
+.pp-r.done .pp-b i{background:linear-gradient(90deg,#4DB82A,#8BE06A)}
+.pp-r small{grid-column:2/4;margin-top:-4px;font:700 12px "Hanken Grotesk",sans-serif;color:#8BE06A}
+.pp-bilan{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 12px}
+.pp-bilan span{font:700 13px "Hanken Grotesk",sans-serif;padding:6px 11px;border-radius:99px;background:#161040;border:1px solid #33298A}
+.pp-bilan .ok{color:#8BE06A;border-color:#2F6B1E}.pp-bilan .ko{color:#FF8A96;border-color:#6B1E2F}
+.pp-why{padding:14px;border-radius:14px;background:#1D0A26;border:1px solid #6B1E3F;color:#C9C4EC;font:400 15px/1.55 "Hanken Grotesk",sans-serif}
+.pp-why b{color:#FF3D78}
+.pp-cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-top:12px}
+.pp-cmp div{padding:10px;border-radius:12px;background:#161040;border:1px solid #33298A;text-align:center}
+.pp-cmp small{display:block;font:600 11px "Hanken Grotesk",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#8E89C4}
+.pp-cmp b{font:800 20px "Bricolage Grotesque",sans-serif}
+.pp-n{margin:16px 0 0;color:#8E89C4;font:400 13px/1.5 "Hanken Grotesk",sans-serif}
