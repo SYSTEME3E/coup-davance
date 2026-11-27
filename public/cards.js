@@ -94,16 +94,18 @@ const card=m=>{m=FULL[m.fixture_id]||m;PBROW[m.fixture_id]=m;const d=m.data,me=M
   else if(st==="void")badge='<span class="pc-bd">'+esc(m.final_status||"Annulé")+'</span>';
   const side=x=>(k===x&&st!=="done"?" pk "+x:"");
   const vd=st==="done"&&m.verdict?'<div class="pc-vd">Prévu : '+(LB[v.predicted]||"?")+(v.scoreHit?' · 🎯 Score exact':"")+(v.btts&&v.over25?' · Les deux marquent '+yn(v.btts.ok)+' · +2,5 buts '+yn(v.over25.ok):"")+'</div>':"";
-  const why=open?pcWhy(d):"";
+  const PP=typeof ppRender==="function"&&open&&!drift(m)&&(st==="next"||st==="live"||st==="done");
+  const ctx={st,h:st==="done"?m.final_home:m.live_home,a:st==="done"?m.final_away:m.live_away,min:m.live_minute,ht:m.live_status==="HT"};
+  const why=open?(PP?ppRender(m,ctx)+pcWhy(d):pcWhy(d)):"";
   return '<div class="pc '+st+'" data-id="'+m.fixture_id+'" role="link" tabindex="0">'
   +'<div class="pc-top"><span>'+when(m)+'</span><span class="pc-badge">'+badge+'</span></div>'
   +'<div class="pc-lg">'+lgo(me.league_logo,"sm")+'<span>'+esc(m.league||"")+'</span>'+tagOf(m)+'</div>'
   +'<div class="pc-teams"><div class="pc-t l'+side("h")+'">'+lgo(me.home_logo)+'<b>'+esc(m.home)+'</b></div><div class="pc-m">'+mid+tag+'</div><div class="pc-t r'+side("a")+'"><b>'+esc(m.away)+'</b>'+lgo(me.away_logo)+'</div></div>'
-  +(open?(drift(m)?origBox(m):probs(d,true)):lockBox(m))+vd
+  +(open?(drift(m)?origBox(m):(PP?ppMini(m,ctx):probs(d,true))):lockBox(m))+(PP?"":vd)
   +'<div class="pc-act">'+(why?'<button type="button" class="pc-b" data-why aria-expanded="false">pourquoi ▾</button>':'<span></span>')+'<a class="pc-b go" href="match.html?id='+m.fixture_id+'">Voir le match ↗</a></div>'
   +(why?'<div class="pc-why" hidden>'+why+'</div>':"")+'</div>'};
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-why]");if(!b)return;
-  const w=b.closest(".pc").querySelector(".pc-why");if(!w)return;const o=w.hidden;w.hidden=!o;b.setAttribute("aria-expanded",o?"true":"false");b.textContent=o?"masquer ▴":"pourquoi ▾"});
+  const w=b.closest(".pc").querySelector(".pc-why");if(!w)return;const o=w.hidden;w.hidden=!o;b.setAttribute("aria-expanded",o?"true":"false");b.textContent=o?"masquer ▴":"analyse complète ▾"});
 // ---- Carte « Historique » (style clair : barre bleu / gris / rouge, résultat vert ou rouge) ----
 const histCard=m=>{m=FULL[m.fixture_id]||m;PBROW[m.fixture_id]=m;const d=m.data,me=META[m.fixture_id]||{},open=isOpen(m);
   let body;
