@@ -68,26 +68,6 @@ const ppRow=(lab,v,o)=>{o=o||{};return'<div class="pp-r'+(o.hit?" hit":"")+(o.do
   +(o.tag?'<small>'+o.tag+'</small>':"")+'</div>'};
 const ppSec=(t,body)=>body?'<h3 class="pp-h">'+t+'</h3>'+body:"";
 const ppDelta=(now,pre)=>{const x=now-pre;return Math.abs(x)<1?"":'<span class="'+(x>0?"up":"dn")+'">'+(x>0?"▲":"▼")+' '+fr(Math.abs(Math.round(x)))+'</span>'};
-const ppOdd=p=>p>0?fr((100/p).toFixed(2)):"–";
-// Niveau de confiance : écart entre le favori et le deuxième scénario
-function ppConf(r){const a=[r.home,r.draw,r.away].sort((x,y)=>y-x),g=a[0]-a[1];
-  return a[0]>=60&&g>=25?["élevée","hi"]:a[0]>=45&&g>=12?["moyenne","mid"]:["faible","lo"]}
-function ppSum(r,name,KEY,pre,top){const k=KEY[pre],cf=ppConf(r),fav=k==="draw"?"Match nul":name[k];
-  return'<div class="pp-sum"><div><small>Favori du modèle</small><b>'+esc(fav)+' · '+ppF(r[k])+' %</b></div>'
-   +'<div><small>Confiance</small><b class="cf-'+cf[1]+'">'+cf[0]+'</b></div>'
-   +(top?'<div><small>Score probable</small><b>'+ppSc(top)+'</b></div>':'')
-   +'<div><small>Cote juste</small><b>'+ppOdd(r[k])+'</b></div></div>'}
-// Version compacte pour les cartes du dashboard (même design que le panneau Pronostics)
-function ppMini(pr,c){
-  const d=pr.data;if(!d||!d.result)return"";const r=d.result,KEY={h:"home",d:"draw",a:"away"},pre=pcPick(r),name={home:pr.home,draw:"Match nul",away:pr.away};
-  let v=r,lead=KEY[pre],hit=null,sub=k=>'cote juste '+ppOdd(r[k]),yes=+d.btts,o25=+(d.over&&d.over["2.5"]);
-  const H=+c.h,A=+c.a,has=c.h!=null&&c.a!=null;
-  if(c.st==="live"&&has){const L=ppLive(d,H,A,c.ht?45:(+c.min||0),{});v=L;lead=L.home>=L.draw&&L.home>=L.away?"home":L.away>=L.draw?"away":"draw";
-    sub=k=>'avant-match '+ppF(r[k])+' % '+ppDelta(L[k],r[k]);yes=L.btts;o25=L.over["2.5"]}
-  if(c.st==="done"&&has){hit=H>A?"home":H<A?"away":"draw";sub=k=>k===hit?"résultat":""}
-  return'<div class="pp pp-mini"><div class="pp-tiles">'+["home","draw","away"].map(k=>ppTile(name[k],v[k],{fav:k===lead,hit:c.st==="done"&&has&&k===hit,sub:c.st==="done"?"":sub(k)})).join("")+'</div>'
-   +ppRow("Les deux marquent",yes,{hit:c.st==="done"&&has&&((+d.btts>=50)===(H>0&&A>0))&&(H>0&&A>0)})
-   +ppRow("Plus de 2,5 buts",o25)+'</div>'}
 const ppOrd=n=>n===1?"le score le plus probable":n===2?"le deuxième score le plus probable":"le troisième score le plus probable";
 
 
@@ -161,8 +141,7 @@ function ppRender(pr,c){
      +ppSec("Scores exacts les plus probables",preScores.map(x=>ppRow(ppSc(x.s),x.p,{hit:ppNorm(x.s)===key})).join(""));
     // Bilan : ✔ / ✘ par marché
     const ok=(b,l)=>'<span class="'+(b?"ok":"ko")+'">'+(b?"✔":"✘")+' '+l+'</span>';
-    const nOk=[out===fav,(yes>=50)===bt,(over["2.5"]>=50)===o25,exact].filter(Boolean).length;
-    h+='<div class="pp-score"><b>'+nOk+'/4</b><span>marchés bien prévus par le modèle</span></div><div class="pp-bilan">'+ok(out===fav,"Résultat 1X2")+ok((yes>=50)===bt,"Les deux marquent")+ok((over["2.5"]>=50)===o25,"+2,5 buts")+'<span class="'+(exact?"ok":"ko")+'">'+(exact?"🎯":"✘")+' Score exact</span></div>';
+    h+='<div class="pp-bilan">'+ok(out===fav,"Résultat 1X2")+ok((yes>=50)===bt,"Les deux marquent")+ok((over["2.5"]>=50)===o25,"+2,5 buts")+'<span class="'+(exact?"ok":"ko")+'">'+(exact?"🎯":"✘")+' Score exact</span></div>';
     // Texte d’explication généré à partir des vrais chiffres
     const pf=r[fav],po=r[out],s=[];
     if(out===fav)s.push("Le modèle donnait "+esc(name[fav])+" à "+fr(ppR(pf))+" % et "+(fav==="draw"?"le match nul s’est produit.":esc(name[fav])+" a gagné."));
@@ -188,8 +167,8 @@ function ppRender(pr,c){
     return h+'</div>'}
 
   // ===== AVANT-MATCH =====
-  h+='<div class="pp-k">Avant-match · résultat final</div>'+ppSum(r,name,KEY,pre,(preScores[0]||{}).s)
-   +'<div class="pp-tiles">'+["home","draw","away"].map(k=>ppTile(name[k],r[k],{fav:k===KEY[pre],sub:'cote juste '+ppOdd(r[k])})).join("")+'</div>'
+  h+='<div class="pp-k">Avant-match · résultat final</div>'
+   +'<div class="pp-tiles">'+["home","draw","away"].map(k=>ppTile(name[k],r[k],{fav:k===KEY[pre]})).join("")+'</div>'
    +ppSec("Les deux équipes marquent",ppRow("Oui",yes)+ppRow("Non",100-yes))
    +ppSec("Total de buts",ppRow("Plus de 2,5",over["2.5"])+ppRow("Moins de 2,5",100-over["2.5"])
      +(over["3.5"]!=null?ppRow("Plus de 3,5",over["3.5"]):""))
