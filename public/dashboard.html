@@ -1,4 +1,3 @@
-
 <!DOCTYPE html><html lang="fr"><head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2617146871223427" crossorigin="anonymous"></script><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="PronostBet"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="ticker.css"><title>Matchs du jour – PronostBet</title><style>
 dialog.wl{border:1px solid var(--brand);border-radius:18px;background:var(--surface);color:var(--ink,#fff);padding:26px 22px 20px;max-width:340px;width:calc(100% - 40px);text-align:center}dialog.wl::backdrop{background:rgba(0,0,0,.65)}
 .wl-e{font-size:46px;line-height:1}.wl h2{margin:8px 0 6px;font:800 24px/1.15 "Bricolage Grotesque",sans-serif}.wl p{margin:6px 0;font-size:16px;line-height:1.45}.wl .wl-s{color:var(--muted);font-size:14px}
@@ -36,7 +35,7 @@ a.pt-go,a.pt-go:visited{display:block;background:#FFC933;color:#1B1500;border-co
 <section class="dc" id="dcode" hidden aria-live="polite"></section>
 <div class="srch"><input id="q" type="search" placeholder="Rechercher une équipe ou une compétition…" autocomplete="off"><input id="qd" type="date" aria-label="Date du match"></div>
 <h2 class="pc-h">Prédictions</h2><p class="pc-sub" id="pcn"></p>
-<div class="pc-flt" id="pf"><button type="button" data-pf="all" class="on">Tous</button><button type="button" data-pf="live">En direct</button><button type="button" data-pf="next">À venir</button><button type="button" data-pf="done">Terminés</button><button type="button" data-pf="top">80 %+ </button></div>
+<div class="pc-flt" id="pf"><button type="button" data-pf="all" class="on">Tous</button><button type="button" data-pf="live">En direct</button><button type="button" data-pf="next">À venir</button><button type="button" data-pf="done">Terminés</button><button type="button" data-pf="top">80 %+</button></div>
 <div id="list"><p class="sub">Chargement des matchs…</p></div>
 <div id="adslot" hidden></div>
 <p class="note pwr" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p></div>
@@ -49,8 +48,7 @@ let homeHTML="",tok=0,cache=null;
 const clean=()=>$("q").value.replace(/[%_,()*\\]/g," ").trim();
 const searching=()=>clean().length>=2||!!$("qd").value;
 // Liste du jour : matchs en cours en premier (rouge), puis les matchs d’aujourd’hui uniquement. Actualisée toutes les 60 s.
-let LIM=Infinity,LIMO=40,lastSig="",FILT="all",OFF=0;
-const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute,kind,unlocked";
+let LIM=30,LIMO=40,lastSig="",FILT="all",OFF=0;const COLS="fixture_id,kickoff,league,home,away,data,settled_at,final_home,final_away,final_status,verdict,live_status,live_home,live_away,live_minute,kind,unlocked";
 document.addEventListener("click",e=>{if(e.target&&e.target.id==="moreHome"){LIM+=30;build()}if(e.target&&e.target.id==="moreOth"){LIMO+=40;build()}});
 const PF=m=>FILT==="all"||(FILT==="live"?!!m.live_status:FILT==="next"?(!m.live_status&&!m.settled_at&&new Date(m.kickoff)>Date.now()):(isOpen(m)&&Math.max(m.data.result.home,m.data.result.draw,m.data.result.away)>=80));
 // ---- Autres matchs du jour (sans pronostic) : tous les championnats fournis par SportScore, comme la page « Football en direct » ----
