@@ -14,13 +14,14 @@ const sb = createClient(url, key, { auth: { persistSession: false } });
 const must = <T>(r: { data: T | null; error: any }, what: string): T => { if (r.error) throw new Error(what + " : " + r.error.message); return r.data as T; };
 
 async function main() {
-  const feeds = must(await sb.from("news_feeds").select("*").eq("enabled", true).neq("provider", "rss_pronostics"), "news_feeds")   // les flux de pronostics ont leur propre synchro (tips-sync.ts) as Feed[];
+  const feeds = must(await sb.from("news_feeds").select("*").eq("enabled", true).neq("provider", "rss_pronostics"), "news_feeds") as Feed[];   // les flux de pronostics sont lus par la fonction Supabase pronos-flux
   const rulesRows = must(await sb.from("news_sources").select("domain,name,kind"), "news_sources") as { domain: string | null; name: string | null; kind: any }[];
   const rules: SourceRules = { byDomain: new Map(), byName: new Map() };
   for (const r of rulesRows) { if (r.domain) rules.byDomain.set(r.domain.toLowerCase(), r.kind); if (r.name) rules.byName.set(norm(r.name), r.kind); }
 
   const items: { feed: Feed; a: RawArticle }[] = [];
   for (const f of feeds) {
+    if (f.provider === "rss_pronostics") continue;
     const p = PROVIDERS[f.provider];
     if (!p) { console.warn("Fournisseur inconnu :", f.provider); continue; }
     try {
