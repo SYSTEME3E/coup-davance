@@ -44,13 +44,35 @@ function mvOverview(m,r,st,ev){
   h+='<div class="ms-rs">'+ord.concat(rest).map(mvRow).join("")+'</div>';
   if(!st.length)h+='<p class="ms-empty">Les statistiques apparaîtront pendant le match.</p>';
   h+='</div></div>';
-  // chronologie
-  const evs=ev.slice().reverse();
-  h+='<div class="ms-card"><h2>Chronologie du match</h2><div class="ms-body">';
-  if(evs.length){h+='<div class="ms-tl">'+evs.map(e=>{const c=(mvIc(e)?mvIc(e)+" ":"")+mvWho(e),side=e.side==="away"?"a":"h";
-    return'<div class="ms-ev"><div class="b h">'+(side==="h"?c:"")+'</div><div class="m">'+esc(mvMin(e))+'’</div><div class="b a">'+(side==="a"?c:"")+'</div></div>'}).join("")+'</div>'}
-  else h+='<p class="ms-empty">Aucun évènement pour le moment.</p>';
-  h+='<div class="ms-lg"><h3>Légende</h3><div><span>⚽ But / Penalty</span><span>🔄 Remplacement</span><span>🟨 Carton jaune</span><span>🟥 Carton rouge</span><span>📺 Contrôle VAR</span></div></div>';
+  // chronologie (style capture : fond nuit, minute au centre, ▲ vert / ▼ rouge pour les changements)
+  h+=mvTimeline(m,ev);
+  return h}
+
+// Score courant après chaque but (rejoue la liste dans l'ordre du temps)
+function mvScores(ev){
+  const asc=ev.slice().sort((x,y)=>(parseInt(mvMin(x))||0)-(parseInt(mvMin(y))||0)),sc=new Map();let h=0,a=0;
+  asc.forEach(e=>{const t=String(e.type||"").toLowerCase();
+    if(!(/goal/.test(t)&&!/miss|cancel|disallow/.test(t)))return;
+    const own=/own/.test(t+" "+String(e.detail||"").toLowerCase()),home=(e.side!=="away")!==own;
+    if(home)h++;else a++;
+    const hs=ssPick(e,["home_score","score_home"]),as=ssPick(e,["away_score","score_away"]);
+    sc.set(e,hs!=null&&as!=null?hs+"-"+as:h+"-"+a)});
+  return sc}
+function mvTimeline(m,ev){
+  const evs=ev.slice().reverse(),sc=mvScores(ev);
+  let h='<div class="ms-card ms-dk"><div class="ms-dkh">'+esc(m.comp||"Chronologie du match")+'</div><div class="ms-body">';
+  if(!evs.length)return h+'<p class="ms-empty">Aucun évènement pour le moment.</p></div></div>';
+  h+='<div class="ms-tl2">'+evs.map(e=>{
+    const home=e.side!=="away",t=String(e.type||"").toLowerCase(),sub=e.is_sub||/subst/.test(t),
+      goal=/goal|penalty/.test(t)&&!/miss/.test(t),yel=/yellow/.test(t)||(e.is_card&&!/red/.test(t)),red=/red/.test(t);
+    let c="";
+    if(sub)c='<div class="tv-p"><span class="in">'+esc(e.player_in||"")+'<i class="up">▲</i></span><span class="out">'+esc(e.player_out||"")+'<i class="dn">▼</i></span></div>';
+    else if(goal){const as=ssName(ssPick(e,["assist","assist_name","player_assist","assist_player"])||""),own=/own/.test(t+" "+String(e.detail||"").toLowerCase()),s=sc.get(e);
+      c='<div class="tv-g"><div class="w"><b>'+esc(ssName(ssPick(e,["player","player_name","name"]))||"")+(own?" (csc)":"")+'</b><span class="bl">⚽</span></div>'
+       +'<div class="d">'+(s?esc(s)+(as?" · passe décisive":""):(as?"passe décisive":""))+(as?'<br>'+esc(as):"")+'</div></div>'}
+    else if(yel||red)c='<div class="tv-c"><b>'+esc(ssName(ssPick(e,["player","player_name","name"]))||"")+'</b><span class="cd '+(red?"r":"y")+'"></span></div>';
+    else c='<div class="tv-c"><b>'+mvWho(e)+'</b></div>';
+    return'<div class="tv"><div class="s h">'+(home?c:"")+'</div><div class="mn">'+esc(mvMin(e))+'\u2032</div><div class="s a">'+(home?"":c)+'</div></div>'}).join("")+'</div>';
   return h+'</div></div>'}
 
 function mvStatsTab(m,st){
