@@ -32,6 +32,16 @@ const xt=d=>{const e=d.extra;if(!e)return"";let a="";
 // Forme des 5 derniers matchs (V = victoire, N = nul, D = défaite), du plus récent au plus ancien
 const FM=s=>String(s||"").split("").map(x=>'<i class="f'+x+'">'+x+'</i>').join("");
 const frm=d=>d.form&&(d.form.home||d.form.away)?'<div class="frm"><span>Forme domicile '+FM(d.form.home)+'</span><span>Forme extérieur '+FM(d.form.away)+'</span></div>':"";
+// Flux pronostics : forme sur 10 matchs (archive) + absences signalées par la presse (data.flux, calculé côté serveur par pronos-flux)
+const fx=d=>{const f=d&&d.flux;if(!f)return"";let h="";const a=f.archive;
+  if(a&&a.home&&a.away&&a.home.n&&a.away.n){const av=(x,k)=>fr((x[k]/x.n).toFixed(1));
+    h+='<div class="stats x"><div>Domicile · '+a.home.n+' derniers<b>'+a.home.w+'V '+a.home.d+'N '+a.home.l+'D</b></div><div>Extérieur · '+a.away.n+' derniers<b>'+a.away.w+'V '+a.away.d+'N '+a.away.l+'D</b></div>'
+     +'<div>Buts pour/contre (dom.)<b>'+av(a.home,"gf")+' / '+av(a.home,"ga")+'</b></div><div>Buts pour/contre (ext.)<b>'+av(a.away,"gf")+' / '+av(a.away,"ga")+'</b></div></div>'}
+  const ev=(l,arr)=>(arr||[]).filter(e=>e.impact<0).slice(0,3).map(e=>'<li>'+esc(l)+' : '+esc(e.title)+' <small>('+esc(e.source||"presse")+(e.confirmed?"":", non confirmé")+')</small></li>').join("");
+  const lst=ev("Domicile",f.events&&f.events.home)+ev("Extérieur",f.events&&f.events.away);
+  if(lst)h+='<p class="note" style="margin:8px 0 2px"><b>Absences signalées dans la presse</b></p><ul class="note" style="margin:0 0 6px;padding-left:18px">'+lst+'</ul>';
+  if(f.h2h&&f.h2h.length)h+='<p class="note" style="margin:6px 0 0">Derniers face-à-face : '+f.h2h.slice(0,3).map(x=>esc(x.s)).join(" · ")+'</p>';
+  return h};
 const when=m=>new Date(m.kickoff).toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"short",day:"numeric",month:"short"})+" · "+new Date(m.kickoff).toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"});
 const isOpen=m=>!!(m.data&&m.data.result);
 const tagOf=m=>{const solid=m.kind?m.kind==="solid":(()=>{const p=m.data.result;return Math.max(p.home,p.draw,p.away)>=55})();
@@ -66,7 +76,7 @@ const gx=d=>{const o=d.over||{};let a="";
   if(o["4.5"]!=null)a+='<span>+4,5 buts <b>'+o["4.5"]+'%</b></span>';
   return a};
 const tops=d=>Array.isArray(d.topScores)&&d.topScores.length?'<div class="pc-chips"><span>Top scores <b>'+d.topScores.map(t=>esc(t.s)+' ('+fr(t.p)+'%)').join(" · ")+'</b></span></div>':"";
-const pcWhy=d=>xt(d)+frm(d);
+const pcWhy=d=>xt(d)+frm(d)+fx(d);
 // fold = true : le détail (corners, forme…) est renvoyé à part, dans un bloc repliable (voir card)
 const probs=(d,fold)=>{const p=d.result,k=pcPick(p);
   return pcBar(p)+'<div class="pc-pills"><span class="pc-pk '+k+'">pronostic '+PCN[k]+' · '+p[PCK[k]]+'%</span><span>score prévu <b>'+esc(d.likelyScore)+'</b></span></div>'
@@ -103,7 +113,7 @@ const histCard=m=>{m=FULL[m.fixture_id]||m;PBROW[m.fixture_id]=m;const d=m.data,
     +'<div class="lg"><span>Domicile</span><span>Nul</span><span>Extérieur</span></div>'
     +'<div class="stats"><div>Les deux marquent<b>'+d.btts+'%</b></div><div>Plus de 2,5 buts<b>'+d.over["2.5"]+'%</b></div><div>Score probable<b>'+esc(d.likelyScore)+'</b></div>'
     +(d.expectedTotal!=null?'<div>Buts attendus<b>'+fr(d.expectedTotal)+'</b></div>':"")+(d.over&&d.over["4.5"]!=null?'<div>Plus de 4,5 buts<b>'+d.over["4.5"]+'%</b></div>':"")+'</div>'
-    +tops(d)+frm(d)}
+    +tops(d)+frm(d)+fx(d)}
   else body=lockBox(m);
   return '<div class="hc" data-id="'+m.fixture_id+'" role="link" tabindex="0">'
   +'<div class="tm"><b class="tn">'+lgo(me.home_logo)+esc(m.home)+'</b><span>contre</span><b class="tn">'+lgo(me.away_logo)+esc(m.away)+'</b></div>'
