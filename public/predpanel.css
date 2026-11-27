@@ -31,3 +31,11 @@
 .pp-cmp small{display:block;font:600 11px "Hanken Grotesk",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#8E89C4}
 .pp-cmp b{font:800 20px "Bricolage Grotesque",sans-serif}
 .pp-n{margin:16px 0 0;color:#8E89C4;font:400 13px/1.5 "Hanken Grotesk",sans-serif}
+
+.pp-r span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-ch{margin:6px 0 4px}.pp-svg{display:block;width:100%;height:auto;border-radius:12px;background:#0E0A2E}
+.pp-lg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font:600 12px "Hanken Grotesk",sans-serif;color:#A9A4D6}
+.pp-lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.pp-ins{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:8px}
+.pp-ins li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:#161040;border:1px solid #33298A;font:400 14px/1.45 "Hanken Grotesk",sans-serif;color:#CFCBF0}
+.pp-ins li b{font-weight:400;flex:none}
