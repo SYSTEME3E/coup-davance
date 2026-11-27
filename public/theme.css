@@ -177,3 +177,7 @@ body.ss{background:#130F33;--ink:#FFFFFF;--mut:#A9A4D6}
 .fm .fb span{font:800 14px "Hanken Grotesk",sans-serif;color:#1B1650;white-space:nowrap}
 .fm .fab{width:26px;height:26px;border-radius:50%;background:#E3E5F2;color:#4A4775;display:flex;align-items:center;justify-content:center;font:800 9px "Hanken Grotesk",sans-serif}
 .fm .fc:first-child .fb span{color:#7C8296}
+
+/* match.html : le panneau « Pronostics » n'est plus enfermé dans une carte blanche, il repose directement sur le fond violet */
+.ss #pred .sec{background:transparent;border:0;box-shadow:none;border-radius:0;padding:0;overflow:visible;margin:0 0 14px}
+.ss #pred .sec>h2{background:transparent;border:0;margin:0 0 10px;padding:6px 2px;color:#fff;font-size:21px}
