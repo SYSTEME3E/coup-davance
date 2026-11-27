@@ -116,3 +116,15 @@ body.pd{--bg:#130F33;--surface:#1B1450;--ink:#FFFFFF;--muted:#A9A4D6;--line:#322
 .pd .srch input::placeholder,.pd input[type=search]::placeholder{color:#6B6890;opacity:1}
 .pd .srch input:focus,.pd input[type=search]:focus,.pd input[type=date]:focus{border-color:#6F5BFF;box-shadow:0 0 0 3px rgba(111,91,255,.25)}
 .pd .logo b{color:#4cc3ff}
+
+/* Dashboard/detail: improve contrast and prevent prediction explanations from looking washed out */
+.pc .pc-why{color:#F6F4FF;background:#130F33;border:1px solid #3A2F9A;border-radius:14px;padding:14px;margin-top:12px}
+.pc .pc-why .stats,.pc .pc-why .frm,.pc .pc-why p,.pc .pc-why span{color:#D6D2F3}
+.pc .pc-why .stats div{border-color:#3A2F9A}
+.pc .pc-why .stats b,.pc .pc-why strong{color:#fff}
+.pc .pc-why .frm i{filter:none}
+.pc .pc-why :where(.stats,.frm){opacity:1;filter:none}
+.pc .pc-act .pc-b{color:#E0DAFF;background:#251C66;border-color:#5B4BDB}
+.pc .pc-act .pc-b.go{color:#FFFFFF;background:#34258A}
+.pc .pc-chips span,.pc .pc-pills span{color:#E0DAFF}
+.pc .pc-chips b,.pc .pc-pills b{color:#FFFFFF}
