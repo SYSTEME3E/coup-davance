@@ -22,7 +22,7 @@ async function fetchDay(date: string) {
   const q = new URLSearchParams({ sport: "football", date, status: "finished", limit: "200", src: "coup-davance" });
   for (let a = 0; a < 3; a++) {
     try {
-      const r = await fetch("https://sportscore.com/api/v1/fixtures/?" + q, { headers: { accept: "application/json" } });
+      const r = await fetch("https://sportscore.com/api/v1/fixtures/?" + q, { headers: { accept: "application/json", "user-agent": "Mozilla/5.0 (compatible; coup-davance-backfill)" }, signal: AbortSignal.timeout(15000) });
       if (!r.ok) throw new Error("HTTP " + r.status);
       const d: any = await r.json();
       const arr = Array.isArray(d) ? d : d.matches ?? d.data ?? d.results ?? d.fixtures ?? [];
@@ -40,11 +40,13 @@ async function main() {
   const lg = await sb.rpc("covered_leagues");   // fournie par la migration ci-dessous si elle existe ; sinon on se rabat sur league_alias seul
   if (!lg.error) (lg.data ?? []).forEach((r: any) => skip.add(r.league));
 
-  let seen = 0, kept = 0, written = 0;
+  let seen = 0, kept = 0, written = 0, fails = 0;
+  console.log("Début : " + DAYS + " jours" + (DRY ? " (essai)" : ""));
   for (let i = 1; i <= DAYS; i++) {
     const date = new Date(Date.now() - i * 864e5).toISOString().slice(0, 10);
     let list: any[];
-    try { list = await fetchDay(date); } catch (e) { console.warn(date, "échec :", String(e)); continue; }
+    try { list = await fetchDay(date); } catch (e) { console.warn(date, "échec :", String(e)); if (++fails >= 5) { console.error("5 échecs de suite : SportScore ne répond pas à ce serveur. Arrêt."); process.exit(1); } continue; }
+    fails = 0;
     const rows: any[] = [];
     for (const m of list) {
       seen++;
