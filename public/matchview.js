@@ -49,6 +49,13 @@ function mvOverview(m,r,st,ev){
   return h}
 
 // Score courant après chaque but (rejoue la liste dans l'ordre du temps)
+// Nom d'un joueur dans un évènement : essaie plusieurs champs possibles (texte ou objet), puis, en dernier recours, tout champ texte qui ressemble à un nom
+const mvNm=(e,keys)=>{for(const k of keys){const v=e[k];if(v==null)continue;const n=typeof v==="object"?ssName(v):String(v);if(n&&!/^\d+$/.test(n))return n}return""};
+const MV_P=["player","player_name","playerName","name","athlete","person","participant","scorer","player1","player_1","main_player","text","title"];
+const MV_A=["assist","assist_name","assist_player","player_assist","assist_by","assistant","player2","player_2","secondary_player"];
+const mvAny=e=>{const skip=/^(type|detail|side|time|minute|min|id|team|team_id|status|icon|extra|score|home_score|away_score|is_sub|is_card)$/i;
+  for(const k of Object.keys(e)){if(skip.test(k))continue;const v=e[k];if(typeof v==="string"&&v.length>2&&!/^\d/.test(v)&&!/goal|card|subst|penalty|\bvar\b|yellow|red|normal/i.test(v))return v}return""};
+const mvPlayer=e=>mvNm(e,MV_P)||mvAny(e);
 function mvScores(ev){
   const asc=ev.slice().sort((x,y)=>(parseInt(mvMin(x))||0)-(parseInt(mvMin(y))||0)),sc=new Map();let h=0,a=0;
   asc.forEach(e=>{const t=String(e.type||"").toLowerCase();
@@ -66,11 +73,11 @@ function mvTimeline(m,ev){
     const home=e.side!=="away",t=String(e.type||"").toLowerCase(),sub=e.is_sub||/subst/.test(t),
       goal=/goal|penalty/.test(t)&&!/miss/.test(t),yel=/yellow/.test(t)||(e.is_card&&!/red/.test(t)),red=/red/.test(t);
     let c="";
-    if(sub)c='<div class="tv-p"><span class="in">'+esc(e.player_in||"")+'<i class="up">▲</i></span><span class="out">'+esc(e.player_out||"")+'<i class="dn">▼</i></span></div>';
-    else if(goal){const as=ssName(ssPick(e,["assist","assist_name","player_assist","assist_player"])||""),own=/own/.test(t+" "+String(e.detail||"").toLowerCase()),s=sc.get(e);
-      c='<div class="tv-g"><div class="w"><b>'+esc(ssName(ssPick(e,["player","player_name","name"]))||"")+(own?" (csc)":"")+'</b><span class="bl">⚽</span></div>'
+    if(sub)c='<div class="tv-p"><span class="in">'+esc(mvNm(e,["player_in","in","player_on","sub_in","playerIn"])||mvPlayer(e)||"Remplaçant")+'<i class="up">▲</i></span><span class="out">'+esc(mvNm(e,["player_out","out","player_off","sub_out","playerOut"])||"Remplacé")+'<i class="dn">▼</i></span></div>';
+    else if(goal){const as=mvNm(e,MV_A),own=/own/.test(t+" "+String(e.detail||"").toLowerCase()),s=sc.get(e);
+      c='<div class="tv-g"><div class="w"><b>'+esc(mvPlayer(e)||"But")+(own?" (csc)":"")+'</b><span class="bl">⚽</span></div>'
        +'<div class="d">'+(s?esc(s)+(as?" · passe décisive":""):(as?"passe décisive":""))+(as?'<br>'+esc(as):"")+'</div></div>'}
-    else if(yel||red)c='<div class="tv-c"><b>'+esc(ssName(ssPick(e,["player","player_name","name"]))||"")+'</b><span class="cd '+(red?"r":"y")+'"></span></div>';
+    else if(yel||red)c='<div class="tv-c"><b>'+esc(mvPlayer(e)||(red?"Carton rouge":"Carton jaune"))+'</b><span class="cd '+(red?"r":"y")+'"></span></div>';
     else c='<div class="tv-c"><b>'+mvWho(e)+'</b></div>';
     return'<div class="tv"><div class="s h">'+(home?c:"")+'</div><div class="mn">'+esc(mvMin(e))+'\u2032</div><div class="s a">'+(home?"":c)+'</div></div>'}).join("")+'</div>';
   return h+'</div></div>'}
