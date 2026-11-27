@@ -220,23 +220,36 @@ body.ss{--ink:#1B1650;--mut:#6B6890;--navy:#1F1A52;--pill:#5B4BDB;--blue:#1D6FE0
 .vd iframe{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:14px;background:#000}
 .vd .vopen{display:inline-block;margin-top:8px;font-size:14px;font-weight:700}
 
-/* Chronologie du match — fond nuit (même couleurs que la capture) */
-.ms-dk{background:#04041A;border:1px solid #14143A}
+/* Chronologie du match — fond nuit, même police que le reste du site (Hanken Grotesk / Bricolage Grotesque) */
+.ms-dk{background:#04041A;border:1px solid #14143A;font-family:"Hanken Grotesk",system-ui,sans-serif}
 .ms-dk .ms-dkh{padding:16px 18px;font:800 15px "Hanken Grotesk",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#7C7EA3;border-bottom:1px solid #14143A}
 .ms-dk .ms-body{padding:0 14px}
 .ms-dk .ms-empty{color:#7C7EA3}
-.tv{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr);align-items:center;gap:6px;padding:16px 0;border-bottom:1px solid #12123A}
+.tv{display:grid;grid-template-columns:minmax(0,1fr) 62px minmax(0,1fr);align-items:center;gap:6px;padding:16px 0;border-bottom:1px solid #12123A}
 .tv:last-child{border-bottom:0}
-.tv .mn{text-align:center;font:700 17px ui-monospace,Menlo,monospace;color:#8FA8F0}
-.tv .s{min-width:0}.tv .s.h{text-align:right}.tv .s.a{text-align:left}
+.tv .mn{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;font:800 17px/1 "Bricolage Grotesque","Hanken Grotesk",sans-serif;font-variant-numeric:tabular-nums;color:#8FA8F0}
+.tv .mn em{font:700 12px/1 "Hanken Grotesk",sans-serif;font-style:normal;font-variant-numeric:tabular-nums;color:#fff;background:#1B1B52;border-radius:99px;padding:4px 8px;white-space:nowrap}
+.tv .s{min-width:0;overflow-wrap:break-word}.tv .s.h{text-align:right}.tv .s.a{text-align:left}
+.tv-sep{display:flex;align-items:center;gap:10px;padding:12px 0;color:#7C7EA3;font:700 13px "Hanken Grotesk",sans-serif;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #12123A}
+.tv-sep::before,.tv-sep::after{content:"";flex:1;height:1px;background:#1B1B52}
+.tv-sep span{font-variant-numeric:tabular-nums}
 .tv-p{display:flex;flex-direction:column;gap:3px;font:500 16px/1.25 "Hanken Grotesk",sans-serif}
 .tv-p .in{color:#fff;font-weight:700}.tv-p .out{color:#8E90B3}
 .tv-p i{font-style:normal;font-size:13px;margin:0 6px}.tv-p .up{color:#2FD071}.tv-p .dn{color:#F0525C}
 .s.a .tv-p i{margin:0 6px 0 0}.s.a .tv-p .in,.s.a .tv-p .out{display:flex;flex-direction:row-reverse;justify-content:flex-end}
 .tv-c{display:flex;align-items:center;gap:10px;font:700 17px/1.25 "Hanken Grotesk",sans-serif;color:#fff}
-.s.h .tv-c{justify-content:flex-end}
+.s.h .tv-c{justify-content:flex-end;flex-direction:row-reverse}.s.a .tv-c{justify-content:flex-start}
+.tv-c .cn{min-width:0}.tv-c .cn b{font-weight:700}
+.tv-c .cn small{display:block;margin-top:2px;font:500 14px/1.3 "Hanken Grotesk",sans-serif;color:#8E90B3}
+.tv-c .ic{font-size:20px;line-height:1;flex:none}
 .tv-c .cd{width:16px;height:22px;border-radius:3px;flex:none}.cd.y{background:#FFC21A}.cd.r{background:#E5322D}
-.tv-g{display:flex;gap:10px;align-items:flex-start}.s.h .tv-g{justify-content:flex-end}.s.a .tv-g{flex-direction:row-reverse;justify-content:flex-end}
-.tv-g .w{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.s.h .tv-g .w{align-items:flex-end}
-.tv-g .w b{color:#2FD071;font:700 17px/1.2 "Hanken Grotesk",sans-serif}.tv-g .bl{font-size:20px;line-height:1}
-.tv-g .d{font:400 14px/1.45 ui-monospace,Menlo,monospace;color:#8E90B3;text-align:right}.s.a .tv-g .d{text-align:left}
+/* But : buteur en vert, passe décisive juste dessous */
+.tv-g{display:flex}.s.h .tv-g{justify-content:flex-end}
+.tv-g .w{display:flex;flex-direction:column;gap:5px;min-width:0}
+.s.h .tv-g .w{align-items:flex-end}.s.a .tv-g .w{align-items:flex-start}
+.tv-g .gn{display:flex;align-items:center;gap:8px;max-width:100%}.s.a .tv-g .gn{flex-direction:row-reverse;justify-content:flex-end}
+.tv-g .gn b{color:#2FD071;font:700 17px/1.2 "Hanken Grotesk",sans-serif;min-width:0}
+.tv-g .gn small{flex:none;font:700 12px/1 "Hanken Grotesk",sans-serif;color:#8E90B3;letter-spacing:.04em}
+.tv-g .bl{font-size:20px;line-height:1;flex:none}
+.tv-g .ga{font:500 14px/1.3 "Hanken Grotesk",sans-serif;color:#8E90B3}
+.tv-g .ga b{color:#fff;font-weight:700}
