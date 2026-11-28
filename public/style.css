@@ -473,3 +473,7 @@ img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none;-webkit-tou
 
 /* « Propulsé par » : flouté (texte conservé) */
 .pwr{filter:blur(4px);-webkit-filter:blur(4px);user-select:none}
+
+/* « Propulsé par KickoffAPI » : même badge rouge que « Pinnacle » */
+.note a[href*="kickoffapi.com"]{display:inline-block;background:#E8283B;color:#fff;font-style:italic;font-weight:800;font-size:13px;padding:4px 12px;border-radius:7px;white-space:nowrap;text-decoration:none;margin-left:6px}
+.note a[href*="kickoffapi.com"]:focus-visible{outline:3px solid #fff;outline-offset:2px}
