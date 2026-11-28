@@ -133,7 +133,7 @@ const card=m=>{m=FULL[m.fixture_id]||m;PBROW[m.fixture_id]=m;const d=m.data,me=M
   +'<div class="pc-top"><span>'+when(m)+'</span><span class="pc-badge">'+(st==="next"?'<span class="cdp" data-cd="'+esc(m.kickoff)+'">'+cdTxt(m.kickoff)+'</span>':badge)+'</span></div>'
   +'<div class="pc-lg">'+lgo(me.league_logo,"sm")+'<span>'+esc(m.league||"")+'</span>'+tagOf(m)+'</div>'
   +'<div class="pc-teams"><div class="pc-t l'+side("h")+'">'+lgo(me.home_logo)+'<b>'+esc(m.home)+'</b></div><div class="pc-m">'+mid+tag+'</div><div class="pc-t r'+side("a")+'"><b>'+esc(m.away)+'</b>'+lgo(me.away_logo)+'</div></div>'
-  +(st==="next"?'<div class="pc-odds" data-odds="'+m.fixture_id+'">'+(ODDS[m.fixture_id]?oddsHtml(ODDS[m.fixture_id]):"")+'</div>':"")+(open?(drift(m)?origBox(m):(PP?ppMini(m,ctx):probs(d,true))):lockBox(m))+(PP?"":vd)
+  +((st==="next"||st==="live")?'<div class="pc-odds" data-odds="'+m.fixture_id+'">'+(ODDS[m.fixture_id]?oddsHtml(ODDS[m.fixture_id]):"")+'</div>':"")+(open?(drift(m)?origBox(m):(PP?ppMini(m,ctx):probs(d,true))):lockBox(m))+(PP?"":vd)
   +'<div class="pc-act">'+(why?'<button type="button" class="pc-b" data-why aria-expanded="false">pourquoi ▾</button>':'<span></span>')+'<a class="pc-b go" href="match.html?id='+m.fixture_id+'">Voir le match ↗</a></div>'
   +(why?'<div class="pc-why" hidden>'+why+'</div>':"")+'</div>'};
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-why]");if(!b)return;
