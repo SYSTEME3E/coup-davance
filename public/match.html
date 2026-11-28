@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="fr" data-tab="p"><head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2617146871223427" crossorigin="anonymous"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="matchview.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="predpanel.css"><link rel="stylesheet" href="theme.css"><title>Match – PronostBet</title><style>
+<!DOCTYPE html><html lang="fr" data-tab="p"><head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2617146871223427" crossorigin="anonymous"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="matchview.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="predpanel.css"><link rel="stylesheet" href="theme.css"><title>Match – PronostBet</title><style>
 .od{background:#fff;color:#1B1650;border-radius:14px;padding:12px 14px;margin:0 0 14px;box-shadow:0 1px 2px rgba(27,22,80,.06)}
 .od .odh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .od h2{margin:0;font-size:16px;font-weight:600;color:#1B1650}
@@ -184,15 +184,21 @@ const team=(side)=>{const t=(d&&d[side])||{},logo=t.logo||(meta&&meta[side+"_log
   return '<div class="t'+(lead===side?' win':'')+'">'+lg(logo)+'<b>'+esc(pr[side])+'</b></div>'};
 const isLive=()=>(d&&LIVE.includes(d.status))||(!!pr.live_status&&!(pr.settled_at));
 // Cotes du marché (Pinnacle) : affichées seulement si l'interrupteur serveur est activé, avant le match, pour un pronostic débloqué
-let oddsFor=null;
+let oddsFor=null,oddsOk=false,oddsAt=0;
 const drawOdds=async()=>{
   if(!pr||!pr.data||!isOpen(pr)){$("odds").innerHTML="";return}
-  if(oddsFor===pr.fixture_id)return;oddsFor=pr.fixture_id;
+  const lv=!pr.settled_at&&isLive();
+  // en direct : les cotes bougent, on les redemande chaque minute ; sinon une seule demande par match
+  if(oddsFor===pr.fixture_id&&(!lv||Date.now()-oddsAt<6e4))return;
+  oddsFor=pr.fixture_id;oddsAt=Date.now();
   let o=null;try{const r=await sb.rpc("get_match_odds",{p_fixture:pr.fixture_id});o=r.data}catch(e){}
-  if(!o||!o.ok){$("odds").innerHTML="";return}
+  if(!o||!o.ok){
+    if(!oddsOk)$("odds").innerHTML=lv?'<div class="od"><div class="odh"><h2>Les cotes du match</h2><span class="ods">EN DIRECT</span></div><p class="note" style="margin:0">Les cotes ne sont pas disponibles pour le moment. Elles s’afficheront dès que le bookmaker les publie.</p></div>':"";
+    return}
+  oddsOk=true;
   const f2=n=>fr(Number(n).toFixed(2));
   const c=(l,v)=>'<div class="oc"><span>'+l+'</span><b>'+f2(v)+'</b></div>';
-  $("odds").innerHTML='<div class="od"><div class="odh"><h2>Les cotes du match</h2><span class="ods">'+esc(o.source||"Pinnacle")+'</span></div>'
+  $("odds").innerHTML='<div class="od"><div class="odh"><h2>Les cotes du match</h2><span class="ods">'+(lv?"EN DIRECT · ":"")+esc(o.source||"Pinnacle")+'</span></div>'
     +'<div class="og">'+c("1",o.home)+c("X",o.draw)+c("2",o.away)+'</div>'
     +(o.total?'<div class="og og2">'+c("+"+fr(o.total.line),o.total.over)+c("-"+fr(o.total.line),o.total.under)+'</div>':"")+'</div>'};
 // ---------- Onglets, confrontations directes (H2H) et classement ----------
@@ -295,7 +301,12 @@ const ssFind=()=>{if(FIND.p&&FIND.id===pr.fixture_id)return FIND.p;FIND.id=pr.fi
     return out})();
   FIND.p=p;p.then(o=>{if(!o.r)setTimeout(()=>{if(FIND.p===p)FIND.p=null},30000)});return p};
 // Statistiques et chronologie : SportScore (gratuit, mis à jour en direct) quand match-info n'est pas appelé pendant le match
-const ssLoad=async(fresh)=>{if(!pr)return;if(fresh)FIND.p=null;const o=await ssFind();if(o&&o.r){SSR=o.r;draw()}};
+const syncLive=o=>{const f=o&&(o.r?ssMatch(o.r):o.f);if(!f||!f.live||pr.settled_at)return false;let ch=false;
+  if(!pr.live_status){pr.live_status=/half[- ]?time|\bht\b/.test(f.status||"")?"HT":"LIVE";ch=true}
+  if(f.hs!=null&&f.as!=null&&(String(pr.live_home)!==String(f.hs)||String(pr.live_away)!==String(f.as))){pr.live_home=f.hs;pr.live_away=f.as;ch=true}
+  if(f.minute!=null&&String(pr.live_minute)!==String(f.minute)){pr.live_minute=f.minute;ch=true}
+  return ch};
+const ssLoad=async(fresh)=>{if(!pr)return;if(fresh)FIND.p=null;const o=await ssFind();if(!o)return;let ch=false;if(o.r){SSR=o.r;ch=true}if(syncLive(o))ch=true;if(ch)draw()};
 // ---- Numéro de tour : donnée du match chez SportScore, à défaut journées jouées + 1 d'après le classement (championnats nationaux) ----
 let RND=null,rndFor=null;
 const rndNum=v=>{if(v==null)return null;if(typeof v==="object")v=ssPick(v,["round","number","name","value"]);const t=String(v==null?"":v);
@@ -444,7 +455,8 @@ const refresh=async()=>{
   await loadRow();
   if(inPlay()){draw();ssLoad(true).catch(()=>{});return}
   await loadDetail();
-  draw()};
+  draw();
+  if(!pr.settled_at&&new Date(pr.kickoff)<Date.now())ssLoad(true).catch(()=>{})};
 // Démarrage : avec la ligne mémorisée, on affiche tout de suite puis on lance TOUT en parallèle ; sans elle (lien direct, notification), ligne + logos en parallèle
 // Match du direct sans pronostic (lien des notifications de but) : score, minute et statut, actualisés tout seuls
 async function liveOnly(){
