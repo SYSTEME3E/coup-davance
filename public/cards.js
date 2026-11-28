@@ -75,9 +75,9 @@ const pbStash=id=>{try{const m=FULL[id]||PBROW[id];if(m)sessionStorage.setItem("
 // Modèle v3 : total de buts attendu, plus de 3,5 / 4,5 et 3 scores les plus probables (absents des anciens pronostics)
 const gx=d=>{const o=d.over||{};let a="";
   if(d.expectedTotal!=null)a+='<span>Total prévu <b>'+fr(d.expectedTotal)+'</b></span>';
-  // +3,5 et +4,5 buts restent côte à côte dans la même pastille, en gras
-  const g=[];if(o["3.5"]!=null)g.push('+3,5 buts '+o["3.5"]+'%');if(o["4.5"]!=null)g.push('+4,5 buts '+o["4.5"]+'%');
-  if(g.length)a+='<span class="pc-b2">'+g.join(' · ')+'</span>';
+  // +3,5 et +4,5 buts : deux pastilles séparées, toujours sur la même ligne (en gras)
+  const g=[];if(o["3.5"]!=null)g.push('<span>+3,5 buts <b>'+o["3.5"]+'%</b></span>');if(o["4.5"]!=null)g.push('<span>+4,5 buts <b>'+o["4.5"]+'%</b></span>');
+  if(g.length)a+='<div class="pc-b2w">'+g.join('')+'</div>';
   return a};
 const tops=d=>Array.isArray(d.topScores)&&d.topScores.length?'<div class="pc-chips"><span>Top scores <b>'+d.topScores.map(t=>esc(t.s)+' ('+fr(t.p)+'%)').join(" · ")+'</b></span></div>':"";
 const pcWhy=d=>xt(d)+frm(d)+fx(d);
