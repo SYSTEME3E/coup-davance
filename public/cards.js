@@ -88,7 +88,7 @@ const probs=(d,fold)=>{const p=d.result,k=pcPick(p);
 // ---- Compteur avant match (forme rouge) + cotes 1 X 2 dans chaque carte ----
 const p2=n=>String(n).padStart(2,"0");
 const cdTxt=t=>{let s=Math.max(0,Math.floor((new Date(t)-Date.now())/1e3));const d=Math.floor(s/86400);s%=86400;return(d?d+"j ":"")+p2(Math.floor(s/3600))+":"+p2(Math.floor(s%3600/60))+":"+p2(s%60)};
-const ODDS={};
+const ODDS={},ODDSAT={};
 const oddsHtml=o=>{const f=n=>fr(Number(n).toFixed(2)),c=(l,v)=>'<div><span>'+l+'</span><b>'+f(v)+'</b></div>';
   return '<div class="og3">'+c("1",o.home)+c("X",o.draw)+c("2",o.away)+'</div>'};
 (()=>{
@@ -103,10 +103,10 @@ const oddsHtml=o=>{const f=n=>fr(Number(n).toFixed(2)),c=(l,v)=>'<div><span>'+l+
   // cotes : chargées après l'affichage, 3 requêtes à la fois, gardées en mémoire (le serveur décide si elles sont disponibles)
   let busy=false;
   const fill=async()=>{if(busy)return;busy=true;
-    try{const todo=[...document.querySelectorAll(".pc-odds[data-odds]")].filter(e=>!e.innerHTML&&!(e.dataset.odds in ODDS));
+    try{const todo=[...document.querySelectorAll(".pc-odds[data-odds]")].filter(e=>!e.innerHTML&&(!(e.dataset.odds in ODDS)||(ODDS[e.dataset.odds]===null&&Date.now()-(ODDSAT[e.dataset.odds]||0)>6e4)));
       let i=0;await Promise.all(Array.from({length:3},async()=>{while(i<todo.length){const e=todo[i++],id=e.dataset.odds;
         let o=null,why="";try{const r=await sb.rpc("get_match_odds",{p_fixture:Number(id)});o=r.data;if(r.error)why=r.error.message||"erreur"}catch(x){why=String((x&&x.message)||x)}
-        ODDS[id]=o&&o.ok?o:null;
+        ODDS[id]=o&&o.ok?o:null;ODDSAT[id]=Date.now();
         if(ODDS[id])e.innerHTML=oddsHtml(ODDS[id]);
         else if(/[?&]debug=1/.test(location.search))e.innerHTML='<small style="color:#6B6890">cotes : '+esc(why||JSON.stringify(o)||"aucune réponse")+'</small>'}}))}catch(e){}
     busy=false};
