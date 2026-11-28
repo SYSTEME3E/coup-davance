@@ -105,8 +105,10 @@ const oddsHtml=o=>{const f=n=>fr(Number(n).toFixed(2)),c=(l,v)=>'<div><span>'+l+
   const fill=async()=>{if(busy)return;busy=true;
     try{const todo=[...document.querySelectorAll(".pc-odds[data-odds]")].filter(e=>!e.innerHTML&&!(e.dataset.odds in ODDS));
       let i=0;await Promise.all(Array.from({length:3},async()=>{while(i<todo.length){const e=todo[i++],id=e.dataset.odds;
-        let o=null;try{const r=await sb.rpc("get_match_odds",{p_fixture:Number(id)});o=r.data}catch(x){}
-        ODDS[id]=o&&o.ok?o:null;if(ODDS[id])e.innerHTML=oddsHtml(ODDS[id])}}))}catch(e){}
+        let o=null,why="";try{const r=await sb.rpc("get_match_odds",{p_fixture:Number(id)});o=r.data;if(r.error)why=r.error.message||"erreur"}catch(x){why=String((x&&x.message)||x)}
+        ODDS[id]=o&&o.ok?o:null;
+        if(ODDS[id])e.innerHTML=oddsHtml(ODDS[id]);
+        else if(/[?&]debug=1/.test(location.search))e.innerHTML='<small style="color:#6B6890">cotes : '+esc(why||JSON.stringify(o)||"aucune réponse")+'</small>'}}))}catch(e){}
     busy=false};
   // les cartes sont redessinées par chaque page : on réagit à l'apparition de nouvelles cartes
   let tm=0;new MutationObserver(()=>{clearTimeout(tm);tm=setTimeout(()=>{document.querySelectorAll(".pc-odds[data-odds]:empty").forEach(e=>{const o=ODDS[e.dataset.odds];if(o)e.innerHTML=oddsHtml(o)});fill()},150)}).observe(document.body,{childList:true,subtree:true});
