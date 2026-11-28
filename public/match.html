@@ -47,6 +47,21 @@ html[data-tab=p] .pn-p,html[data-tab=f] .pn-f,html[data-tab=l] .pn-l,html[data-t
 .ct tr.hl{background:#E9E9FC}
 .ct tr.hl td.n span{font-weight:800}
 .ct .gp{color:#1E8E5A}
+</style><style>
+.lp{position:relative;margin:14px;aspect-ratio:.55;border-radius:12px;overflow:hidden;background:linear-gradient(#0E3B22,#145230 50%,#0E3B22)}
+.lp i{position:absolute;border:2px solid rgba(255,255,255,.4);pointer-events:none}
+.lp-l{inset:2.5%;border-radius:2px}
+.lp-c{left:50%;top:50%;width:26%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%}
+.lp-b{left:50%;width:46%;height:11%;transform:translateX(-50%)}
+.lp-b.t{top:2.5%;border-top:0}.lp-b.u{bottom:2.5%;border-bottom:0}
+.lp::after{content:"";position:absolute;left:2.5%;right:2.5%;top:50%;border-top:2px solid rgba(255,255,255,.4)}
+.lp-p{position:absolute;z-index:1;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;text-align:center}
+.lp-a{position:relative;width:42px;height:42px;border-radius:50%;background:#1F1A52;border:2px solid #fff;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font:800 14px/1 inherit;font-family:inherit}
+.lp-p.a .lp-a{background:#D81E3C}
+.lp-a img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
+.lp-p span{margin-top:3px;font:700 11px/1.1 inherit;font-family:inherit;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.85);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lp-f{position:absolute;z-index:1;font:800 12px/1 inherit;font-family:inherit;color:#fff;background:rgba(0,0,0,.4);padding:4px 9px;border-radius:99px}
+.lp-f.h{left:8px;top:8px}.lp-f.a{right:8px;bottom:8px}
 </style></head><body class="ss"><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icons/icon-192.png" alt="" width="34" height="34"><span>PRONOST<b>BET</b></span></a><span id="who" hidden></span></header>
 <a class="back" href="dashboard.html" id="back">← Retour aux matchs</a>
@@ -189,13 +204,33 @@ let LU={id:null,t:0,has:false};
 // Tolérant sur la forme de la réponse : home_xi / away_xi, ou home.{xi,starters,lineup,players}, remplaçants et formation inclus
 const luSide=(L,k)=>{const o=(L&&L[k])||{},arr=v=>Array.isArray(v)?v:[],
   pick=(...c)=>{for(const v of c)if(Array.isArray(v)&&v.length)return v;return[]},
-  pl=p=>({name:ssName(p&&(p.name||p.player||p.player_name||p.short_name))||(typeof p==="string"?p:""),number:p&&(p.number??p.shirt_number??p.jersey_number??p.jersey),position:p&&(p.position||p.pos),captain:!!(p&&(p.captain||p.is_captain))});
+  ph=p=>{const o=p&&typeof p==="object"?p:{},q=o.player&&typeof o.player==="object"?o.player:{};return o.photo||o.image||o.img||o.logo||o.player_logo||o.player_photo||o.avatar||o.picture||o.thumb||q.photo||q.image||q.img||q.logo||q.avatar||""},
+  pl=p=>({name:ssName(p&&(p.name||p.player||p.player_name||p.short_name))||(typeof p==="string"?p:""),number:p&&(p.number??p.shirt_number??p.jersey_number??p.jersey),position:p&&(p.position||p.pos),captain:!!(p&&(p.captain||p.is_captain)),photo:ph(p),k:p&&typeof p==="object"?Object.keys(p).join(","):""});
   return{xi:pick(L[k+"_xi"],L[k+"_lineup"],L[k+"_starters"],o.xi,o.starters,o.starting_xi,o.lineup,o.players).map(pl),
     subs:pick(L[k+"_subs"],L[k+"_bench"],o.subs,o.bench,o.substitutes).map(pl),
     form:L[k+"_formation"]||o.formation||""}};
 const luNorm=r=>{const L=r&&(r.lineups||r.lineup||r.line_ups);if(!L||typeof L!=="object")return null;
   const h=luSide(L,"home"),a=luSide(L,"away");
   return{home_xi:h.xi,away_xi:a.xi,home_subs:h.subs,away_subs:a.subs,home_formation:h.form,away_formation:a.form,confirmed:!!(L.confirmed||L.is_confirmed||L.official)}};
+// Terrain vertical : domicile en haut (gardien → attaquants), extérieur en bas ; photo du joueur si SportScore la fournit, sinon numéro
+const luRows=(xi,form)=>{const nums=String(form||"").split("-").map(Number).filter(n=>n>0),lines=[1].concat(nums);
+  if(xi.length&&lines.reduce((a,b)=>a+b,0)===xi.length){let i=0;return lines.map(c=>{const r=xi.slice(i,i+c);i+=c;return r})}
+  const g=k=>xi.filter(p=>String(p.position||"").charAt(0).toUpperCase()===k),rows=["G","D","M","F"].map(g).filter(r=>r.length);
+  if(rows.length>1&&rows.reduce((a,r)=>a+r.length,0)===xi.length)return rows;
+  const out=[];let i=0;[1,4,3,3].forEach(c=>{if(i<xi.length){out.push(xi.slice(i,i+c));i+=c}});if(i<xi.length)out.push(xi.slice(i));return out};
+const luLast=n=>{const t=String(n||"").trim().split(/\s+/);return t.length>1&&/\.$/.test(t[0])?t.slice(1).join(" "):t[t.length-1]||""};
+const luPitch=(xi,form,side)=>{const rows=luRows(xi,form),n=rows.length;let h="";
+  rows.forEach((r,li)=>{const y0=n>1?8+li*(37/(n-1)):20,y=side==="h"?y0:100-y0,w=Math.min(22,100/(r.length+.6));
+    r.forEach((p,j)=>{h+='<div class="lp-p '+side+'" style="left:'+((j+1)/(r.length+1)*100)+'%;top:'+y+'%;width:'+w+'%"><div class="lp-a">'+esc(p.number??"")
+      +(p.photo?'<img src="'+esc(p.photo)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">':"")+'</div><span>'+esc(luLast(p.name))+'</span></div>'})});
+  return h};
+const luRender=(m,L)=>{
+  const list=(n,xs,subs)=>'<h3>'+esc(n)+'</h3>'+xs.map(p=>'<div class="ms-xr"><em>'+esc(p.number??"")+'</em>'+(p.position?'<u class="'+esc(String(p.position)[0].toUpperCase())+'">'+esc(String(p.position)[0].toUpperCase())+'</u>':'<u></u>')+'<span>'+esc(p.name)+(p.captain?' <small>(C)</small>':"")+'</span></div>').join("")
+    +((subs||[]).length?'<h3>Remplaçants</h3>'+subs.map(p=>'<div class="ms-xr"><em>'+esc(p.number??"")+'</em><u></u><span>'+esc(p.name)+'</span></div>').join(""):"");
+  return '<div class="ms"><div class="ms-card"><h2>Compositions</h2><div class="ms-fm"><div><b>'+esc(m.home)+'</b><small>Formation '+esc(L.home_formation||"–")+'</small></div><span class="ms-ok'+(L.confirmed?"":" p")+'">'+(L.confirmed?"CONFIRMÉE":"PROBABLE")+'</span><div><b>'+esc(m.away)+'</b><small>Formation '+esc(L.away_formation||"–")+'</small></div></div>'
+    +'<div class="lp"><i class="lp-l"></i><i class="lp-c"></i><i class="lp-b t"></i><i class="lp-b u"></i>'+(L.home_formation?'<span class="lp-f h">'+esc(L.home_formation)+'</span>':"")+(L.away_formation?'<span class="lp-f a">'+esc(L.away_formation)+'</span>':"")
+    +luPitch(L.home_xi,L.home_formation,"h")+luPitch(L.away_xi,L.away_formation,"a")+'</div>'
+    +'<div class="ms-xi">'+list(m.home,L.home_xi,L.home_subs)+list(m.away,L.away_xi,L.away_subs)+'</div></div></div>'};
 const lineups=async()=>{
   const el=$("lu"),card=(m,dbg)=>{el.innerHTML='<div class="h2c"><h2>Compositions</h2><p class="note">'+m+'</p>'+(dbg?'<p class="note" style="font-size:11px;opacity:.7">'+esc(dbg)+'</p>':'')+'</div>'};
   if(!pr){card("Chargement…");return}
@@ -218,7 +253,8 @@ const lineups=async()=>{
     LU.has=!!(L&&(L.home_xi.length||L.away_xi.length));
     if(!LU.has){card("Compositions pas encore publiées pour ce match. Elles arrivent en général 1 h avant le coup d’envoi.","SportScore : "+used+(r.lineups?" (lineups vides)":" (pas de champ lineups)"));return}
     const m=Object.assign({},ssMatch(r),{home:shortN(pr.home),away:shortN(pr.away)});
-    el.innerHTML='<div class="ms">'+mvLineups(m,{lineups:L})+'</div>'+(!L.confirmed?'<p class="lun">Compositions probables : les officielles sont publiées environ 1 h avant le match.</p>':'')
+    const k=[...L.home_xi,...L.away_xi],hasPh=k.some(p=>p.photo);
+    el.innerHTML=luRender(m,L)+(!hasPh&&k[0]?'<p class="lun" style="font-size:11px;opacity:.7">Pas de photo reçue de SportScore. Champs du joueur : '+esc(k[0].k||"?")+'</p>':"")+(!L.confirmed?'<p class="lun">Compositions probables : les officielles sont publiées environ 1 h avant le match.</p>':'')
   }catch(e){LU.t=0;card("Compositions indisponibles pour le moment.",String((e&&e.message)||e))}};
 // Classement : SportScore (même source que la page Football en direct)
 const SLUG={"premier league":"english-premier-league","champions league":"uefa-champions-league","uefa champions league":"uefa-champions-league","la liga":"spanish-la-liga","primera division":"spanish-la-liga","serie a":"italian-serie-a","bundesliga":"bundesliga","ligue 1":"french-ligue-1","europa league":"uefa-europa-league","uefa europa league":"uefa-europa-league","conference league":"uefa-conference-league","uefa europa conference league":"uefa-conference-league","brasileirao":"brazilian-serie-a","mls":"united-states-major-league-soccer","major league soccer":"united-states-major-league-soccer","world cup":"fifa-world-cup","fifa world cup":"fifa-world-cup"};
