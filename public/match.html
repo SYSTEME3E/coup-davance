@@ -62,6 +62,27 @@ html[data-tab=p] .pn-p,html[data-tab=f] .pn-f,html[data-tab=l] .pn-l,html[data-t
 .lp-p span{margin-top:3px;font:700 11px/1.1 inherit;font-family:inherit;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.85);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lp-f{position:absolute;z-index:1;font:800 12px/1 inherit;font-family:inherit;color:#fff;background:rgba(0,0,0,.4);padding:4px 9px;border-radius:99px}
 .lp-f.h{left:8px;top:8px}.lp-f.a{right:8px;bottom:8px}
+</style><style>
+.lu2{margin:0 0 14px}
+.lu2 .lp{margin:0;aspect-ratio:.62;border-radius:16px;background:linear-gradient(#0B2E1A,#0F4025 50%,#0B2E1A)}
+.lu2 .lp-a{width:38px;height:38px;border:2px solid #fff;background:#2A2F45}
+.lu2 .lp-p span{font:600 11px/1.15 inherit;font-family:inherit;margin-top:4px;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.lu2 .lp-f{display:flex;align-items:center;gap:6px;background:none;padding:0;border-radius:0;z-index:2}
+.lu2 .lp-f b{font:800 12px/1 inherit;font-family:inherit;color:#fff;opacity:.9}
+.lu2 .lp-f img{width:28px;height:28px;object-fit:contain}
+.lu2 .lp-f.h{left:14px;top:12px}.lu2 .lp-f.a{right:14px;bottom:12px}
+.lu-miss{background:#fff;border-radius:16px;padding:14px;margin-top:12px;color:#1B1650}
+.lu-sw{display:grid;grid-template-columns:1fr 1fr;background:#E4EAF5;border-radius:99px;padding:4px;gap:4px;margin-bottom:16px}
+.lu-sw button{border:0;background:transparent;border-radius:99px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1B1650;font:700 13px inherit;font-family:inherit}
+.lu-sw button.on{background:#fff;box-shadow:0 1px 3px rgba(27,22,80,.15)}
+.lu-sw img{width:26px;height:26px;object-fit:contain}
+.lu-ms h3{margin:0;text-align:center;font-size:19px;font-weight:800}
+.lu-ms>p{margin:4px 0 14px;text-align:center;color:#6B6890;font-size:14px}
+.lu-ms .lu-none{color:#6B6890;margin:8px 0}
+.lu-mr{display:flex;align-items:center;gap:12px;padding:8px 0}
+.lu-mr img,.lu-mr i{width:48px;height:48px;border-radius:50%;border:1px solid #E4E5EE;object-fit:cover;background:#F1F2F7;flex:none}
+.lu-mr b{display:block;font-size:17px}
+.lu-mr small{color:#D81E3C;font-weight:600;font-size:14px}
 </style></head><body class="ss"><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icons/icon-192.png" alt="" width="34" height="34"><span>PRONOST<b>BET</b></span></a><span id="who" hidden></span></header>
 <a class="back" href="dashboard.html" id="back">← Retour aux matchs</a>
@@ -224,15 +245,28 @@ const luPitch=(xi,form,side)=>{const rows=luRows(xi,form),n=rows.length;let h=""
     r.forEach((p,j)=>{h+='<div class="lp-p '+side+'" style="left:'+((j+1)/(r.length+1)*100)+'%;top:'+y+'%;width:'+w+'%"><div class="lp-a">'+esc(p.number??"")
       +(p.photo?'<img src="'+esc(p.photo)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">':"")+'</div><span>'+esc(luLast(p.name))+'</span></div>'})});
   return h};
-const luRender=(m,L)=>{
-  const list=(n,xs,subs)=>'<h3>'+esc(n)+'</h3>'+xs.map(p=>'<div class="ms-xr"><em>'+esc(p.number??"")+'</em>'+(p.position?'<u class="'+esc(String(p.position)[0].toUpperCase())+'">'+esc(String(p.position)[0].toUpperCase())+'</u>':'<u></u>')+'<span>'+esc(p.name)+(p.captain?' <small>(C)</small>':"")+'</span></div>').join("")
-    +((subs||[]).length?'<h3>Remplaçants</h3>'+subs.map(p=>'<div class="ms-xr"><em>'+esc(p.number??"")+'</em><u></u><span>'+esc(p.name)+'</span></div>').join(""):"");
-  return '<div class="ms"><div class="ms-card"><h2>Compositions</h2><div class="ms-fm"><div><b>'+esc(m.home)+'</b><small>Formation '+esc(L.home_formation||"–")+'</small></div><span class="ms-ok'+(L.confirmed?"":" p")+'">'+(L.confirmed?"CONFIRMÉE":"PROBABLE")+'</span><div><b>'+esc(m.away)+'</b><small>Formation '+esc(L.away_formation||"–")+'</small></div></div>'
-    +'<div class="lp"><i class="lp-l"></i><i class="lp-c"></i><i class="lp-b t"></i><i class="lp-b u"></i>'+(L.home_formation?'<span class="lp-f h">'+esc(L.home_formation)+'</span>':"")+(L.away_formation?'<span class="lp-f a">'+esc(L.away_formation)+'</span>':"")
-    +luPitch(L.home_xi,L.home_formation,"h")+luPitch(L.away_xi,L.away_formation,"a")+'</div>'
-    +'<div class="ms-xi">'+list(m.home,L.home_xi,L.home_subs)+list(m.away,L.away_xi,L.away_subs)+'</div></div></div>'};
+// Nom court « E. Touré » (initiale + nom), comme sur zonestat
+const luShort=n=>{const t=String(n||"").trim().split(/\s+/).filter(Boolean);if(t.length<2)return t[0]||"";return /\.$/.test(t[0])?t.join(" "):t[0].charAt(0).toUpperCase()+". "+t.slice(1).join(" ")};
+// Un seul terrain pleine largeur, sans card ni en-tête : domicile en haut, extérieur en bas, formation + écusson dans le coin
+const luPitch2=(xi,form,side)=>{const rows=luRows(xi,form),n=rows.length;let h="";
+  rows.forEach((r,li)=>{const y0=n>1?5+li*(40/(n-1)):20,y=side==="h"?y0:100-y0,w=Math.min(25,100/(r.length+.4));
+    r.forEach((p,j)=>{h+='<div class="lp-p '+side+'" style="left:'+((j+1)/(r.length+1)*100)+'%;top:'+y+'%;width:'+w+'%"><div class="lp-a">'+(p.photo?'<img src="'+esc(p.photo)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">':'')+'</div><span>'+esc(luShort(p.name))+'</span></div>'})});
+  return h};
+const luBadge=(side,form,logo)=>(form||logo)?'<div class="lp-f '+side+'">'+(logo?'<img src="'+esc(logo)+'" alt="" referrerpolicy="no-referrer" onerror="this.remove()">':'')+(form?'<b>'+esc(form)+'</b>':'')+'</div>':'';
+// Blessures et suspensions : seulement si SportScore les fournit
+const luMiss=(r,k)=>{const o=(r&&r[k])||{},c=[r&&r[k+"_missing"],r&&r[k+"_injuries"],r&&r[k+"_absences"],o.missing,o.injuries,o.absences,o.unavailable,r&&r.injuries&&r.injuries[k],r&&r.missing&&r.missing[k]];
+  for(const v of c)if(Array.isArray(v))return v.map(p=>({name:ssName(p&&(p.name||p.player||p.player_name))||(typeof p==="string"?p:""),status:(p&&(p.status||p.type||p.reason||p.detail))||"Absent",photo:(p&&(p.photo||p.image||p.img||p.logo))||""})).filter(p=>p.name);
+  return null};
+const luRender=(m,L,miss,hl,al)=>{
+  const hasMiss=!!(miss&&(miss.h||miss.a));
+  return '<div class="lu2"><div class="lp"><i class="lp-l"></i><i class="lp-c"></i><i class="lp-b t"></i><i class="lp-b u"></i>'
+    +luBadge("h",L.home_formation,hl)+luBadge("a",L.away_formation,al)
+    +luPitch2(L.home_xi,L.home_formation,"h")+luPitch2(L.away_xi,L.away_formation,"a")+'</div>'
+    +(hasMiss?'<div class="lu-miss"><div class="lu-sw" role="tablist"><button type="button" data-s="h" class="on" aria-label="'+esc(m.home)+'">'+(hl?'<img src="'+esc(hl)+'" alt="" referrerpolicy="no-referrer">':esc(m.home))+'</button><button type="button" data-s="a" aria-label="'+esc(m.away)+'">'+(al?'<img src="'+esc(al)+'" alt="" referrerpolicy="no-referrer">':esc(m.away))+'</button></div>'
+      +['h','a'].map(k=>'<div class="lu-ms" data-s="'+k+'"'+(k==='a'?' hidden':'')+'><h3>Blessures et suspensions</h3><p>'+esc(k==='h'?m.home:m.away)+'</p>'
+        +((miss[k]||[]).length?(miss[k]).map(p=>'<div class="lu-mr">'+(p.photo?'<img src="'+esc(p.photo)+'" alt="" referrerpolicy="no-referrer" onerror="this.remove()">':'<i></i>')+'<div><b>'+esc(luShort(p.name))+'</b><small>✚ '+esc(p.status)+'</small></div></div>').join(""):'<p class="lu-none">Aucun absent signalé.</p>')+'</div>').join("")+'</div>':'')+'</div>'};
 const lineups=async()=>{
-  const el=$("lu"),card=(m,dbg)=>{el.innerHTML='<div class="h2c"><h2>Compositions</h2><p class="note">'+m+'</p>'+(dbg?'<p class="note" style="font-size:11px;opacity:.7">'+esc(dbg)+'</p>':'')+'</div>'};
+  const el=$("lu"),card=m=>{el.innerHTML='<p class="lun" style="margin:24px 0">'+m+'</p>'};
   if(!pr){card("Chargement…");return}
   if(LU.id===pr.fixture_id&&Date.now()-LU.t<(LU.has?3e5:6e4))return;
   LU={id:pr.fixture_id,t:Date.now(),has:false};
@@ -253,17 +287,25 @@ const lineups=async()=>{
     LU.has=!!(L&&(L.home_xi.length||L.away_xi.length));
     if(!LU.has){card("Compositions pas encore publiées pour ce match. Elles arrivent en général 1 h avant le coup d’envoi.","SportScore : "+used+(r.lineups?" (lineups vides)":" (pas de champ lineups)"));return}
     const m=Object.assign({},ssMatch(r),{home:shortN(pr.home),away:shortN(pr.away)});
-    const k=[...L.home_xi,...L.away_xi],hasPh=k.some(p=>p.photo);
-    el.innerHTML=luRender(m,L)+(!hasPh&&k[0]?'<p class="lun" style="font-size:11px;opacity:.7">Pas de photo reçue de SportScore. Champs du joueur : '+esc(k[0].k||"?")+'</p>':"")+(!L.confirmed?'<p class="lun">Compositions probables : les officielles sont publiées environ 1 h avant le match.</p>':'')
+    const hl=(d&&d.home&&d.home.logo)||(meta&&meta.home_logo)||m.hl||"",al=(d&&d.away&&d.away.logo)||(meta&&meta.away_logo)||m.al||"";
+    const miss={h:luMiss(r,"home"),a:luMiss(r,"away")};
+    el.innerHTML=luRender(m,L,miss,hl,al)+(!L.confirmed?'<p class="lun">Compositions probables : les officielles sont publiées environ 1 h avant le match.</p>':'');
+    const sw=el.querySelector(".lu-sw");
+    if(sw)sw.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sw.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));el.querySelectorAll(".lu-ms").forEach(x=>x.hidden=x.dataset.s!==b.dataset.s)})
   }catch(e){LU.t=0;card("Compositions indisponibles pour le moment.",String((e&&e.message)||e))}};
 // Classement : SportScore (même source que la page Football en direct)
-const SLUG={"premier league":"english-premier-league","champions league":"uefa-champions-league","uefa champions league":"uefa-champions-league","la liga":"spanish-la-liga","primera division":"spanish-la-liga","serie a":"italian-serie-a","bundesliga":"bundesliga","ligue 1":"french-ligue-1","europa league":"uefa-europa-league","uefa europa league":"uefa-europa-league","conference league":"uefa-conference-league","uefa europa conference league":"uefa-conference-league","brasileirao":"brazilian-serie-a","mls":"united-states-major-league-soccer","major league soccer":"united-states-major-league-soccer","world cup":"fifa-world-cup","fifa world cup":"fifa-world-cup"};
+const SLUG={"premier league":"english-premier-league","english premier league":"english-premier-league","championship":"english-championship","efl championship":"english-championship","champions league":"uefa-champions-league","uefa champions league":"uefa-champions-league","la liga":"spanish-la-liga","laliga":"spanish-la-liga","primera division":"spanish-la-liga","spanish la liga":"spanish-la-liga","serie a":"italian-serie-a","italian serie a":"italian-serie-a","bundesliga":"bundesliga","ligue 1":"french-ligue-1","french ligue 1":"french-ligue-1","europa league":"uefa-europa-league","uefa europa league":"uefa-europa-league","conference league":"uefa-conference-league","uefa conference league":"uefa-conference-league","uefa europa conference league":"uefa-conference-league","brasileirao":"brazilian-serie-a","brazilian serie a":"brazilian-serie-a","eredivisie":"dutch-eredivisie","primeira liga":"portuguese-primeira-liga","liga portugal":"portuguese-primeira-liga","mls":"united-states-major-league-soccer","major league soccer":"united-states-major-league-soccer","world cup":"fifa-world-cup","fifa world cup":"fifa-world-cup"};
+// « Serie A (Brazil) » / « Serie A (Italy) » : le pays départage les noms identiques
+const SLUGC={"serie a|brazil":"brazilian-serie-a","serie a|italy":"italian-serie-a","premier league|england":"english-premier-league","la liga|spain":"spanish-la-liga","ligue 1|france":"french-ligue-1","bundesliga|germany":"bundesliga","eredivisie|netherlands":"dutch-eredivisie","championship|england":"english-championship","primeira liga|portugal":"portuguese-primeira-liga","mls|usa":"united-states-major-league-soccer","mls|united states":"united-states-major-league-soccer"};
+// Le nom de la ligue arrive sous la forme « La Liga (Spain) » : on sépare le nom et le pays avant de chercher
+const leagueSlug=l=>{const raw=String(l||""),m=raw.match(/^(.*?)\s*[\(\[]\s*([^)\]]+?)\s*[\)\]]\s*$/),name=nrm(m?m[1]:raw),ctry=nrm(m?m[2]:"");
+  return SLUGC[name+"|"+ctry]||SLUG[name]||SLUG[nrm(raw)]||(m?null:SLUG[nrm(raw.replace(/\s*-\s*.*$/,""))])||null};
 let stFor=null;
 const stand=async()=>{
   const el=$("cl"),card=m=>{el.innerHTML='<div class="h2c"><h2>Classement</h2><p class="note">'+m+'</p></div>'};
   if(!pr){card("Chargement…");return}
   if(stFor===pr.fixture_id)return;stFor=pr.fixture_id;
-  const slug=SLUG[nrm(pr.league)];
+  const slug=leagueSlug(pr.league);
   if(!slug){card("Classement non disponible pour cette compétition.");return}
   card("Chargement…");
   let d;try{d=await SS("standings",{slug})}catch(e){stFor=null;card("Données indisponibles pour le moment.");return}
