@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="matchview.css"><link rel="stylesheet" href="theme.css"><title>Football en direct – PronostBet</title></head><body class="ss"><div class="wrap">
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="matchview.css"><link rel="stylesheet" href="theme.css"><title>Football en direct – PronostBet</title></head><body class="ss"><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icons/icon-192.png" alt="" width="34" height="34"><span>PRONOST<b>BET</b></span></a></header>
 <h1 class="pt">Football en direct</h1>
 <p class="sx-lead">Scores, classements, buteurs et tableaux des compétitions.</p>
@@ -9,7 +9,7 @@
 <p class="note sx-credit">Données : <a href="https://sportscore.com" target="_blank" rel="noopener">Powered by SportScore</a></p><div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="cards.js"></script><script src="sportscore.js"></script><script src="matchview.js"></script><script src="menu.js"></script><script>
+</script><script src="cards.js"></script><script src="sportscore.js"></script><script src="livelink.js"></script><script src="matchview.js"></script><script src="menu.js"></script><script>
 let COMP=null,TIMER=null,COMPS=[],MODE="goals",FILTER="all",QUERY="",LIM=50,MATCHES=[],DAY="";
 const DEBUG=/[?&]debug=1/.test(location.search);
 
@@ -29,7 +29,7 @@ const mgo=x=>"match/"+esc(x.id)+(x.mid?"/"+esc(x.mid):"");
 const mrow=(x,go)=>{
   const sc=x.hs!=null&&x.as!=null,g=go===""?"":' data-go="'+(go||mgo(x))+'"';
   const st=x.live?'<span class="sx-live"><i></i>'+(x.minute?esc(x.minute)+"’":"LIVE")+'</span>':x.done?'<span>Terminé</span>':'<span>'+(hm(x.start)||"vs")+'</span>';
-  return'<div class="sx-m'+(x.live?" lv":"")+'"'+g+'><div class="st">'+st+'</div>'
+  return'<div class="sx-m'+(x.live?" lv":"")+'"'+g+(window.PBLINK?PBLINK.attrs(x):"")+'><div class="st">'+st+'</div>'
    +'<div class="tm"><div>'+lg(x.hl)+'<span>'+esc(x.home)+'</span></div><div>'+lg(x.al)+'<span>'+esc(x.away)+'</span></div></div>'
    +'<div class="sc">'+(sc?'<b>'+esc(x.hs)+'</b><b>'+esc(x.as)+'</b>':'<b>–</b><b>–</b>')+'</div></div>'};
 
