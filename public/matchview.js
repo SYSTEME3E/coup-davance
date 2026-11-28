@@ -103,12 +103,26 @@ async function mvH2H(box,m){
      +'<div class="ms-hb"><i class="l" style="width:'+p(w)+'%"></i><i class="d" style="width:'+p(d)+'%"></i><i class="r" style="width:'+p(l)+'%"></i></div><div class="ms-hp"><span>'+p(w)+'%</span><span>'+d+' nul'+(d>1?"s":"")+'</span><span>'+p(l)+'%</span></div><div class="ms-hl">'+li+'</div>'}
   catch(e){box.innerHTML='<p class="ms-empty">Historique indisponible pour le moment.</p>'}}
 
+
+// ---- Classement : affiché dans l'onglet (même source que la page Classements) ----
+const MV_SL={"premier league":"english-premier-league","english premier league":"english-premier-league","championship":"english-championship","champions league":"uefa-champions-league","uefa champions league":"uefa-champions-league","la liga":"spanish-la-liga","laliga":"spanish-la-liga","primera division":"spanish-la-liga","serie a":"italian-serie-a","bundesliga":"bundesliga","ligue 1":"french-ligue-1","europa league":"uefa-europa-league","uefa europa league":"uefa-europa-league","conference league":"uefa-conference-league","uefa europa conference league":"uefa-conference-league","eredivisie":"dutch-eredivisie","primeira liga":"portuguese-primeira-liga","mls":"united-states-major-league-soccer","major league soccer":"united-states-major-league-soccer","world cup":"fifa-world-cup","fifa world cup":"fifa-world-cup"};
+async function mvStand(box,m){
+  const nm=mvKey(String(m.comp||"").replace(/\s*[\(\[].*$/,"")).replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+  const cands=[...new Set([m.cid,MV_SL[nm]].filter(Boolean))];
+  let d=null;
+  for(const sl of cands){try{const x=await SS("standings",{slug:sl});if(Array.isArray(x.tables)&&x.tables.some(g=>(g.rows||[]).length)){d=x;break}}catch(e){}}
+  if(!d){box.innerHTML='<p class="ms-empty">Classement non disponible pour cette compétition.</p>';return}
+  const isT=x=>ssSameTeam(x.team,m.home)||ssSameTeam(x.team,m.away);
+  const tabs=d.tables.filter(g=>(g.rows||[]).length),use=tabs.filter(g=>g.rows.some(isT));
+  box.innerHTML=(use.length?use:tabs.slice(0,1)).map(g=>(g.group?'<h3 style="margin:0 0 8px">'+esc(g.group)+'</h3>':'')+'<div class="sx-tw"><table class="sx-tb"><thead><tr><th>#</th><th class="n">Équipe</th><th>J</th><th>+/-</th><th>Pts</th></tr></thead><tbody>'
+    +g.rows.map((x,i)=>'<tr'+(isT(x)?' style="background:#E9E9FC;font-weight:800"':'')+'><td class="pos" style="box-shadow:inset 4px 0 0 '+esc(/^#?[0-9a-z(),.% ]{3,30}$/i.test(String(x.promo_color||""))?x.promo_color:"transparent")+'">'+esc(x.pos??i+1)+'</td><td class="n">'+lg(x.team_logo)+'<span>'+esc(x.team||"")+'</span></td><td>'+esc(x.p??"")+'</td><td>'+esc(x.gd??"")+'</td><td class="pts">'+esc(x.pts??"")+'</td></tr>').join("")+'</tbody></table></div>').join("")}
+
 const MV_TABS=[["overview","Aperçu"],["stats","Stats"],["lineups","Compos"],["standings","Classement"],["h2h","H2H"],["comments","Commentaires"]];
 let MV_M=null;
 function mvRender(r,m){
   MV_M=m;const st=mvStats(r),ev=mvEvents(r);
   const pn={overview:mvOverview(m,r,st,ev),stats:mvStatsTab(m,st),lineups:mvLineups(m,r),
-    standings:'<div class="ms-card"><h2>Classement</h2><div class="ms-body"><button type="button" class="ms-btn" data-mvstand="'+esc(m.cid||"")+'">Voir le classement de '+esc(m.comp||"la compétition")+'</button></div></div>',
+    standings:'<div class="ms-card"><h2>Classement</h2><div class="ms-body" id="ms-st"><p class="ms-empty">Chargement…</p></div></div>',
     h2h:'<div class="ms-card"><h2>Face à face</h2><div class="ms-body" id="ms-h2h"><p class="ms-empty">Chargement…</p></div></div>',
     comments:mvComments(m,ev)};
   return'<div class="ms"><a class="ms-back" href="#matches">← Retour aux matchs</a>'+mvHero(m,r)
@@ -121,6 +135,7 @@ document.addEventListener("click",e=>{
   const root=b.closest(".ms"),k=b.dataset.mvtab;
   root.querySelectorAll("[data-mvtab]").forEach(x=>x.classList.toggle("on",x===b));
   root.querySelectorAll("[data-mvpn]").forEach(x=>x.classList.toggle("on",x.dataset.mvpn===k));
+  if(k==="standings"){const bx=document.getElementById("ms-st");if(bx&&!bx.dataset.done&&MV_M){bx.dataset.done=1;mvStand(bx,MV_M)}}
   if(k==="h2h"){const box=document.getElementById("ms-h2h");if(box&&!box.dataset.done&&MV_M){box.dataset.done=1;mvH2H(box,MV_M)}}
   b.scrollIntoView&&b.scrollIntoView({block:"nearest",inline:"center"})});
 
