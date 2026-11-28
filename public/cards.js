@@ -84,6 +84,33 @@ const pcWhy=d=>xt(d)+frm(d)+fx(d);
 const probs=(d,fold)=>{const p=d.result,k=pcPick(p);
   return pcBar(p)+'<div class="pc-pills"><span class="pc-pk '+k+'">pronostic '+PCN[k]+' · '+p[PCK[k]]+'%</span><span>score prévu <b>'+esc(d.likelyScore)+'</b></span></div>'
   +'<div class="pc-chips"><span>Plus de 2,5 buts <b>'+d.over["2.5"]+'%</b></span><span>Les deux marquent <b>'+d.btts+'%</b></span>'+gx(d)+'</div>'+tops(d)+(fold?"":pcWhy(d))};
+
+// ---- Compteur avant match (forme rouge) + cotes 1 X 2 dans chaque carte ----
+const p2=n=>String(n).padStart(2,"0");
+const cdTxt=t=>{let s=Math.max(0,Math.floor((new Date(t)-Date.now())/1e3));const d=Math.floor(s/86400);s%=86400;return(d?d+"j ":"")+p2(Math.floor(s/3600))+":"+p2(Math.floor(s%3600/60))+":"+p2(s%60)};
+const ODDS={};
+const oddsHtml=o=>{const f=n=>fr(Number(n).toFixed(2)),c=(l,v)=>'<div><span>'+l+'</span><b>'+f(v)+'</b></div>';
+  return '<div class="og3">'+c("1",o.home)+c("X",o.draw)+c("2",o.away)+'</div>'};
+(()=>{
+  const st=document.createElement("style");
+  st.textContent='.cdp{background:#E8283B;color:#fff;font:800 13px/1 "Hanken Grotesk",system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.03em;padding:6px 11px;border-radius:99px;white-space:nowrap}'
+  +'.pc-odds:empty{display:none}.pc-odds{margin:10px 0 2px}.pc-odds .og3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}'
+  +'.pc-odds .og3 div{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#F1F2F7;border-radius:10px;padding:9px 12px}'
+  +'.pc-odds .og3 span{color:#6B6890;font-size:14px}.pc-odds .og3 b{color:#1B1650;font-size:16px;font-weight:800}';
+  document.head.appendChild(st);
+  // un seul minuteur pour toutes les cartes ; la pastille disparaît au coup d'envoi
+  setInterval(()=>{document.querySelectorAll("[data-cd]").forEach(e=>{if(new Date(e.dataset.cd)<=Date.now()){e.remove();return}e.textContent=cdTxt(e.dataset.cd)})},1000);
+  // cotes : chargées après l'affichage, 3 requêtes à la fois, gardées en mémoire (le serveur décide si elles sont disponibles)
+  let busy=false;
+  const fill=async()=>{if(busy)return;busy=true;
+    try{const todo=[...document.querySelectorAll(".pc-odds[data-odds]")].filter(e=>!e.innerHTML&&!(e.dataset.odds in ODDS));
+      let i=0;await Promise.all(Array.from({length:3},async()=>{while(i<todo.length){const e=todo[i++],id=e.dataset.odds;
+        let o=null;try{const r=await sb.rpc("get_match_odds",{p_fixture:Number(id)});o=r.data}catch(x){}
+        ODDS[id]=o&&o.ok?o:null;if(ODDS[id])e.innerHTML=oddsHtml(ODDS[id])}}))}catch(e){}
+    busy=false};
+  // les cartes sont redessinées par chaque page : on réagit à l'apparition de nouvelles cartes
+  let tm=0;new MutationObserver(()=>{clearTimeout(tm);tm=setTimeout(()=>{document.querySelectorAll(".pc-odds[data-odds]:empty").forEach(e=>{const o=ODDS[e.dataset.odds];if(o)e.innerHTML=oddsHtml(o)});fill()},150)}).observe(document.body,{childList:true,subtree:true});
+})();
 const pcState=m=>m.settled_at?(m.final_home!=null?"done":"void"):m.live_status?"live":new Date(m.kickoff)<Date.now()?"wait":"next";
 const card=m=>{m=FULL[m.fixture_id]||m;PBROW[m.fixture_id]=m;const d=m.data,me=META[m.fixture_id]||{},st=pcState(m),open=isOpen(m),k=open?pcPick(d.result):"",v=m.verdict||{},good=!!v.ok1x2||!!v.scoreHit;
   let badge="",mid='<span class="pc-vs">vs</span>',tag="";
@@ -101,10 +128,10 @@ const card=m=>{m=FULL[m.fixture_id]||m;PBROW[m.fixture_id]=m;const d=m.data,me=M
   const ctx={st,h:st==="done"?m.final_home:m.live_home,a:st==="done"?m.final_away:m.live_away,min:m.live_minute,ht:m.live_status==="HT"};
   const why=open?(PP?ppRender(m,ctx)+pcWhy(d):pcWhy(d)):"";
   return '<div class="pc '+st+'" data-id="'+m.fixture_id+'" role="link" tabindex="0">'
-  +'<div class="pc-top"><span>'+when(m)+'</span><span class="pc-badge">'+badge+'</span></div>'
+  +'<div class="pc-top"><span>'+when(m)+'</span><span class="pc-badge">'+(st==="next"?'<span class="cdp" data-cd="'+esc(m.kickoff)+'">'+cdTxt(m.kickoff)+'</span>':badge)+'</span></div>'
   +'<div class="pc-lg">'+lgo(me.league_logo,"sm")+'<span>'+esc(m.league||"")+'</span>'+tagOf(m)+'</div>'
   +'<div class="pc-teams"><div class="pc-t l'+side("h")+'">'+lgo(me.home_logo)+'<b>'+esc(m.home)+'</b></div><div class="pc-m">'+mid+tag+'</div><div class="pc-t r'+side("a")+'"><b>'+esc(m.away)+'</b>'+lgo(me.away_logo)+'</div></div>'
-  +(open?(drift(m)?origBox(m):(PP?ppMini(m,ctx):probs(d,true))):lockBox(m))+(PP?"":vd)
+  +(st==="next"?'<div class="pc-odds" data-odds="'+m.fixture_id+'">'+(ODDS[m.fixture_id]?oddsHtml(ODDS[m.fixture_id]):"")+'</div>':"")+(open?(drift(m)?origBox(m):(PP?ppMini(m,ctx):probs(d,true))):lockBox(m))+(PP?"":vd)
   +'<div class="pc-act">'+(why?'<button type="button" class="pc-b" data-why aria-expanded="false">pourquoi ▾</button>':'<span></span>')+'<a class="pc-b go" href="match.html?id='+m.fixture_id+'">Voir le match ↗</a></div>'
   +(why?'<div class="pc-why" hidden>'+why+'</div>':"")+'</div>'};
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-why]");if(!b)return;
