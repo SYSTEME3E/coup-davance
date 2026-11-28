@@ -13,7 +13,7 @@
     var st=/half[- ]?time|\bht\b/i.test(x.status||"")?"MT":(x.minute?E(x.minute)+"’":"");
     var inner=E(x.home)+' '+sc+' '+lg(x.al||"")+' '+E(x.away)+(st?'<span class="tk-m">'+st+'</span>':"");
     inner=lg(x.hl||"")+' '+inner;
-    return x.id?'<a class="tk-i" href="sport.html#match/'+encodeURIComponent(x.id)+(x.mid?"/"+encodeURIComponent(x.mid):"")+'">'+inner+'</a>':'<span class="tk-i">'+inner+'</span>'}
+    return x.id?'<a class="tk-i"'+(window.PBLINK?PBLINK.attrs(x):"")+' href="sport.html#match/'+encodeURIComponent(x.id)+(x.mid?"/"+encodeURIComponent(x.mid):"")+'">'+inner+'</a>':'<span class="tk-i">'+inner+'</span>'}
   // diagnostic (seulement avec ?debug=1) : combien de matchs reçus, combien en direct, et la dernière réponse de SportScore
   function diag(txt){if(!DEBUG)return;var l=(typeof SS!=="undefined"&&SS.last)||{};
     bar.hidden=false;bar.innerHTML='<div class="tk-b">DIAG</div><div class="tk-w" style="padding:0 10px;line-height:38px;overflow:auto">'+E(txt+" | SportScore : HTTP "+(l.status==null?"?":l.status)+" "+String(l.body||"").slice(0,80))+'</div>'}
