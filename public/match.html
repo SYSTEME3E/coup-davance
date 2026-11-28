@@ -301,12 +301,26 @@ const ssFind=()=>{if(FIND.p&&FIND.id===pr.fixture_id)return FIND.p;FIND.id=pr.fi
     return out})();
   FIND.p=p;p.then(o=>{if(!o.r)setTimeout(()=>{if(FIND.p===p)FIND.p=null},30000)});return p};
 // Statistiques et chronologie : SportScore (gratuit, mis à jour en direct) quand match-info n'est pas appelé pendant le match
-const syncLive=o=>{const f=o&&(o.r?ssMatch(o.r):o.f);if(!f||!f.live||pr.settled_at)return false;let ch=false;
+const applyLive=f=>{if(!f||pr.settled_at)return false;let ch=false;
   if(!pr.live_status){pr.live_status=/half[- ]?time|\bht\b/.test(f.status||"")?"HT":"LIVE";ch=true}
-  if(f.hs!=null&&f.as!=null&&(String(pr.live_home)!==String(f.hs)||String(pr.live_away)!==String(f.as))){pr.live_home=f.hs;pr.live_away=f.as;ch=true}
-  if(f.minute!=null&&String(pr.live_minute)!==String(f.minute)){pr.live_minute=f.minute;ch=true}
+  if(f.hs!=null&&f.as!=null&&f.hs!==""&&(String(pr.live_home)!==String(f.hs)||String(pr.live_away)!==String(f.as))){pr.live_home=f.hs;pr.live_away=f.as;ch=true}
+  if(f.minute!=null&&f.minute!==""&&String(pr.live_minute)!==String(f.minute)){pr.live_minute=f.minute;ch=true}
   return ch};
-const ssLoad=async(fresh)=>{if(!pr)return;if(fresh)FIND.p=null;const o=await ssFind();if(!o)return;let ch=false;if(o.r){SSR=o.r;ch=true}if(syncLive(o))ch=true;if(ch)draw()};
+// Score en direct : 1) liste SportScore (statut, score, minute)  2) fiche détaillée SportScore  3) table live_matches de la base
+const hasSc=f=>!!f&&f.hs!=null&&f.as!=null&&f.hs!==""&&f.as!=="";
+const liveTbl=async()=>{try{
+  const t=new Date(pr.kickoff).getTime(),x={home:pr.home,away:pr.away,t};
+  const{data}=await sb.from("live_matches").select("home,away,kickoff,home_score,away_score,minute,status").gte("kickoff",new Date(t-864e5).toISOString()).lt("kickoff",new Date(t+864e5).toISOString()).limit(1000);
+  const r=(data||[]).find(v=>ssSameMatch(x,{home:v.home,away:v.away,t:Date.parse(v.kickoff)||0},6));
+  if(!r||!(r.status==="live"||r.status==="ht"))return null;
+  return{live:true,status:r.status==="ht"?"halftime":"live",hs:r.home_score,as:r.away_score,minute:r.minute}}catch(e){return null}};
+const syncLive=async o=>{
+  if(pr.settled_at)return false;
+  const fl=o&&o.f&&o.f.live?o.f:null,fr_=o&&o.r?ssMatch(o.r):null,fd=fr_&&fr_.live?fr_:null;
+  let src=[fl,fd].find(hasSc)||fl||fd;
+  if(!hasSc(src)){const t=await liveTbl();if(t)src=Object.assign({},src||{},t)}
+  return applyLive(src&&(src.live||hasSc(src))?src:null)};
+const ssLoad=async(fresh)=>{if(!pr)return;if(fresh)FIND.p=null;let o=null;try{o=await ssFind()}catch(e){}let ch=false;if(o&&o.r){SSR=o.r;ch=true}if(await syncLive(o||{}))ch=true;if(ch)draw()};
 // ---- Numéro de tour : donnée du match chez SportScore, à défaut journées jouées + 1 d'après le classement (championnats nationaux) ----
 let RND=null,rndFor=null;
 const rndNum=v=>{if(v==null)return null;if(typeof v==="object")v=ssPick(v,["round","number","name","value"]);const t=String(v==null?"":v);
