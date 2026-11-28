@@ -117,6 +117,9 @@ body.pd{--bg:#130F33;--surface:#1B1450;--ink:#FFFFFF;--muted:#A9A4D6;--line:#322
 .pd .srch input:focus,.pd input[type=search]:focus,.pd input[type=date]:focus{border-color:#6F5BFF;box-shadow:0 0 0 3px rgba(111,91,255,.25)}
 .pd .logo b{color:#4cc3ff}
 
-/* +3,5 / +4,5 buts : une seule pastille, en gras, sur la même ligne */
-.pc-chips span.pc-b2,.pc-pills span.pc-b2{font-weight:800;white-space:nowrap;color:#1B1650}
-.pc-solo .pc-chips span.pc-b2{color:#fff}
+/* +3,5 / +4,5 buts : deux pastilles séparées, en gras, toujours sur la même ligne */
+.pc-b2w{display:flex;flex-wrap:nowrap;gap:6px;max-width:100%}
+.pc-b2w span{font-weight:800;white-space:nowrap;color:#1B1650}
+.pc-b2w span b{font-weight:800}
+.pc-solo .pc-b2w span{color:#fff}
+@media (max-width:380px){.pc-b2w{gap:4px}.pc-b2w span{font-size:12px;padding:5px 8px}}
