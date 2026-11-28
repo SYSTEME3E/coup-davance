@@ -54,6 +54,13 @@ const PF=m=>FILT==="all"||(FILT==="live"?!!m.live_status:FILT==="next"?(!m.live_
 // ---- Autres matchs du jour (sans pronostic) : tous les championnats fournis par SportScore, comme la page « Football en direct » ----
 const PRIO=/^(english premier league|spanish la liga|italian serie a|french ligue 1|bundesliga|uefa champions league|uefa europa league|uefa europa conference league|uefa conference league)$/i;
 const EURO=/premier league|la liga|serie a|serie b|ligue 1|ligue 2|bundesliga|championship|eredivisie|primeira liga|super lig|super league|premiership|pro league|segunda|league one|league two|champions league|europa|conference|cup|coupe|copa|pokal|coppa|ekstraklasa|allsvenskan|eliteserien|superliga|superettan|veikkausliiga|hnl|nb i|liga i|fortuna|a-league|euro/i;
+// Grands championnats d'Europe d'abord : niveau 0 = Premier League, Liga, Serie A, Ligue 1, Bundesliga et coupes UEFA ; niveau 1 = autres championnats européens ; niveau 2 = le reste du monde.
+// (noms tels qu'ils arrivent dans les pronostics : « Premier League », « Primera Division », « Serie A (Italy) », etc.)
+const T0=[/^premier league( \(england\))?$/i,/^(la liga( \(spain\))?|primera division)$/i,/^serie a( \(italy\))?$/i,/^ligue 1( \(france\))?$/i,/^bundesliga( \(germany\))?$/i,/^uefa (champions league|europa league|europa conference league|conference league)$/i];
+const T1P=/^(championship|eredivisie|primeira liga|premiership|serie b|ligue 2|2\. bundesliga|segunda|super lig|pro league|jupiler|superliga|eliteserien|allsvenskan|ekstraklasa|liga i|league one|league two|uefa nations league)\b/i;
+const T1C=/\((england|scotland|wales|ireland|northern ireland|netherlands|belgium|portugal|turkey|russia|ukraine|austria|switzerland|greece|denmark|norway|sweden|finland|poland|czech republic|romania|croatia|serbia|hungary|italy|france|germany|spain)\)\s*$/i;
+const lgTier=m=>{const l=String(m.league||"").trim();return T0.some(r=>r.test(l))?0:(T1P.test(l)||T1C.test(l))?1:2};
+const byLg=(a,b)=>lgTier(a)-lgTier(b)||new Date(a.kickoff)-new Date(b.kickoff);
 const hm=d=>new Date(d).toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"});
 const othRow=x=>{const sc=x.hs!=null&&x.as!=null,
   t=x.live?'<span class="oth-lv"><i></i>'+(x.minute?esc(x.minute)+"’":"LIVE")+'</span>':esc(hm(x.start)),
@@ -71,7 +78,7 @@ const othHTML=list=>{
  if(a.length>LIMO)h+='<button id="moreOth" class="more">Afficher plus de matchs ('+(a.length-LIMO)+')</button>';
  return h};
 const build=()=>{const{all:all0,error,s,tm,others}=cache;const all=all0.filter(PF);$("pcn").textContent=error?"":all.length+(all.length>1?" affichés":" affiché");
- const liveNow=all.filter(m=>m.live_status),rest=all.filter(m=>!m.live_status);
+ const liveNow=all.filter(m=>m.live_status).sort(byLg),rest=all.filter(m=>!m.live_status).sort(byLg);
  let budget=LIM;const take=a=>{const x=a.slice(0,Math.max(0,budget));budget-=x.length;return x};
  const day=d=>rest.filter(m=>new Date(m.kickoff).toDateString()===d.toDateString());
  const part=(t,d,hideEmpty)=>{const a=day(d);if(!a.length&&hideEmpty)return"";return '<p class="sub dh">'+t+' ('+a.length+')</p>'+(a.length?take(a).map(card).join(""):'<div class="card"><p class="sub" style="margin:0">Plus aucun match à venir pour le moment.</p></div>')};
