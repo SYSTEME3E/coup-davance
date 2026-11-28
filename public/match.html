@@ -11,7 +11,7 @@
 </style><style>
 .mt{display:flex;gap:4px;overflow-x:auto;margin:0 0 12px;border-bottom:1px solid rgba(255,255,255,.14);scrollbar-width:none}
 .mt::-webkit-scrollbar{display:none}
-.mt button{flex:none;border:0;background:transparent;color:#A9A4D6;font:700 15px/1 inherit;font-family:inherit;padding:12px 12px 11px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.mt button{flex:none;border:0;background:transparent;color:#A9A4D6;font-weight:700;font-size:15px;line-height:1;font-family:inherit;padding:12px 12px 11px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
 .mt button.on{color:#fff;border-bottom-color:#6F5BFF}
 .pn{display:none}
 html[data-tab=p] .pn-p,html[data-tab=f] .pn-f,html[data-tab=l] .pn-l,html[data-tab=c] .pn-c,html[data-tab=s] .pn-s{display:block}
@@ -56,11 +56,11 @@ html[data-tab=p] .pn-p,html[data-tab=f] .pn-f,html[data-tab=l] .pn-l,html[data-t
 .lp-b.t{top:2.5%;border-top:0}.lp-b.u{bottom:2.5%;border-bottom:0}
 .lp::after{content:"";position:absolute;left:2.5%;right:2.5%;top:50%;border-top:2px solid rgba(255,255,255,.4)}
 .lp-p{position:absolute;z-index:1;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;text-align:center}
-.lp-a{position:relative;width:42px;height:42px;border-radius:50%;background:#1F1A52;border:2px solid #fff;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font:800 14px/1 inherit;font-family:inherit}
+.lp-a{position:relative;width:42px;height:42px;border-radius:50%;background:#1F1A52;border:2px solid #fff;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;line-height:1;font-family:inherit}
 .lp-p.a .lp-a{background:#D81E3C}
 .lp-a img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
-.lp-p span{margin-top:3px;font:700 11px/1.1 inherit;font-family:inherit;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.85);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lp-f{position:absolute;z-index:1;font:800 12px/1 inherit;font-family:inherit;color:#fff;background:rgba(0,0,0,.4);padding:4px 9px;border-radius:99px}
+.lp-p span{margin-top:3px;font-weight:700;font-size:11px;line-height:1.1;font-family:inherit;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.85);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lp-f{position:absolute;z-index:1;font-weight:800;font-size:12px;line-height:1;font-family:inherit;color:#fff;background:rgba(0,0,0,.4);padding:4px 9px;border-radius:99px}
 .lp-f.h{left:8px;top:8px}.lp-f.a{right:8px;bottom:8px}
 </style><style>
 .lu2{margin:0 0 14px}
@@ -71,16 +71,15 @@ html[data-tab=p] .pn-p,html[data-tab=f] .pn-f,html[data-tab=l] .pn-l,html[data-t
 .lu2 .lp-c{width:36%}
 .lu2 .lp-b{width:59%;height:7%}
 .lu2 .lp-b.t{top:0}.lu2 .lp-b.u{bottom:0}
-.lu2 .lp-a{width:9cqw;height:9cqw;min-width:30px;min-height:30px;border:2px solid #fff;background:#C9CCD6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='9' r='4.2' fill='%238A8FA3'/%3E%3Cpath d='M3.5 24c.6-5.5 4-8 8.5-8s7.9 2.5 8.5 8z' fill='%238A8FA3'/%3E%3C/svg%3E") center/100% no-repeat}
-.lu2 .lp-p{width:auto!important}
-.lu2 .lp-p span{font:500 max(9px,2.5cqw)/1.2 inherit;font-family:inherit;margin-top:3px;max-width:26cqw;text-shadow:none;color:#fff}
+.lu2 .lp-p .lp-a,.lu2 .lp-p.a .lp-a{width:9cqw;height:9cqw;min-width:30px;min-height:30px;border:2px solid #fff;background:#C9CCD6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='9' r='4.2' fill='%238A8FA3'/%3E%3Cpath d='M3.5 24c.6-5.5 4-8 8.5-8s7.9 2.5 8.5 8z' fill='%238A8FA3'/%3E%3C/svg%3E") center/100% no-repeat}
+.lu2 .lp-p span{font-weight:500;font-size:max(9px,2.5cqw);line-height:1.2;font-family:inherit;margin-top:3px;max-width:100%;text-shadow:none;color:#fff}
 .lu2 .lp-f{display:flex;flex-direction:column;gap:5px;background:none;padding:0;border-radius:0;z-index:2}
-.lu2 .lp-f b{font:800 max(11px,3cqw)/1 inherit;font-family:inherit;color:#fff;letter-spacing:.03em}
+.lu2 .lp-f b{font-weight:800;font-size:max(11px,3cqw);line-height:1;font-family:inherit;color:#fff;letter-spacing:.03em}
 .lu2 .lp-f img{width:8cqw;min-width:28px;object-fit:contain}
 .lu2 .lp-f.h{left:6cqw;top:3cqw;align-items:flex-start}.lu2 .lp-f.a{right:6cqw;bottom:3cqw;left:auto;top:auto;align-items:center}
 .lu-miss{background:#fff;border-radius:16px;padding:14px;margin-top:12px;color:#1B1650}
 .lu-sw{display:grid;grid-template-columns:1fr 1fr;background:#E4EAF5;border-radius:99px;padding:4px;gap:4px;margin-bottom:16px}
-.lu-sw button{border:0;background:transparent;border-radius:99px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1B1650;font:700 13px inherit;font-family:inherit}
+.lu-sw button{border:0;background:transparent;border-radius:99px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1B1650;font-weight:700;font-size:13px;font-family:inherit}
 .lu-sw button.on{background:#fff;box-shadow:0 1px 3px rgba(27,22,80,.15)}
 .lu-sw img{width:26px;height:26px;object-fit:contain}
 .lu-ms h3{margin:0;text-align:center;font-size:19px;font-weight:800}
@@ -94,7 +93,7 @@ html[data-tab=p] .pn-p,html[data-tab=f] .pn-f,html[data-tab=l] .pn-l,html[data-t
 .mh .lgh{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;margin:0 0 12px}
 .mh .lgh .lgl{justify-content:center}
 .mh .lgd{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:14px;opacity:.95}
-.mh .cdp{background:#E8283B;color:#fff;font:800 14px/1 inherit;font-family:inherit;font-variant-numeric:tabular-nums;letter-spacing:.03em;padding:6px 12px;border-radius:99px}
+.mh .cdp{background:#E8283B;color:#fff;font-weight:800;font-size:14px;line-height:1;font-family:inherit;font-variant-numeric:tabular-nums;letter-spacing:.03em;padding:6px 12px;border-radius:99px}
 </style></head><body class="ss"><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icons/icon-192.png" alt="" width="34" height="34"><span>PRONOST<b>BET</b></span></a><span id="who" hidden></span></header>
 <a class="back" href="dashboard.html" id="back">← Retour aux matchs</a>
@@ -177,7 +176,7 @@ const l10=async()=>{
   const[h,a]=await Promise.all([blk(pr.home,pr.home_key),blk(pr.away,pr.away_key)]);
   drawForme();
   if(h||a)$("l10").innerHTML='<div class="sec l10"><h2>10 derniers matchs</h2>'+h+a+'</div>'};
-let sideOn=false;const startSide=()=>{if(sideOn||!pr)return;sideOn=true;document.title=pr.home+" – "+pr.away+" · PronostBet";linkSide();roundLoad().catch(()=>{});l10().catch(()=>{});h2h().catch(()=>{});if(document.documentElement.dataset.tab==="c")stand().catch(()=>{});if(document.documentElement.dataset.tab==="l")lineups().catch(()=>{})};
+let sideOn=false;const startSide=()=>{if(sideOn||!pr)return;sideOn=true;document.title=pr.home+" – "+pr.away+" · PronostBet";linkSide();roundLoad().catch(()=>{});ssLoad().catch(()=>{});l10().catch(()=>{});h2h().catch(()=>{});if(document.documentElement.dataset.tab==="c")stand().catch(()=>{});if(document.documentElement.dataset.tab==="l")lineups().catch(()=>{})};
 const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
 let lead=null;
 const S=(h,a)=>{h=+h;a=+a;lead=h>a?"home":a>h?"away":null;return '<span class="g'+(lead==="home"?' w':'')+'">'+h+'</span> – <span class="g'+(lead==="away"?' w':'')+'">'+a+'</span>'};
@@ -246,9 +245,12 @@ const luNorm=r=>{const L=r&&(r.lineups||r.lineup||r.line_ups);if(!L||typeof L!==
   const h=luSide(L,"home"),a=luSide(L,"away");
   return{home_xi:h.xi,away_xi:a.xi,home_subs:h.subs,away_subs:a.subs,home_formation:h.form,away_formation:a.form,confirmed:!!(L.confirmed||L.is_confirmed||L.official)}};
 // Terrain vertical : domicile en haut (gardien → attaquants), extérieur en bas ; photo du joueur si SportScore la fournit, sinon numéro
-const luRows=(xi,form)=>{const nums=String(form||"").split("-").map(Number).filter(n=>n>0),lines=[1].concat(nums);
+const luPos=p=>{const c=String(p.position||"").charAt(0).toUpperCase();return c==="A"?"F":"GDMF".includes(c)&&c?c:""};
+const luRows=(xi0,form)=>{const nums=String(form||"").split("-").map(Number).filter(n=>n>0),lines=[1].concat(nums);
+  // l'ordre reçu n'est pas fiable : si tous les postes sont connus, on range G, D, M, F (tri stable) avant de découper selon la formation
+  let xi=xi0;if(xi0.length&&xi0.every(p=>luPos(p)))xi=xi0.map((p,i)=>[p,i]).sort((a,b)=>"GDMF".indexOf(luPos(a[0]))-"GDMF".indexOf(luPos(b[0]))||a[1]-b[1]).map(x=>x[0]);
   if(xi.length&&lines.reduce((a,b)=>a+b,0)===xi.length){let i=0;return lines.map(c=>{const r=xi.slice(i,i+c);i+=c;return r})}
-  const g=k=>xi.filter(p=>String(p.position||"").charAt(0).toUpperCase()===k),rows=["G","D","M","F"].map(g).filter(r=>r.length);
+  const g=k=>xi.filter(p=>luPos(p)===k),rows=["G","D","M","F"].map(g).filter(r=>r.length);
   if(rows.length>1&&rows.reduce((a,r)=>a+r.length,0)===xi.length)return rows;
   const out=[];let i=0;[1,4,3,3].forEach(c=>{if(i<xi.length){out.push(xi.slice(i,i+c));i+=c}});if(i<xi.length)out.push(xi.slice(i));return out};
 const luLast=n=>{const t=String(n||"").trim().split(/\s+/);return t.length>1&&/\.$/.test(t[0])?t.slice(1).join(" "):t[t.length-1]||""};
@@ -279,7 +281,7 @@ const luRender=(m,L,miss,hl,al)=>{
         +((miss[k]||[]).length?(miss[k]).map(p=>'<div class="lu-mr">'+(p.photo?'<img src="'+esc(p.photo)+'" alt="" referrerpolicy="no-referrer" onerror="this.remove()">':'<i></i>')+'<div><b>'+esc(luShort(p.name))+'</b><small>✚ '+esc(p.status)+'</small></div></div>').join(""):'<p class="lu-none">Aucun absent signalé.</p>')+'</div>').join("")+'</div>':'')+'</div>'};
 // ---- Recherche du match chez SportScore (partagée par les compositions et le numéro de tour) ----
 const DBG=/[?&]debug=1/.test(location.search);
-let FIND={id:null,p:null};
+let FIND={id:null,p:null},SSR=null;
 const ssFind=()=>{if(FIND.p&&FIND.id===pr.fixture_id)return FIND.p;FIND.id=pr.fixture_id;
   const p=(async()=>{const out={f:null,r:null,used:"",dbg:""};
     const x={home:pr.home,away:pr.away,t:new Date(pr.kickoff).getTime()},same=y=>ssSameMatch(x,{home:y.home,away:y.away,t:+new Date(y.start)||0},6);
@@ -292,6 +294,8 @@ const ssFind=()=>{if(FIND.p&&FIND.id===pr.fixture_id)return FIND.p;FIND.id=pr.fi
     if(!out.r)out.dbg=(out.dbg?out.dbg+" · ":"")+"match non trouvé chez SportScore ("+list.length+" matchs ce jour)";
     return out})();
   FIND.p=p;p.then(o=>{if(!o.r)setTimeout(()=>{if(FIND.p===p)FIND.p=null},30000)});return p};
+// Statistiques et chronologie : SportScore (gratuit, mis à jour en direct) quand match-info n'est pas appelé pendant le match
+const ssLoad=async(fresh)=>{if(!pr)return;if(fresh)FIND.p=null;const o=await ssFind();if(o&&o.r){SSR=o.r;draw()}};
 // ---- Numéro de tour : donnée du match chez SportScore, à défaut journées jouées + 1 d'après le classement (championnats nationaux) ----
 let RND=null,rndFor=null;
 const rndNum=v=>{if(v==null)return null;if(typeof v==="object")v=ssPick(v,["round","number","name","value"]);const t=String(v==null?"":v);
@@ -409,7 +413,10 @@ const draw=()=>{
   // statistiques
   let st='<div class="sec"><h2>Statistiques du match</h2>';
   const hs=d&&d.statistics&&d.statistics.find(s=>s.team===d.home.id),as=d&&d.statistics&&d.statistics.find(s=>s.team===d.away.id);
-  if(!d)st+='<p class="note">Chargement…</p>';
+  const sr=(SSR&&typeof mvStats==="function"?mvStats(SSR):[]).filter(x=>x.h!=null||x.a!=null);
+  if(!(hs&&as)&&sr.length){sr.forEach(x=>{const a=num(x.h),b=num(x.a),pct=/%/.test(String(x.h)+String(x.a)),mx=Math.max(a,b),wl=pct?a:(mx?a/mx*100:0),wr=pct?b:(mx?b/mx*100:0);
+      st+='<div class="sr"><div class="sv"><b>'+fr(x.h==null?0:x.h)+'</b><span>'+esc(x.l)+'</span><b>'+fr(x.a==null?0:x.a)+'</b></div><div class="sb"><div class="l"><i style="width:'+Math.min(100,wl)+'%"></i></div><div class="r"><i style="width:'+Math.min(100,wr)+'%"></i></div></div></div>'})}
+  else if(!d)st+=(inPlay()||isLive()||(pr.settled_at)?'<p class="note">Les statistiques apparaîtront dès qu’elles sont disponibles.</p>':'<p class="note">Chargement…</p>');
   else if(hs&&as){let n=0;
     const known=new Set(ROWS.map(r=>r[0])),more=[...new Set([...Object.keys(hs.stats),...Object.keys(as.stats)])].filter(k=>!known.has(k)).map(k=>[k,k.replace(/_/g," ")]);
     ROWS.concat(more).forEach(([k,lab])=>{const l=hs.stats[k],r=as.stats[k];if(l==null&&r==null)return;n++;
@@ -429,11 +436,13 @@ const draw=()=>{
   const ic=e=>e.type==="Goal"?(e.detail==="Missed Penalty"?"❌":"⚽"):e.type==="Card"?(/Red/.test(e.detail||"")?"🟥":"🟨"):e.type==="subst"?"🔄":"📺";
   $("ev").innerHTML=evs.length?'<div class="sec"><h2>Temps forts</h2>'+evs.map(e=>{
     const home=d.home&&e.team===d.home.id,txt=ic(e)+' '+esc(e.player||"")+(e.type==="Goal"&&e.assist?'<small>passe : '+esc(e.assist)+'</small>':e.type==="subst"&&e.assist?'<small>entre : '+esc(e.assist)+'</small>':"");
-    return '<div class="evr"><div class="h">'+(home?txt:"")+'</div><div class="m">'+(e.min==null?"":e.min+(e.extra?"+"+e.extra:"")+"’")+'</div><div class="a">'+(home?"":txt)+'</div></div>'}).join("")+'</div>':"";
+    return '<div class="evr"><div class="h">'+(home?txt:"")+'</div><div class="m">'+(e.min==null?"":e.min+(e.extra?"+"+e.extra:"")+"’")+'</div><div class="a">'+(home?"":txt)+'</div></div>'}).join("")+'</div>':(()=>{const e2=(SSR&&typeof mvEvents==="function")?mvEvents(SSR).slice().reverse():[];
+    return e2.length?'<div class="sec"><h2>Temps forts</h2>'+e2.map(e=>{const home=e.side!=="away",txt=(mvIc(e)?mvIc(e)+" ":"")+mvWho(e);
+      return '<div class="evr"><div class="h">'+(home?txt:"")+'</div><div class="m">'+esc(mvMin(e))+'’</div><div class="a">'+(home?"":txt)+'</div></div>'}).join("")+'</div>':""})();
 };
 const refresh=async()=>{
   await loadRow();
-  if(inPlay()){draw();return}
+  if(inPlay()){draw();ssLoad(true).catch(()=>{});return}
   await loadDetail();
   draw()};
 // Démarrage : avec la ligne mémorisée, on affiche tout de suite puis on lance TOUT en parallèle ; sans elle (lien direct, notification), ligne + logos en parallèle
