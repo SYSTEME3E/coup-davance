@@ -14,7 +14,9 @@
 .mt button{flex:none;border:0;background:transparent;color:#A9A4D6;font:700 15px/1 inherit;font-family:inherit;padding:12px 12px 11px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
 .mt button.on{color:#fff;border-bottom-color:#6F5BFF}
 .pn{display:none}
-html[data-tab=p] .pn-p,html[data-tab=f] .pn-f,html[data-tab=c] .pn-c,html[data-tab=s] .pn-s{display:block}
+html[data-tab=p] .pn-p,html[data-tab=f] .pn-f,html[data-tab=l] .pn-l,html[data-tab=c] .pn-c,html[data-tab=s] .pn-s{display:block}
+.pn-l .ms{background:none;margin:0;padding:0}
+.lun{color:#A9A4D6;font-size:13px;text-align:center;margin:0 0 14px}
 .h2c{background:#fff;color:#1B1650;border-radius:14px;padding:14px;margin:0 0 14px;box-shadow:0 1px 2px rgba(27,22,80,.06)}
 .h2c h2{margin:0;font-size:17px;font-weight:700;color:#1B1650}
 .h2c .h2s{margin:2px 0 12px;color:#6B6890;font-size:13px}
@@ -50,7 +52,7 @@ html[data-tab=p] .pn-p,html[data-tab=f] .pn-f,html[data-tab=c] .pn-c,html[data-t
 <a class="back" href="dashboard.html" id="back">← Retour aux matchs</a>
 <div id="mh"><p class="sub">Chargement du match…</p></div>
 <div id="sl"></div>
-<nav class="mt" id="mt" aria-label="Sections du match"><button type="button" data-t="p" class="on">Pronostics</button><button type="button" data-t="f">Forme récente</button><button type="button" data-t="c">Classement</button><button type="button" data-t="s">Statistiques</button></nav>
+<nav class="mt" id="mt" aria-label="Sections du match"><button type="button" data-t="p" class="on">Pronostics</button><button type="button" data-t="f">Forme récente</button><button type="button" data-t="l">Compositions</button><button type="button" data-t="c">Classement</button><button type="button" data-t="s">Statistiques</button></nav>
 <div id="odds" class="pn pn-p"></div>
 <div id="pred" class="pn pn-p"></div>
 <div id="vd" class="pn pn-p"></div>
@@ -58,6 +60,7 @@ html[data-tab=p] .pn-p,html[data-tab=f] .pn-f,html[data-tab=c] .pn-c,html[data-t
 <div id="fm" class="pn pn-f"></div>
 <div id="h2h" class="pn pn-f"></div>
 <div id="l10" class="pn pn-f"></div>
+<div id="lu" class="pn pn-l"></div>
 <div id="cl" class="pn pn-c"></div>
 <div id="st" class="pn pn-s"></div>
 <div id="hs" class="pn pn-s"></div>
@@ -67,7 +70,7 @@ html[data-tab=p] .pn-p,html[data-tab=f] .pn-f,html[data-tab=c] .pn-c,html[data-t
 <div style="height:40px"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="i18n.js"></script><script>
 const $=i=>document.getElementById(i),sb=supabase.createClient(CFG.url,CFG.key);
-</script><script src="cards.js"></script><script src="sportscore.js"></script><script src="predpanel.js"></script><script src="menu.js"></script><script src="ads.js"></script><script>PBAds.display($("adslot"),{sb:sb});</script><script>
+</script><script src="cards.js"></script><script src="sportscore.js"></script><script src="matchview.js"></script><script src="predpanel.js"></script><script src="menu.js"></script><script src="ads.js"></script><script>PBAds.display($("adslot"),{sb:sb});</script><script>
 const LIVE=["1H","2H","ET","BT","P","LIVE","INT","SUSP","HT"],DONE=["FT","AET","PEN"];
 const ROWS=[["expected_goals","Buts attendus (xG)"],["Ball Possession","Possession"],["Total Shots","Total de tirs"],["Shots on Goal","Tirs cadrés"],["Shots off Goal","Tirs non cadrés"],["Blocked Shots","Tirs contrés"],["Shots insidebox","Tirs dans la surface"],["Shots outsidebox","Tirs hors de la surface"],["Corner Kicks","Corners"],["Fouls","Fautes"],["Offsides","Hors-jeu"],["Yellow Cards","Cartons jaunes"],["Red Cards","Cartons rouges"],["Goalkeeper Saves","Arrêts du gardien"],["goals_prevented","Buts évités"],["Total passes","Passes"],["Passes accurate","Passes réussies"],["Passes %","Précision des passes"]];
 const num=v=>v==null?0:(parseFloat(String(v))||0);
@@ -126,7 +129,7 @@ const l10=async()=>{
   const[h,a]=await Promise.all([blk(pr.home,pr.home_key),blk(pr.away,pr.away_key)]);
   drawForme();
   if(h||a)$("l10").innerHTML='<div class="sec l10"><h2>10 derniers matchs</h2>'+h+a+'</div>'};
-let sideOn=false;const startSide=()=>{if(sideOn||!pr)return;sideOn=true;document.title=pr.home+" – "+pr.away+" · PronostBet";linkSide();l10().catch(()=>{});h2h().catch(()=>{});if(document.documentElement.dataset.tab==="c")stand().catch(()=>{})};
+let sideOn=false;const startSide=()=>{if(sideOn||!pr)return;sideOn=true;document.title=pr.home+" – "+pr.away+" · PronostBet";linkSide();l10().catch(()=>{});h2h().catch(()=>{});if(document.documentElement.dataset.tab==="c")stand().catch(()=>{});if(document.documentElement.dataset.tab==="l")lineups().catch(()=>{})};
 const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
 let lead=null;
 const S=(h,a)=>{h=+h;a=+a;lead=h>a?"home":a>h?"away":null;return '<span class="g'+(lead==="home"?' w':'')+'">'+h+'</span> – <span class="g'+(lead==="away"?' w':'')+'">'+a+'</span>'};
@@ -148,7 +151,7 @@ const drawOdds=async()=>{
 // ---------- Onglets, confrontations directes (H2H) et classement ----------
 const PBloc=()=>window.PB?PB.loc():"fr-FR";
 const setTab=t=>{document.documentElement.dataset.tab=t;document.querySelectorAll("#mt button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
-  if(t==="f")h2h().catch(()=>{});if(t==="c")stand().catch(()=>{})};
+  if(t==="f")h2h().catch(()=>{});if(t==="c")stand().catch(()=>{});if(t==="l")lineups().catch(()=>{})};
 $("mt").addEventListener("click",e=>{const b=e.target.closest("button");if(b)setTab(b.dataset.t)});
 window.addEventListener("hashchange",()=>{if(location.hash==="#l10")setTab("f")});
 if(location.hash==="#l10")setTab("f");
@@ -181,6 +184,23 @@ const h2h=async()=>{
   const t0=new Date(pr.kickoff).getTime();
   H2H=(data||[]).filter(r=>r.home_goals!=null&&r.away_goals!=null&&new Date(r.kickoff).getTime()<t0).slice(0,15);
   h2hDraw()};
+// Compositions : retrouvées chez SportScore par noms d'équipes + heure (comme la page « match en direct »)
+let LU={id:null,t:0,has:false};
+const lineups=async()=>{
+  const el=$("lu"),card=m=>{el.innerHTML='<div class="h2c"><h2>Compositions</h2><p class="note">'+m+'</p></div>'};
+  if(!pr){card("Chargement…");return}
+  if(LU.id===pr.fixture_id&&Date.now()-LU.t<(LU.has?3e5:6e4))return;
+  LU={id:pr.fixture_id,t:Date.now(),has:false};
+  if(!el.innerHTML)card("Chargement…");
+  try{
+    const x={home:pr.home,away:pr.away,t:new Date(pr.kickoff).getTime()},same=y=>ssSameMatch(x,{home:y.home,away:y.away,t:+new Date(y.start)||0},6);
+    const f=(await ssToday(new Date(pr.kickoff).toISOString().slice(0,10))).find(same);
+    if(!f||!f.id){card("Compositions pas encore disponibles pour ce match. Elles sont publiées au plus tôt 1 h avant le coup d’envoi.");return}
+    let d;try{d=await SS("match",{slug:f.id})}catch(e){if(!f.mid)throw e;d=await SS("match",{slug:f.mid})}
+    const r=d.match||d.data||d,m=Object.assign({},ssMatch(r),{home:shortN(pr.home),away:shortN(pr.away)}),L=r.lineups;
+    LU.has=!!(L&&((L.home_xi||[]).length||(L.away_xi||[]).length));
+    el.innerHTML='<div class="ms">'+mvLineups(m,r)+'</div>'+(LU.has&&!L.confirmed?'<p class="lun">Compositions probables : les officielles sont publiées environ 1 h avant le match.</p>':'')
+  }catch(e){LU.t=0;card("Compositions indisponibles pour le moment.")}};
 // Classement : SportScore (même source que la page Football en direct)
 const SLUG={"premier league":"english-premier-league","champions league":"uefa-champions-league","uefa champions league":"uefa-champions-league","la liga":"spanish-la-liga","primera division":"spanish-la-liga","serie a":"italian-serie-a","bundesliga":"bundesliga","ligue 1":"french-ligue-1","europa league":"uefa-europa-league","uefa europa league":"uefa-europa-league","conference league":"uefa-conference-league","uefa europa conference league":"uefa-conference-league","brasileirao":"brazilian-serie-a","mls":"united-states-major-league-soccer","major league soccer":"united-states-major-league-soccer","world cup":"fifa-world-cup","fifa world cup":"fifa-world-cup"};
 let stFor=null;
