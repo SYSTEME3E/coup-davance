@@ -181,3 +181,13 @@ body.ss{background:#130F33;--ink:#FFFFFF;--mut:#A9A4D6}
 /* match.html : le panneau « Pronostics » n'est plus enfermé dans une carte blanche, il repose directement sur le fond violet */
 .ss #pred .sec{background:transparent;border:0;box-shadow:none;border-radius:0;padding:0;overflow:visible;margin:0 0 14px}
 .ss #pred .sec>h2{background:transparent;border:0;margin:0 0 10px;padding:6px 2px;color:#fff;font-size:21px}
+
+/* ---- Mobile : aucun contenu ne doit dépasser la largeur de l'écran (sinon Chrome dézoome toute la page) ---- */
+html{max-width:100%;overflow-x:hidden}
+.wrap{min-width:0}
+.tick{width:100%;max-width:100%;contain:paint}
+.tick .tk-w{min-width:0}
+#adslot,#adgate,.adg{max-width:100%;overflow:hidden;contain:paint}
+ins.adsbygoogle{max-width:100%!important;overflow:hidden}
+.bn,.pc,.card{max-width:100%}
+.drw:not(.on){display:none}
