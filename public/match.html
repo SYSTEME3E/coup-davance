@@ -127,11 +127,11 @@ const id=Number(new URLSearchParams(location.search).get("id"));
 const sessP=sb.auth.getSession().then(({data:{session}})=>{if(!session){location.href="auth.html#login";return null}$("who").textContent=session.user.email;return session});
 if(document.referrer&&new URL(document.referrer).origin===location.origin){$("back").onclick=e=>{e.preventDefault();history.back()}}
 if(!id){$("mh").innerHTML='<div class="card">Match introuvable.</div>';return}
-let pr=null,d=null,meta=null;
+let pr=null,d=null,meta=null,LV=null; // LV = dernier score en direct connu (la base peut en avoir un plus ancien)
 // Ligne du pronostic et logos laissés par la carte sur laquelle on a cliqué : la page s'affiche tout de suite (moins de 10 min)
 try{const c=JSON.parse(sessionStorage.getItem("pb_row_"+id)||"null");if(c&&c.row&&Date.now()-c.t<6e5){pr=c.row;meta=c.meta||null}}catch(e){}
 const hadCache=!!pr;
-const loadRow=async()=>{const{data}=await sb.from("predictions_safe").select("*").eq("fixture_id",id).maybeSingle();if(data)pr=data};
+const loadRow=async()=>{const{data}=await sb.from("predictions_safe").select("*").eq("fixture_id",id).maybeSingle();if(data){pr=data;reapplyLive()}};
 const loadMeta=async()=>{try{const{data}=await sb.from("match_meta").select("*").eq("fixture_id",id).maybeSingle();if(data)meta=data}catch(e){}};
 const loadDetail=async()=>{try{const{data,error}=await sb.functions.invoke("match-info",{body:{action:"detail",id}});if(!error&&data&&!data.error)d=data}catch(e){}};
 const inPlay=()=>!!(pr&&pr.live_status&&!pr.settled_at); // match en cours : pas d'appel API, on attend le score final
@@ -301,7 +301,13 @@ const ssFind=()=>{if(FIND.p&&FIND.id===pr.fixture_id)return FIND.p;FIND.id=pr.fi
     return out})();
   FIND.p=p;p.then(o=>{if(!o.r)setTimeout(()=>{if(FIND.p===p)FIND.p=null},30000)});return p};
 // Statistiques et chronologie : SportScore (gratuit, mis à jour en direct) quand match-info n'est pas appelé pendant le match
+// Après chaque lecture de la base, on remet le dernier score connu : sans ça le score disparaissait ("– –") à chaque actualisation
+const reapplyLive=()=>{if(!LV||!pr||pr.settled_at||Date.now()-LV.at>6e5)return;
+  if(!pr.live_status)pr.live_status=LV.status;
+  if(LV.hs!=null&&(pr.live_home==null||pr.live_away==null||Date.now()-LV.at<9e4)){pr.live_home=LV.hs;pr.live_away=LV.as}
+  if(LV.minute!=null&&(pr.live_minute==null||Date.now()-LV.at<9e4))pr.live_minute=LV.minute};
 const applyLive=f=>{if(!f||pr.settled_at)return false;let ch=false;
+  LV={status:/half[- ]?time|\bht\b/.test(f.status||"")?"HT":"LIVE",hs:hasSc(f)?f.hs:(LV&&LV.hs),as:hasSc(f)?f.as:(LV&&LV.as),minute:f.minute!=null&&f.minute!==""?f.minute:(LV&&LV.minute),at:Date.now()};
   if(!pr.live_status){pr.live_status=/half[- ]?time|\bht\b/.test(f.status||"")?"HT":"LIVE";ch=true}
   if(f.hs!=null&&f.as!=null&&f.hs!==""&&(String(pr.live_home)!==String(f.hs)||String(pr.live_away)!==String(f.as))){pr.live_home=f.hs;pr.live_away=f.as;ch=true}
   if(f.minute!=null&&f.minute!==""&&String(pr.live_minute)!==String(f.minute)){pr.live_minute=f.minute;ch=true}
@@ -515,6 +521,7 @@ if(hadCache){
   if(!inPlay()){await loadDetail();draw()}
 }
 setInterval(()=>{if(document.hidden)return;if(pr.settled_at&&d&&d.statistics&&d.statistics.length)return;refresh()},45000);
+setInterval(()=>{if(document.hidden||!pr||pr.settled_at||new Date(pr.kickoff)>Date.now())return;ssLoad(true).catch(()=>{})},20000);
 
 // ---- Vidéos Highlightly : clips de buts (pendant le match) et résumé officiel (après le match) ----
 const VH=["youtube.com","youtube-nocookie.com","youtu.be","streamable.com","vimeo.com","dailymotion.com","twitter.com","x.com","rumble.com"];
