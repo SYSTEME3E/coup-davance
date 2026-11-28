@@ -11,6 +11,7 @@
 <div id="l10"></div>
 <div id="tp"></div>
 <div id="ev"></div>
+<div id="odds"></div>
 <div id="adslot" hidden></div>
 <p class="note" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p>
 <div style="height:40px"></div></div>
@@ -82,6 +83,17 @@ const S=(h,a)=>{h=+h;a=+a;lead=h>a?"home":a>h?"away":null;return '<span class="g
 const team=(side)=>{const t=(d&&d[side])||{},logo=t.logo||(meta&&meta[side+"_logo"]);
   return '<div class="t'+(lead===side?' win':'')+'">'+lg(logo)+'<b>'+esc(pr[side])+'</b></div>'};
 const isLive=()=>(d&&LIVE.includes(d.status))||(!!pr.live_status&&!(pr.settled_at));
+// Cotes du marché (Pinnacle) : affichées seulement si l'interrupteur serveur est activé, avant le match, pour un pronostic débloqué
+let oddsFor=null;
+const drawOdds=async()=>{
+  if(!pr||!pr.data||!isOpen(pr)){$("odds").innerHTML="";return}
+  if(oddsFor===pr.fixture_id)return;oddsFor=pr.fixture_id;
+  let o=null;try{const r=await sb.rpc("get_match_odds",{p_fixture:pr.fixture_id});o=r.data}catch(e){}
+  if(!o||!o.ok){$("odds").innerHTML="";return}
+  const f2=n=>fr(Number(n).toFixed(2)),hh=o.asOf?new Date(o.asOf).toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"}):"";
+  $("odds").innerHTML='<div class="sec"><h2>Cotes du marché</h2><div class="stats"><div>Domicile<b>'+f2(o.home)+'</b></div><div>Nul<b>'+f2(o.draw)+'</b></div><div>Extérieur<b>'+f2(o.away)+'</b></div>'
+    +(o.total?'<div>Plus de '+fr(o.total.line)+' buts<b>'+f2(o.total.over)+'</b></div><div>Moins de '+fr(o.total.line)+' buts<b>'+f2(o.total.under)+'</b></div>':"")+'</div>'
+    +'<p class="note" style="margin:8px 0 0"><small>Source : '+esc(o.source||"Pinnacle")+(hh?' · mise à jour à '+hh:"")+'. Cotes indicatives, susceptibles d’évoluer avant le match ; elles ne constituent pas une incitation à parier. Aucun résultat n’est garanti. Réservé aux +18 ans. <a href="jeu-responsable.html">Jeu responsable</a>.</small></p></div>'};
 const draw=()=>{
   drawForme();
   const lgLogo=(d&&d.league&&d.league.logo)||(meta&&meta.league_logo);
@@ -108,6 +120,7 @@ const draw=()=>{
     ev:d&&d.events&&d.home?d.events.filter(e=>e.type==="Goal"&&e.detail!=="Missed Penalty"&&e.min!=null&&e.min<=125).map(e=>({m:e.min,h:e.team===d.home.id,og:/Own/i.test(e.detail||"")})):null};
   const body=!pr.data?"":!isOpen(pr)?lockBox(pr):(drift(pr)||(ctx.st!=="next"&&ctx.h==null))?(drift(pr)?origBox(pr):probs(pr.data)):ppRender(pr,ctx);
   $("pred").innerHTML=pr.data?'<div class="sec"><h2>Pronostics</h2><div class="mk" style="margin-bottom:10px">'+tagOf(pr)+'</div><div class="pc-solo">'+body+'</div></div>':"";
+  drawOdds();
   // statistiques
   let st='<div class="sec"><h2>Statistiques du match</h2>';
   const hs=d&&d.statistics&&d.statistics.find(s=>s.team===d.home.id),as=d&&d.statistics&&d.statistics.find(s=>s.team===d.away.id);
