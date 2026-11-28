@@ -320,10 +320,32 @@ const liveTbl=async()=>{try{
   const r=(data||[]).find(v=>ssSameMatch(x,{home:v.home,away:v.away,t:Date.parse(v.kickoff)||0},6));
   if(!r||!(r.status==="live"||r.status==="ht"))return null;
   return{live:true,status:r.status==="ht"?"halftime":"live",hs:r.home_score,as:r.away_score,minute:r.minute}}catch(e){return null}};
+// Lecture directe et fraîche du score (sans la liste du jour gardée 5 min) : 1) tous les matchs en direct  2) direct du jour  3) compétitions du jour (si 1 et 2 ne trouvent pas le match)
+let _lnFail=0,_lnDbg="";
+const liveNow=async()=>{
+  const x={home:pr.home,away:pr.away,t:new Date(pr.kickoff).getTime()},same=y=>ssSameMatch(x,{home:y.home,away:y.away,t:+new Date(y.start)||0},8);
+  const day=new Date(pr.kickoff).toISOString().slice(0,10),dbg=[];
+  const pick=(list,forceLive)=>{const m=(list||[]).find(same);if(!m)return null;
+    const sinceK=Date.now()-x.t;
+    if(forceLive||m.live||(hasSc(m)&&!m.done&&sinceK>0&&sinceK<4*36e5))return Object.assign({},m,{live:true});
+    return null};
+  const step=async(label,fn,forceLive)=>{try{const l=await fn();const m=pick(l,forceLive);dbg.push(label+" : "+(l?l.length:0)+" match(s)"+(m?" → trouvé "+(hasSc(m)?m.hs+"-"+m.as:"sans score"):""));return m}catch(e){dbg.push(label+" : erreur "+ssErr(e));return null}};
+  let m=await step("direct",()=>ssLive(),true);
+  if(!hasSc(m)){const m2=await step("direct du jour",()=>ssFix({status:"live",date:day,limit:200}),true);if(hasSc(m2)||!m)m=m2||m}
+  // dernier recours (au plus une fois par minute) : les grandes compétitions du jour, une par une
+  if(!hasSc(m)&&Date.now()-_lnFail>6e4){
+    _lnFail=Date.now();
+    const comps=SS_TOP.concat(SS_MORE),res=await ssPool(comps.map(c=>()=>ssFix({date:day,limit:200,competition:c}).catch(()=>[])),4);
+    const m3=pick(res.flat(),false);dbg.push("compétitions : "+res.flat().length+" match(s)"+(m3?" → trouvé "+(hasSc(m3)?m3.hs+"-"+m3.as:"sans score"):""));
+    if(hasSc(m3)||!m)m=m3||m}
+  _lnDbg=dbg.join(" | ");
+  if(DBG){let b=document.getElementById("lndbg");if(!b){b=document.createElement("pre");b.id="lndbg";b.style.cssText="white-space:pre-wrap;font:11px/1.4 monospace;color:#9aa;margin:8px 16px;word-break:break-word";document.body.appendChild(b)}b.textContent="Score direct : "+_lnDbg}
+  return m};
 const syncLive=async o=>{
   if(pr.settled_at)return false;
   const fl=o&&o.f&&o.f.live?o.f:null,fr_=o&&o.r?ssMatch(o.r):null,fd=fr_&&fr_.live?fr_:null;
-  let src=[fl,fd].find(hasSc)||fl||fd;
+  const ln=await liveNow().catch(()=>null);
+  let src=[ln,fl,fd].find(hasSc)||ln||fl||fd;
   if(!hasSc(src)){const t=await liveTbl();if(t)src=Object.assign({},src||{},t)}
   return applyLive(src&&(src.live||hasSc(src))?src:null)};
 const ssLoad=async(fresh)=>{if(!pr)return;if(fresh)FIND.p=null;let o=null;try{o=await ssFind()}catch(e){}let ch=false;if(o&&o.r){SSR=o.r;ch=true}if(await syncLive(o||{}))ch=true;if(ch)draw()};
@@ -572,4 +594,3 @@ setInterval(()=>{if(document.hidden||vdBusy||Date.now()<vdNext)return;vdLoad()},
     +'</ul><p class="note" style="margin:8px 0 0"><small>Avis de sites tiers, à titre d’information. Aucun résultat n’est garanti. <a href="jeu-responsable.html">Jeu responsable</a>.</small></p></div>'
 }catch(e){}})();
 </script></body></html>
-
