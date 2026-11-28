@@ -435,6 +435,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--brand);outline:0;box-
 .sx-err b{font:800 17px "Bricolage Grotesque",sans-serif}
 .sx-err span{color:var(--muted);font-size:15px}
 .sx-credit{text-align:center;margin:30px 0 8px}
+.sx-credit a{display:inline-block;background:#E8283B;color:#fff;font-style:italic;font-weight:800;font-size:13px;padding:4px 12px;border-radius:7px;white-space:nowrap;text-decoration:none;margin-left:6px}
+.sx-credit a:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .sx-dbg{white-space:pre-wrap;word-break:break-all;font-size:12px;max-height:260px;overflow:auto;background:var(--surface);border-radius:10px;padding:10px}
 /* Page match : évènements un peu plus aérés */
 .evr{padding:10px 0;align-items:start}
