@@ -177,7 +177,7 @@ const l10=async()=>{
   const[h,a]=await Promise.all([blk(pr.home,pr.home_key),blk(pr.away,pr.away_key)]);
   drawForme();
   if(h||a)$("l10").innerHTML='<div class="sec l10"><h2>10 derniers matchs</h2>'+h+a+'</div>'};
-let sideOn=false;const startSide=()=>{if(sideOn||!pr)return;sideOn=true;document.title=pr.home+" – "+pr.away+" · PronostBet";linkSide();l10().catch(()=>{});h2h().catch(()=>{});if(document.documentElement.dataset.tab==="c")stand().catch(()=>{});if(document.documentElement.dataset.tab==="l")lineups().catch(()=>{})};
+let sideOn=false;const startSide=()=>{if(sideOn||!pr)return;sideOn=true;document.title=pr.home+" – "+pr.away+" · PronostBet";linkSide();roundLoad().catch(()=>{});l10().catch(()=>{});h2h().catch(()=>{});if(document.documentElement.dataset.tab==="c")stand().catch(()=>{});if(document.documentElement.dataset.tab==="l")lineups().catch(()=>{})};
 const lg=(u,c)=>u?'<img class="'+(c||"")+'" src="'+esc(u)+'" alt="" referrerpolicy="no-referrer" draggable="false" onload="if(this.naturalWidth<3)this.remove()" onerror="this.remove()">':"";
 let lead=null;
 const S=(h,a)=>{h=+h;a=+a;lead=h>a?"home":a>h?"away":null;return '<span class="g'+(lead==="home"?' w':'')+'">'+h+'</span> – <span class="g'+(lead==="away"?' w':'')+'">'+a+'</span>'};
@@ -277,31 +277,73 @@ const luRender=(m,L,miss,hl,al)=>{
     +(hasMiss?'<div class="lu-miss"><div class="lu-sw" role="tablist"><button type="button" data-s="h" class="on" aria-label="'+esc(m.home)+'">'+(hl?'<img src="'+esc(hl)+'" alt="" referrerpolicy="no-referrer">':esc(m.home))+'</button><button type="button" data-s="a" aria-label="'+esc(m.away)+'">'+(al?'<img src="'+esc(al)+'" alt="" referrerpolicy="no-referrer">':esc(m.away))+'</button></div>'
       +['h','a'].map(k=>'<div class="lu-ms" data-s="'+k+'"'+(k==='a'?' hidden':'')+'><h3>Blessures et suspensions</h3><p>'+esc(k==='h'?m.home:m.away)+'</p>'
         +((miss[k]||[]).length?(miss[k]).map(p=>'<div class="lu-mr">'+(p.photo?'<img src="'+esc(p.photo)+'" alt="" referrerpolicy="no-referrer" onerror="this.remove()">':'<i></i>')+'<div><b>'+esc(luShort(p.name))+'</b><small>✚ '+esc(p.status)+'</small></div></div>').join(""):'<p class="lu-none">Aucun absent signalé.</p>')+'</div>').join("")+'</div>':'')+'</div>'};
+// ---- Recherche du match chez SportScore (partagée par les compositions et le numéro de tour) ----
+const DBG=/[?&]debug=1/.test(location.search);
+let FIND={id:null,p:null};
+const ssFind=()=>{if(FIND.p&&FIND.id===pr.fixture_id)return FIND.p;FIND.id=pr.fixture_id;
+  const p=(async()=>{const out={f:null,r:null,used:"",dbg:""};
+    const x={home:pr.home,away:pr.away,t:new Date(pr.kickoff).getTime()},same=y=>ssSameMatch(x,{home:y.home,away:y.away,t:+new Date(y.start)||0},6);
+    const day=new Date(pr.kickoff).toISOString().slice(0,10);
+    let list=[];try{list=await ssToday(day)}catch(e){out.dbg="liste du jour indisponible"}
+    out.f=list.find(same)||null;
+    const tries=[];if(out.f){if(out.f.id)tries.push(out.f.id);if(out.f.mid)tries.push(out.f.mid)}
+    tries.push(ssSlug(shortN(pr.home))+"-vs-"+ssSlug(shortN(pr.away)));
+    for(const sl of tries){try{const d=await SS("match",{slug:sl}),r=d.match||d.data||d;out.used=sl;if(r&&(r.lineups||r.lineup||r.line_ups||ssPick(r,["home","home_team"]))){out.r=r;break}}catch(e){out.dbg=out.dbg||ssErr(e)}}
+    if(!out.r)out.dbg=(out.dbg?out.dbg+" · ":"")+"match non trouvé chez SportScore ("+list.length+" matchs ce jour)";
+    return out})();
+  FIND.p=p;p.then(o=>{if(!o.r)setTimeout(()=>{if(FIND.p===p)FIND.p=null},30000)});return p};
+// ---- Numéro de tour : donnée du match chez SportScore, à défaut journées jouées + 1 d'après le classement (championnats nationaux) ----
+let RND=null,rndFor=null;
+const rndNum=v=>{if(v==null)return null;if(typeof v==="object")v=ssPick(v,["round","number","name","value"]);const t=String(v==null?"":v);
+  if(/final|round of|play-?off|group|knockout|qualif|\d\/\d/i.test(t))return null;const m=t.match(/\d+/);return m?m[0]:null};
+const rndFrom=o=>{for(const src of[o.r,o.f&&o.f.raw]){if(!src)continue;
+  for(const k of["round","round_name","roundName","matchday","match_day","matchweek","week","round_number","stage","competition.round","league.round"]){const n=rndNum(ssPick(src,[k]));if(n)return n}}return null};
+const roundLoad=async()=>{
+  if(!pr||rndFor===pr.fixture_id)return;rndFor=pr.fixture_id;
+  let n=null;try{n=rndFrom(await ssFind())}catch(e){}
+  if(!n){const slug=leagueSlug(pr.league);
+    if(slug&&!/^(uefa|fifa)-/.test(slug)){try{const d=await SS("standings",{slug}),rows=(Array.isArray(d.tables)?d.tables:[]).flatMap(g=>g.rows||[]);
+      const ps=[rows.find(x=>sameTeam(x.team,pr.home)),rows.find(x=>sameTeam(x.team,pr.away))].filter(Boolean).map(x=>Number(x.p)).filter(v=>v>=0);
+      if(ps.length)n=String(Math.max(...ps)+1)}catch(e){}}}
+  if(n&&n!==RND){RND=n;draw()}};
+// ---- Composition probable : onze de départ du dernier match joué par l'équipe (quand la composition officielle n'est pas encore publiée) ----
+const luProbable=async(o,need)=>{
+  const fm=o.r?ssMatch(o.r):(o.f||{}),slugs={home:fm.hid||ssSlug(shortN(pr.home)),away:fm.aid||ssSlug(shortN(pr.away))},names={home:pr.home,away:pr.away};
+  const matchesOf=d=>{const out=[],seen=new Set(),walk=(v,dep)=>{if(!v||dep>5)return;if(Array.isArray(v)){v.forEach(x=>walk(x,dep+1));return}if(typeof v!=="object")return;
+      if(typeof v.url==="string"&&/\/match\//.test(v.url)){if(!seen.has(v.url)){seen.add(v.url);out.push(ssMatch(v))}return}Object.values(v).forEach(x=>walk(x,dep+1))};
+    walk(d,0);return out.filter(x=>x.done&&x.id).sort((a,b)=>+new Date(b.start)-+new Date(a.start))};
+  const one=async k=>{
+    let d;try{d=await SS("team",{slug:slugs[k]})}catch(e){return null}
+    for(const x of matchesOf(d).slice(0,4)){
+      for(const sl of[x.id,x.mid].filter(Boolean)){
+        try{const dd=await SS("match",{slug:sl}),r=dd.match||dd.data||dd,Lx=luNorm(r);if(!Lx)continue;const mm=ssMatch(r);
+          const isH=ssSameTeam(names[k],mm.home),isA=ssSameTeam(names[k],mm.away);if(!isH&&!isA)break;
+          const xi=isH?Lx.home_xi:Lx.away_xi,form=isH?Lx.home_formation:Lx.away_formation;
+          if(xi.length>=11)return{xi,form};break}catch(e){}}}
+    return null};
+  const res={};await Promise.all(need.map(async k=>{res[k]=await one(k)}));return res};
 const lineups=async()=>{
-  const el=$("lu"),card=m=>{el.innerHTML='<p class="lun" style="margin:24px 0">'+m+'</p>'};
+  const el=$("lu"),card=(m,dbg)=>{el.innerHTML='<p class="lun" style="margin:24px 0">'+m+'</p>'+(DBG&&dbg?'<p class="lun" style="font-size:11px;opacity:.7">'+esc(dbg)+'</p>':'')};
   if(!pr){card("Chargement…");return}
   if(LU.id===pr.fixture_id&&Date.now()-LU.t<(LU.has?3e5:6e4))return;
   LU={id:pr.fixture_id,t:Date.now(),has:false};
   if(!el.innerHTML)card("Chargement…");
-  let dbg="";
   try{
-    const x={home:pr.home,away:pr.away,t:new Date(pr.kickoff).getTime()},same=y=>ssSameMatch(x,{home:y.home,away:y.away,t:+new Date(y.start)||0},6);
-    const day=new Date(pr.kickoff).toISOString().slice(0,10);
-    // 1) liste du jour (+ direct) ; 2) à défaut, adresse devinée « equipe-vs-equipe »
-    let list=[];try{list=await ssToday(day)}catch(e){dbg="liste du jour indisponible"}
-    const f=list.find(same);
-    const tries=[];if(f){if(f.id)tries.push(f.id);if(f.mid)tries.push(f.mid)}
-    tries.push(ssSlug(shortN(pr.home))+"-vs-"+ssSlug(shortN(pr.away)));
-    let r=null,used="";
-    for(const sl of tries){try{const d=await SS("match",{slug:sl});r=d.match||d.data||d;used=sl;if(r&&(r.lineups||r.lineup||r.line_ups||ssPick(r,["home","home_team"])))break;r=null}catch(e){dbg=dbg||ssErr(e)}}
-    if(!r){card("Compositions pas encore disponibles pour ce match. Elles sont publiées au plus tôt 1 h avant le coup d’envoi.","Match non trouvé chez SportScore ("+list.length+" matchs ce jour). "+dbg);return}
-    const L=luNorm(r);
-    LU.has=!!(L&&(L.home_xi.length||L.away_xi.length));
-    if(!LU.has){card("Compositions pas encore publiées pour ce match. Elles arrivent en général 1 h avant le coup d’envoi.","SportScore : "+used+(r.lineups?" (lineups vides)":" (pas de champ lineups)"));return}
-    const m=Object.assign({},ssMatch(r),{home:shortN(pr.home),away:shortN(pr.away)});
+    const o=await ssFind();
+    let L=o.r?luNorm(o.r):null;
+    if(!L)L={home_xi:[],away_xi:[],home_subs:[],away_subs:[],home_formation:"",away_formation:"",confirmed:false};
+    let prob=false;
+    const need=["home","away"].filter(k=>!L[k+"_xi"].length);
+    if(need.length){
+      const P=await luProbable(o,need);
+      need.forEach(k=>{if(P[k]){L[k+"_xi"]=P[k].xi;L[k+"_formation"]=P[k].form||"";prob=true}});
+      if(prob)L.confirmed=false}
+    LU.has=!!(L.home_xi.length||L.away_xi.length);
+    if(!LU.has){card("Composition probable indisponible pour ce match pour le moment.",(o.dbg||"")+" · SportScore : "+(o.used||"?"));return}
+    const m=Object.assign({},o.r?ssMatch(o.r):{},{home:shortN(pr.home),away:shortN(pr.away)});
     const hl=(d&&d.home&&d.home.logo)||(meta&&meta.home_logo)||m.hl||"",al=(d&&d.away&&d.away.logo)||(meta&&meta.away_logo)||m.al||"";
-    const miss={h:luMiss(r,"home"),a:luMiss(r,"away")};
-    el.innerHTML=luRender(m,L,miss,hl,al)+(!L.confirmed?'<p class="lun">Compositions probables : les officielles sont publiées environ 1 h avant le match.</p>':'');
+    const miss={h:o.r?luMiss(o.r,"home"):null,a:o.r?luMiss(o.r,"away"):null};
+    el.innerHTML=luRender(m,L,miss,hl,al)+(!L.confirmed?'<p class="lun">'+(prob?'Composition probable, d’après le dernier match joué. ':'Compositions probables. ')+'La composition officielle est publiée environ 1 h avant le coup d’envoi.</p>':'');
     const sw=el.querySelector(".lu-sw");
     if(sw)sw.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sw.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));el.querySelectorAll(".lu-ms").forEach(x=>x.hidden=x.dataset.s!==b.dataset.s)})
   }catch(e){LU.t=0;card("Compositions indisponibles pour le moment.",String((e&&e.message)||e))}};
@@ -330,7 +372,7 @@ const stand=async()=>{
       return '<tr class="'+(isT(x)?"hl":"")+'"><td class="pos" style="box-shadow:inset 4px 0 0 '+esc(col(x.promo_color))+'">'+esc(x.pos??i+1)+'</td><td class="n">'+lg(x.team_logo)+'<span>'+esc(x.team||"")+'</span></td><td>'+esc(x.p??"")+'</td><td>'+esc(gd)+'</td><td class="pts">'+esc(x.pts??"")+'</td></tr>'}).join("")
     +'</tbody></table></div>').join("")};
 const CTRY={"Spain": "Espagne", "England": "Angleterre", "Italy": "Italie", "Germany": "Allemagne", "France": "France", "Portugal": "Portugal", "Netherlands": "Pays-Bas", "Brazil": "Brésil", "USA": "États-Unis", "Belgium": "Belgique", "Turkey": "Turquie", "Scotland": "Écosse", "Argentina": "Argentine", "World": "Monde", "Europe": "Europe"};
-const lgFull=(l,round)=>{const m=String(l||"").match(/^(.*?)\s*[\(\[]\s*([^)\]]+?)\s*[\)\]]\s*$/),name=(m?m[1]:String(l||"")).trim(),c=m?(CTRY[m[2].trim()]||m[2].trim()):"",n=String(round||"").match(/\d+/);
+const lgFull=(l,round)=>{const m=String(l||"").match(/^(.*?)\s*[\(\[]\s*([^)\]]+?)\s*[\)\]]\s*$/),name=(m?m[1]:String(l||"")).trim(),c=m?(CTRY[m[2].trim()]||m[2].trim()):"",rs=String(round||""),n=/final|round of|play-?off|group|knockout|qualif|\d\/\d/i.test(rs)?null:rs.match(/\d+/);
   return[c,name,n?"Tour "+n[0]:""].filter(Boolean).join(". ")};
 const p2=n=>String(n).padStart(2,"0");
 const fmtK=t=>{const x=new Date(t),h=x.getHours(),ap=h>=12?"PM":"AM";return p2(x.getDate())+"."+p2(x.getMonth()+1)+"."+x.getFullYear()+" ("+p2(h%12||12)+":"+p2(x.getMinutes())+" "+ap+")"};
@@ -349,7 +391,7 @@ const draw=()=>{
   else if(new Date(pr.kickoff)<Date.now())center='<div class="scr">– –<small>Résultat en attente</small></div>';
   else center='<div class="scr" style="font-size:30px">'+new Date(pr.kickoff).toLocaleTimeString((window.PB?PB.loc():"fr-FR"),{hour:"2-digit",minute:"2-digit"})+'<small>'+new Date(pr.kickoff).toLocaleDateString((window.PB?PB.loc():"fr-FR"),{weekday:"short",day:"numeric",month:"short"})+'</small></div>';
   const upcoming=!pr.settled_at&&!isLive()&&new Date(pr.kickoff)>Date.now();
-  const head='<div class="lgh"><div class="lgl">'+lg(lgLogo,"lgo sm")+'<span>'+esc(lgFull(pr.league,d&&d.league&&d.league.round))+'</span></div><div class="lgd">'+(upcoming?'<span id="cd" class="cdp">'+cdTxt(pr.kickoff)+'</span>':'')+'<span>'+esc(fmtK(pr.kickoff))+'</span></div></div>';
+  const head='<div class="lgh"><div class="lgl">'+lg(lgLogo,"lgo sm")+'<span>'+esc(lgFull(pr.league,(d&&d.league&&d.league.round)||RND))+'</span></div><div class="lgd">'+(upcoming?'<span id="cd" class="cdp">'+cdTxt(pr.kickoff)+'</span>':'')+'<span>'+esc(fmtK(pr.kickoff))+'</span></div></div>';
   $("mh").innerHTML='<div class="mh">'+head+'<div class="tt">'+team("home")+center+team("away")+'</div></div>';
   // Panneau Pronostics : 3 états (avant-match / direct / terminé), calculé à partir du pronostic stocké + score
   const isDone=!!(pr.settled_at&&pr.final_home!=null)||!!(d&&DONE.includes(d.status)&&g),isLv=!isDone&&isLive();
