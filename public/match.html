@@ -1,8 +1,19 @@
-<!DOCTYPE html><html lang="fr"><head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2617146871223427" crossorigin="anonymous"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="matchview.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="predpanel.css"><link rel="stylesheet" href="theme.css"><title>Match – PronostBet</title></head><body class="ss"><div class="wrap">
+<!DOCTYPE html><html lang="fr"><head><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2617146871223427" crossorigin="anonymous"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#130F33"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Hanken+Grotesk:wght@400;500;700&display=swap"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="matchview.css"><link rel="stylesheet" href="predview.css"><link rel="stylesheet" href="predpanel.css"><link rel="stylesheet" href="theme.css"><title>Match – PronostBet</title><style>
+.od{background:#fff;color:#1B1650;border-radius:14px;padding:12px 14px;margin:0 0 14px;box-shadow:0 1px 2px rgba(27,22,80,.06)}
+.od .odh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.od h2{margin:0;font-size:16px;font-weight:600;color:#1B1650}
+.od .ods{background:#E8283B;color:#fff;font-style:italic;font-weight:800;font-size:13px;padding:4px 12px;border-radius:7px;white-space:nowrap}
+.od .og{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.od .og2{grid-template-columns:repeat(2,1fr);margin-top:8px}
+.od .oc{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#F1F2F7;border-radius:10px;padding:10px 12px;min-width:0}
+.od .oc span{color:#6B6890;font-size:14px;white-space:nowrap}
+.od .oc b{color:#1B1650;font-size:16px;font-weight:800}
+</style></head><body class="ss"><div class="wrap">
 <header class="top"><a class="logo" href="index.html"><img src="icons/icon-192.png" alt="" width="34" height="34"><span>PRONOST<b>BET</b></span></a><span id="who" hidden></span></header>
 <a class="back" href="dashboard.html" id="back">← Retour aux matchs</a>
 <div id="mh"><p class="sub">Chargement du match…</p></div>
 <div id="sl"></div>
+<div id="odds"></div>
 <div id="pred"></div>
 <div id="vd"></div>
 <div id="fm"></div>
@@ -11,7 +22,6 @@
 <div id="l10"></div>
 <div id="tp"></div>
 <div id="ev"></div>
-<div id="odds"></div>
 <div id="adslot" hidden></div>
 <p class="note" style="text-align:center;margin:28px 0 8px">Propulsé par <a href="https://kickoffapi.com" target="_blank" rel="noopener">KickoffAPI</a></p>
 <div style="height:40px"></div></div>
@@ -91,9 +101,10 @@ const drawOdds=async()=>{
   let o=null;try{const r=await sb.rpc("get_match_odds",{p_fixture:pr.fixture_id});o=r.data}catch(e){}
   if(!o||!o.ok){$("odds").innerHTML="";return}
   const f2=n=>fr(Number(n).toFixed(2));
-  $("odds").innerHTML='<div class="sec"><h2>Cotes du marché</h2><div class="stats"><div>Domicile<b>'+f2(o.home)+'</b></div><div>Nul<b>'+f2(o.draw)+'</b></div><div>Extérieur<b>'+f2(o.away)+'</b></div>'
-    +(o.total?'<div>Plus de '+fr(o.total.line)+' buts<b>'+f2(o.total.over)+'</b></div><div>Moins de '+fr(o.total.line)+' buts<b>'+f2(o.total.under)+'</b></div>':"")+'</div>'
-    +'<p class="note" style="margin:8px 0 0"><small>Source : '+esc(o.source||"Pinnacle")+'</small></p></div>'};
+  const c=(l,v)=>'<div class="oc"><span>'+l+'</span><b>'+f2(v)+'</b></div>';
+  $("odds").innerHTML='<div class="od"><div class="odh"><h2>Les cotes du match</h2><span class="ods">'+esc(o.source||"Pinnacle")+'</span></div>'
+    +'<div class="og">'+c("1",o.home)+c("X",o.draw)+c("2",o.away)+'</div>'
+    +(o.total?'<div class="og og2">'+c("+"+fr(o.total.line),o.total.over)+c("-"+fr(o.total.line),o.total.under)+'</div>':"")+'</div>'};
 const draw=()=>{
   drawForme();
   const lgLogo=(d&&d.league&&d.league.logo)||(meta&&meta.league_logo);
